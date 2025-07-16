@@ -13,15 +13,14 @@ public interface IDisasterReportService
 
     Task<IEnumerable<DisasterReportDto>> GetUrgentReportsAsync();
 
-    Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId);
-
-    Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId);
+    Task<IEnumerable<DisasterReportDto>> GetMyReportsAsync(Guid reporterId);
+    Task<IEnumerable<DisasterReportDto>> GetMyDeletedReportsAsync(Guid reporterId);
 
     Task<IEnumerable<DisasterReportDto>> GetDeletedReportsAsync(string category);
 
     Task<DisasterReportDto?> GetReportByIdAsync(int id);
 
-    Task AddReportAsync(AddDisasterReportDto report);
+    Task AddReportAsync(AddDisasterReportDto report,Guid reporterId);
 
     Task UpdateReportAsync(int reportId, UpdateDisasterReportDto reportDto);
 

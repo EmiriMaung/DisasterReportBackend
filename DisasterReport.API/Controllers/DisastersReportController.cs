@@ -1,11 +1,14 @@
 ﻿using DisasterReport.Services.Models;
 using DisasterReport.Services.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class DisastersReportController : ControllerBase
     {
         private readonly IDisasterReportService _disasterReportService;
@@ -27,16 +30,30 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetUrgentReportsAsync();
             return Ok(reports);
         }
-        [HttpGet("reporter/{reporterId}")]
-        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetAllReportsByReporterIdAsync(Guid reporterId)
+       
+        [HttpGet("my-reports")]
+        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetMyReportsAsync()
         {
-            var reports = await _disasterReportService.GetAllReportsByReporterIdAsync(reporterId);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid reporterId))
+            {
+                return Unauthorized("User ID claim is missing or invalid");
+            }
+
+            var reports = await _disasterReportService.GetMyReportsAsync(reporterId);
             return Ok(reports);
         }
-        [HttpGet("reporter/{reporterId}/deleted-report")]
-        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetDeletedReportsByReporterIdAsync(Guid reporterId)
+
+        [HttpGet("my-deleted-reports")]
+        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetMyDeletedReportsAsync()
         {
-            var reports = await _disasterReportService.GetDeletedReportsByReporterIdAsync(reporterId);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid reporterId))
+            {
+                return Unauthorized("User ID claim is missing or invalid");
+            }
+
+            var reports = await _disasterReportService.GetMyDeletedReportsAsync(reporterId);
             return Ok(reports);
         }
 
@@ -80,14 +97,28 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetReportsByTownshipAsync(townshipName);
             return Ok(reports);
         }
+      
         [HttpPost("add-disaster-report")]
         public async Task<IActionResult> AddReportAsync([FromForm] AddDisasterReportDto report)
         {
             if (report == null)
                 return BadRequest("Report data is required.");
 
-            await _disasterReportService.AddReportAsync(report);
-            return Ok("Report added successfully.");
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid reporterId))
+            {
+                return Unauthorized("User ID claim is missing or invalid");
+            }
+
+            try
+            {
+                await _disasterReportService.AddReportAsync(report, reporterId);
+                return Ok("Report added successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while adding the report");
+            }
         }
 
         [HttpPut("{id}")]
@@ -117,18 +148,46 @@ namespace DisasterReport.API.Controllers
             await _disasterReportService.HardDeleteAsync(id);
             return NoContent();
         }
+       
         [HttpPost("{reportId}/approve")]
-        public async Task<IActionResult> ApproveReportAsync(int reportId, [FromQuery] Guid approvedBy)
+        public async Task<IActionResult> ApproveReportAsync(int reportId)
         {
-            await _disasterReportService.ApproveReportAsync(reportId, approvedBy);
-            return Ok(new { message = "Report approved successfully." });
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid approvedBy))
+            {
+                return Unauthorized("User ID claim is missing or invalid");
+            }
+
+            try
+            {
+                await _disasterReportService.ApproveReportAsync(reportId, approvedBy);
+                return Ok(new { message = "Report approved successfully." });
+            }
+            catch (Exception ex)
+            {
+                // Log error if needed
+                return StatusCode(500, new { message = "Failed to approve report", error = ex.Message });
+            }
         }
 
         [HttpPost("{reportId}/reject")]
-        public async Task<IActionResult> RejectReportAsync(int reportId, [FromQuery] Guid rejectedBy)
+        public async Task<IActionResult> RejectReportAsync(int reportId)
         {
-            await _disasterReportService.RejectReportAsync(reportId, rejectedBy);
-            return Ok(new { message = "Report rejected successfully." });
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid rejectedBy))
+            {
+                return Unauthorized("User ID claim is missing or invalid");
+            }
+
+            try
+            {
+                await _disasterReportService.RejectReportAsync(reportId, rejectedBy);
+                return Ok(new { message = "Report rejected successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to reject report", error = ex.Message });
+            }
         }
 
     }

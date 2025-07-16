@@ -72,7 +72,32 @@ namespace DisasterReport.Services.Services.Implementations
             return dtoList;
         }
 
-        public async Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId)
+        //public async Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId)
+        //{
+        //    var cacheKey = $"reports_by_reporter_{reporterId}";
+
+        //    if (_cache.TryGetValue(cacheKey, out List<DisasterReportDto> cachedReports))
+        //    {
+        //        return cachedReports;
+        //    }
+
+        //    var reports = await _postRepo.GetAllPostsByReporterId(reporterId);
+        //    var dtoList = await MapToDtoListAsync(reports);
+
+        //    var cacheOptions = new MemoryCacheEntryOptions()
+        //        .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); 
+
+        //    _cache.Set(cacheKey, dtoList, cacheOptions);
+
+        //    return dtoList;
+        //}
+
+        //public async Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId)
+        //{
+        //    var reports = await _postRepo.GetDeletedPostsByReporterId(reporterId);
+        //    return await MapToDtoListAsync(reports);
+        //}
+        public async Task<IEnumerable<DisasterReportDto>> GetMyReportsAsync(Guid reporterId)
         {
             var cacheKey = $"reports_by_reporter_{reporterId}";
 
@@ -85,19 +110,18 @@ namespace DisasterReport.Services.Services.Implementations
             var dtoList = await MapToDtoListAsync(reports);
 
             var cacheOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); 
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
 
             _cache.Set(cacheKey, dtoList, cacheOptions);
 
             return dtoList;
         }
 
-        public async Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId)
+        public async Task<IEnumerable<DisasterReportDto>> GetMyDeletedReportsAsync(Guid reporterId)
         {
             var reports = await _postRepo.GetDeletedPostsByReporterId(reporterId);
             return await MapToDtoListAsync(reports);
         }
-
         public async Task<IEnumerable<DisasterReportDto>> GetDeletedReportsAsync(string category)
         {
             throw new NotImplementedException("This method is not implemented yet.");
@@ -141,7 +165,7 @@ namespace DisasterReport.Services.Services.Implementations
             var reports = await _postRepo.GetReportsByStatusAsync(status);
             return await MapToDtoListAsync(reports);
         }
-        public async Task AddReportAsync(AddDisasterReportDto report)
+        public async Task AddReportAsync(AddDisasterReportDto report,Guid reporterId)
         {
             var uploadedFiles = new List<ImpactUrlDto>();
 
@@ -167,7 +191,7 @@ namespace DisasterReport.Services.Services.Implementations
                     Title = report.Title,
                     Description = report.Description,
                     Category = report.Category,
-                    ReporterId = report.ReporterId,
+                    ReporterId = reporterId,
                     LocationId = newLocation.Id,
                     // DisasterTopicsId = report.DisasterTopicsId,
                     IsUrgent = report.IsUrgent,
@@ -202,7 +226,8 @@ namespace DisasterReport.Services.Services.Implementations
                 await _postRepo.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                _cache.Remove($"reports_by_reporter_{report.ReporterId}");
+                ClearReportCache(0, reporterId); 
+
 
             }
             catch (Exception ex)
@@ -259,6 +284,7 @@ namespace DisasterReport.Services.Services.Implementations
                 report.Description = reportDto.Description;
                 report.Category = reportDto.Category;
                 // report.DisasterTopicsId = reportDto.DisasterTopicsId;
+                report.UpdatedAt = reportDto.UpdateAt ?? DateTime.UtcNow;
                 report.IsUrgent = reportDto.IsUrgent;
                 report.UpdatedAt = DateTime.UtcNow;
                 report.LocationId = existingLocation.Id;
@@ -290,7 +316,7 @@ namespace DisasterReport.Services.Services.Implementations
                 await _postRepo.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                _cache.Remove($"reports_by_reporter_{report.ReporterId}");
+                ClearReportCache(report.Id, report.ReporterId);
 
             }
             catch (Exception ex)
@@ -314,7 +340,7 @@ namespace DisasterReport.Services.Services.Implementations
 
             await _postRepo.SoftDeleteReportAsync(id);
             await _postRepo.SaveChangesAsync();
-            _cache.Remove($"reports_by_reporter_{report.ReporterId}");
+            ClearReportCache(report.Id, report.ReporterId);
 
         }
 
@@ -326,7 +352,7 @@ namespace DisasterReport.Services.Services.Implementations
             await _postRepo.RestoreDeletedReportAsync(id);
             report.UpdatedAt = DateTime.UtcNow;
             await _postRepo.SaveChangesAsync();
-            _cache.Remove($"reports_by_reporter_{report.ReporterId}");
+            ClearReportCache(report.Id, report.ReporterId);
 
         }
 
@@ -376,7 +402,7 @@ namespace DisasterReport.Services.Services.Implementations
 
                 await _postRepo.SaveChangesAsync();
                 await transaction.CommitAsync();
-                _cache.Remove($"reports_by_reporter_{report.ReporterId}");
+                ClearReportCache(report.Id, report.ReporterId);
             }
             catch (Exception ex)
             {
@@ -396,9 +422,11 @@ namespace DisasterReport.Services.Services.Implementations
             await _postRepo.ApproveReportAsync(reportId, approvedBy);
             await _postRepo.SaveChangesAsync();
 
-            _cache.Remove($"report_{reportId}");
-
-            _cache.Remove("all_reports");
+            var report = await _postRepo.GetPostByIdAsync(reportId);
+            if (report != null)
+            {
+                ClearReportCache(report.Id, report.ReporterId);
+            }
 
         }
 
@@ -407,9 +435,12 @@ namespace DisasterReport.Services.Services.Implementations
             await _postRepo.RejectReportAsync(reportId, rejectedBy);
             await _postRepo.SaveChangesAsync();
 
-            _cache.Remove($"report_{reportId}");
+            var report = await _postRepo.GetPostByIdAsync(reportId);
+            if (report != null)
+            {
+                ClearReportCache(report.Id, report.ReporterId);
+            }
 
-            _cache.Remove("all_reports");
         }
         private async Task<List<DisasterReportDto>> MapToDtoListAsync(List<DisastersReport> reports)
         {
@@ -476,5 +507,13 @@ namespace DisasterReport.Services.Services.Implementations
 
             }).ToList();
         }
+        private void ClearReportCache(int reportId, Guid reporterId)
+        {
+            _cache.Remove($"report_{reportId}");
+            _cache.Remove($"reports_by_reporter_{reporterId}");
+            _cache.Remove("all_reports");
+            _cache.Remove("urgent_reports"); // only if your system tracks urgent reports separately
+        }
+
     }
 }

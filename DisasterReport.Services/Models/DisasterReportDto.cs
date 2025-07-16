@@ -38,7 +38,7 @@ public class AddDisasterReportDto
 {
     public string? Title { get; set; }
     public string? Description { get; set; }
-    public Guid ReporterId { get; set; }
+    //public Guid ReporterId { get; set; }
     public string Category { get; set; } = null!;
     // public int DisasterTopicsId { get; set; }
     public bool IsUrgent { get; set; }
@@ -55,6 +55,7 @@ public class UpdateDisasterReportDto
     public string? Title { get; set; }
     public string? Description { get; set; }
     public string Category { get; set; } = null!;
+    public DateTime? UpdateAt { get; set; }
     //public int DisasterTopicsId { get; set; }
     public bool IsUrgent { get; set; }
 
