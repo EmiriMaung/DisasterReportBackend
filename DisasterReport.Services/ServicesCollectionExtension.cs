@@ -17,10 +17,14 @@ namespace DisasterReport.Services
             services.AddScoped<IAuthAccountService, AuthAccountService>();
 
             services.AddScoped<IOrganizationService, OrganizationService>();
+
+            services.AddScoped<IDisasterReportService, DisasterReportService>();
+
             //Add Cloudinary
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
+
             return services;
         }
     }

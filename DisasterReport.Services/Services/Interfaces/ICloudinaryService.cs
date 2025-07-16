@@ -11,5 +11,8 @@ namespace DisasterReport.Services.Services
     public interface ICloudinaryService
     {
         Task<UploadResult> UploadFileAsync(IFormFile file); //Custom Model's UploadResult
+        //For disaster report
+        Task<List<ImpactUrlDto>> UploadFilesAsync(List<IFormFile> files);
+        Task DeleteFilesAsync(List<string> publicIds);
     }
 }

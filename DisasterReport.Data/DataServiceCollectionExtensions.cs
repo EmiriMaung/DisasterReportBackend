@@ -1,5 +1,7 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Data.Repositories;
+using DisasterReport.Data.Repositories.Implementations;
+using DisasterReport.Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -20,7 +22,9 @@ namespace DisasterReport.Data
             services.AddScoped<IOrganizationRepo, OrganizationRepo>();
             services.AddScoped<IOrganizationDocRepo, OrganizationDocRepo>();
             services.AddScoped<IOrganizationMemberRepo, OrganizationMemberRepo>();
-           
+            services.AddScoped<IPostRepo, PostRepo>();
+            services.AddScoped<ILocationRepo, LocationRepo>();
+            services.AddScoped<IImpactUrlRepo, ImpactUrlRepo>();
             return services;
         }
     }

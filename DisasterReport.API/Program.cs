@@ -23,6 +23,8 @@ namespace DisasterReport.API
             builder.Services.AddDataServices(connectionString); //get from DataServiceControllerEntension... 
             // 3 .  Register Service Layer 
             builder.Services.AddServiceLayer(builder.Configuration);
+            // Memory Cache
+            builder.Services.AddMemoryCache();
 
             // ADD CORS CONFIGURATION
             builder.Services.AddCors(options =>

@@ -1,0 +1,33 @@
+﻿using DisasterReport.Data.Domain;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DisasterReport.Data.Repositories.Interfaces
+{
+    public interface IPostRepo
+    {
+        Task<List<DisastersReport>> GetAllPostsWithMaterialsAsync();
+        Task<List<DisastersReport>> GetAllPostsByReporterId(Guid reporterId);
+        Task<List<DisastersReport>> GetDeletedPostsByReporterId(Guid reporterId);
+        Task<DisastersReport?> GetPostByIdAsync(int id);
+        Task<List<DisastersReport>> GetReportsByStatusAsync(int status);
+        Task<List<DisastersReport>> GetReportsByRegionAsync(string regionName);
+        Task<List<DisastersReport>> GetReportsByTownshipAsync(string townshipName);
+        Task<List<DisastersReport>> GetPendingReportsAsync();
+        Task<List<DisastersReport>> GetUrgentReportsAsync();
+        Task AddPostAsync(DisastersReport report);
+        Task UpdatePostAsync(DisastersReport report);
+        Task SoftDeleteReportAsync(int reportId);
+        Task RestoreDeletedReportAsync(int reportId);
+        Task HardDeleteReportAsync(DisastersReport report);
+        Task<List<DisastersReport>> SearchReportsAsync(string? keyword, string? category, string? region, bool? isUrgent);
+        Task ApproveReportAsync(int reportId, Guid approvedBy);
+        Task RejectReportAsync(int reportId, Guid rejectedBy);
+        Task SaveChangesAsync();
+        ApplicationDBContext DbContext { get; }
+    }
+
+}
