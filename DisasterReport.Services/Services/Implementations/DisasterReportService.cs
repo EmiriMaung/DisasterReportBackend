@@ -3,6 +3,7 @@ using DisasterReport.Data.Repositories;
 using DisasterReport.Data.Repositories.Interfaces;
 using DisasterReport.Services.Enums;
 using DisasterReport.Services.Models;
+using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;

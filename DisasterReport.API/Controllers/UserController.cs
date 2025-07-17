@@ -17,27 +17,38 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers([FromQuery] UserFilterOptions options)
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
-            var users = await _userService.GetAllUsersAsync(options);
+            var users = await _userService.GetAllUsersAsync();
+            if (users == null)
+            {
+                return NotFound("No users found.");
+            }
             return Ok(users);
         }
 
         [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActiveUsers([FromQuery] UserFilterOptions options)
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActiveUsers()
         {
-            options.OnlyBlacklisted = false;
-            var users = await _userService.GetAllUsersAsync(options);
+            var users = await _userService.GetAllActiveUsersAsync();
+            if (users == null)
+            {
+                return NotFound("No users found.");
+            }
             return Ok(users);
         }
 
-        [HttpGet("blacklisted")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllBlacklistedUsers([FromQuery] UserFilterOptions options)
+        [HttpGet("admins")]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAdmins()
         {
-            options.OnlyBlacklisted = true;
-            var users = await _userService.GetAllUsersAsync(options);
+            var users = await _userService.GetAllAdminsAsync();
+            if (users == null)
+            {
+                return NotFound("No admin found.");
+            }
             return Ok(users);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetUserById(Guid id)
@@ -74,14 +85,6 @@ namespace DisasterReport.API.Controllers
             if (user == null)
                 return NotFound();
 
-            return Ok(user);
-        }
-
-        [HttpGet("blacklisted/{id}")]
-        public async Task<ActionResult<UserDto>> GetBlacklistedUserById(Guid id)
-        {
-            var user = await _userService.GetBlacklistedUserByIdAsync(id);
-            if (user == null) return NotFound();
             return Ok(user);
         }
 

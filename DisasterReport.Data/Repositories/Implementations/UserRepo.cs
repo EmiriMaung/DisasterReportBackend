@@ -13,24 +13,31 @@ namespace DisasterReport.Data.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync(UserFilterOptions options)
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            var query = _context.Users
+            return await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Organizations)
-                .AsQueryable();
+                .ToListAsync();
+        }
 
-            if (options.OnlyBlacklisted.HasValue)
-            {
-                query = query.Where(u => u.IsBlacklistedUser == options.OnlyBlacklisted.Value);
-            }
+        public async Task<IEnumerable<User>> GetAllActiveUsersAsync()
+        {
+            return await _context.Users
+                .Where(u => !u.IsBlacklistedUser)
+                .Where(u => u.RoleId == 2)
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .ToListAsync();
+        }
 
-            if (options.RoleId.HasValue)
-            {
-                query = query.Where(u => u.RoleId == options.RoleId.Value);
-            }
-
-            return await query.ToListAsync();
+        public async Task<IEnumerable<User>> GetAllAdminsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Role.RoleName == "Admin")
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .ToListAsync();
         }
 
         public async Task<User?> GetUserByIdAsync(Guid id)
@@ -47,14 +54,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Include(u => u.Role)
                 .Include(u => u.Organizations)
                 .FirstOrDefaultAsync(u => u.Email == email);
-        }
-
-        public async Task<User?> GetBlacklistedUserByIdAsync(Guid id)
-        {
-            return await _context.Users
-                .Include(u => u.Role)
-                .Include(u => u.Organizations)
-                .FirstOrDefaultAsync(u => u.Id == id && u.IsBlacklistedUser);
         }
 
         public async Task UpdateUserAsync(User user)

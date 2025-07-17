@@ -14,12 +14,29 @@ namespace DisasterReport.Services.Services.Implementations
             _userRepo = userRepo;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync(UserFilterOptions options)
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
-            var users = await _userRepo.GetAllUsersAsync(options);
+            var users = await _userRepo.GetAllUsersAsync();
             return users
                 .Select(MapToDto)
                 .ToList();
+        }
+
+        public async Task<IEnumerable<UserDto>> GetAllActiveUsersAsync()
+        {
+            var users = await _userRepo.GetAllActiveUsersAsync();
+            return users
+                .Select(MapToDto)
+                .ToList();
+        }
+
+        public async Task<IEnumerable<UserDto>> GetAllAdminsAsync()
+        {
+            var users = await _userRepo.GetAllAdminsAsync();
+            return users
+                .Select(MapToDto)
+                .ToList();
+
         }
 
         public async Task<UserDto?> GetUserByIdAsync(Guid id)
@@ -31,12 +48,6 @@ namespace DisasterReport.Services.Services.Implementations
         public async Task<UserDto?> GetUsersByEmailAsync(string email)
         {
             var user = await _userRepo.GetUsersByEmailAsync(email);
-            return user != null ? MapToDto(user) : null;
-        }
-
-        public async Task<UserDto?> GetBlacklistedUserByIdAsync(Guid id)
-        {
-            var user = await _userRepo.GetBlacklistedUserByIdAsync(id);
             return user != null ? MapToDto(user) : null;
         }
               

@@ -10,13 +10,15 @@ namespace DisasterReport.Data.Repositories.Interfaces
 {
     public interface IUserRepo
     {
-        Task<IEnumerable<User>> GetAllUsersAsync(UserFilterOptions options);
+        Task<IEnumerable<User>> GetAllUsersAsync();
+
+        Task<IEnumerable<User>> GetAllActiveUsersAsync();
+
+        Task<IEnumerable<User>> GetAllAdminsAsync();
 
         Task<User?> GetUserByIdAsync(Guid id);
 
         Task<User?> GetUsersByEmailAsync(string email);
-
-        Task<User?> GetBlacklistedUserByIdAsync(Guid id);
 
         Task UpdateUserAsync(User user);
 
