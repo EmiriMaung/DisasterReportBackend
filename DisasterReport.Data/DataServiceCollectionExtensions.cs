@@ -25,6 +25,7 @@ namespace DisasterReport.Data
             services.AddScoped<IPostRepo, PostRepo>();
             services.AddScoped<ILocationRepo, LocationRepo>();
             services.AddScoped<IImpactUrlRepo, ImpactUrlRepo>();
+            services.AddScoped<IUserRepo, UserRepo>();
             return services;
         }
     }
