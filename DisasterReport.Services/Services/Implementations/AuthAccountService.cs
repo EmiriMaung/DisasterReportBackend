@@ -128,9 +128,6 @@ namespace DisasterReport.Services.Services.Implementations
             };
 
             _context.Users.Add(user);
-            _context.SaveChangesAsync();
-
-            user.Role = defaultRole;
 
             var accessToken = _jwtService.GenerateAccessToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
