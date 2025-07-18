@@ -1,4 +1,7 @@
-﻿namespace DisasterReport.Data.Domain;
+﻿using System;
+using System.Collections.Generic;
+
+namespace DisasterReport.Data.Domain;
 
 public partial class User
 {
@@ -17,6 +20,8 @@ public partial class User
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
+
+    public string? PasswordHash { get; set; }
 
     public virtual ICollection<BlacklistEntry> BlacklistEntries { get; set; } = new List<BlacklistEntry>();
 

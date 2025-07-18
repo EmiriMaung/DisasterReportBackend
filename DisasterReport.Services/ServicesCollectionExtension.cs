@@ -15,6 +15,7 @@ namespace DisasterReport.Services
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IOAuthService, OAuthService>();
             services.AddScoped<IAuthAccountService, AuthAccountService>();
+            services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
             services.AddScoped<IOrganizationService, OrganizationService>();
 
