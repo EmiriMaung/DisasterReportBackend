@@ -22,5 +22,7 @@ namespace DisasterReport.Services.Services
         Task<bool> BlacklistOrganizationAsync(int orgId, Guid adminUserId);
         Task<bool> UnBlacklistOrganizationAsync(int orgId, Guid adminUserId);
         Task<bool> InviteMemberAsync(int orgId, InviteMemberDto dto, Guid inviterUserId);
+        Task<bool> UserHasActiveOrganizationAsync(Guid userId);
+
     }
 }

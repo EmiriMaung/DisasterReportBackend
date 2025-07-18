@@ -53,20 +53,21 @@ namespace DisasterReport.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CreateOrganizationDto dto)
         {
-            //var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            //return Ok(claims);
-
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // ← this matches your JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid creatorUserId))
             {
                 return Unauthorized("User ID claim is missing or invalid");
             }
 
-            // TEMPORARY: skip JWT claim lookup
-            //Guid creatorUserId = Guid.Parse("0A795CD5-C2AE-4840-BF6F-813661CC76EB");
-
-            var newOrgId = await _organizationService.CreateOrganizationAsync(dto, creatorUserId);
-            return CreatedAtAction(nameof(GetById), new { id = newOrgId }, new { Id = newOrgId });
+            try
+            {
+                var newOrgId = await _organizationService.CreateOrganizationAsync(dto, creatorUserId);
+                return CreatedAtAction(nameof(GetById), new { id = newOrgId }, new { Id = newOrgId });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         // PUT: api/organization/{id}
