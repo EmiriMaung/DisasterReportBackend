@@ -25,6 +25,7 @@ namespace DisasterReport.Services.Services.Implementations
 
             var claims = new List<Claim>
             {
+                new Claim("id", user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("name", user.Name),
