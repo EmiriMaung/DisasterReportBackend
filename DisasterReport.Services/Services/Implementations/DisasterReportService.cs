@@ -480,7 +480,8 @@ namespace DisasterReport.Services.Services.Implementations
                 {
                     Id = report.Reporter.Id,
                     Name = report.Reporter.Name,
-                    Email = report.Reporter.Email
+                    Email = report.Reporter.Email,
+                    ProfilePictureUrl=report.Reporter.ProfilePictureUrl
                 },
 
                 ImpactUrls = report.ImpactUrls?.Select(i => new ImpactUrlDto
