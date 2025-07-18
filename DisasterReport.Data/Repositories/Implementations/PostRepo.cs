@@ -162,7 +162,7 @@ public class PostRepo : IPostRepo
         if (report != null)
         {
             report.Status = 1;
-            report.UpdatedAt = DateTime.UtcNow;
+            report.UpdatedAt = DateTime.Now;
             _context.DisastersReports.Update(report);
         }
     }

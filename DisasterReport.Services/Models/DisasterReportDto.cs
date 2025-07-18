@@ -67,6 +67,12 @@ public class UpdateDisasterReportDto
 
     public List<IFormFile> Files { get; set; } = new();
 }
+public class ApproveWithTopicDto
+{
+    public int? ExistingTopicId { get; set; }  // use if existing
+    public CreateDisasterTopicDto? NewTopic { get; set; }  // use if creating new one
+}
+
 
 
 

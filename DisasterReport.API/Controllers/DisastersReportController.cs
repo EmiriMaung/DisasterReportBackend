@@ -56,7 +56,20 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetMyDeletedReportsAsync(reporterId);
             return Ok(reports);
         }
+        [HttpGet("reporter/{reporterId}")]
+        public async Task<IActionResult> GetAllReportsByReporter(Guid reporterId)
+        {
+            var reports = await _disasterReportService.GetAllReportsByReporterIdAsync(reporterId);
+            return Ok(reports);
+        }
 
+        // GET: api/ReporterReports/reporter/{reporterId}/deleted
+        [HttpGet("reporter/{reporterId}/deleted")]
+        public async Task<IActionResult> GetDeletedReportsByReporter(Guid reporterId)
+        {
+            var deletedReports = await _disasterReportService.GetDeletedReportsByReporterIdAsync(reporterId);
+            return Ok(deletedReports);
+        }
         [HttpGet("reports/{id}")]
         public async Task<ActionResult<DisasterReportDto>> GetReportByIdAsync(int id)
         {
@@ -148,9 +161,10 @@ namespace DisasterReport.API.Controllers
             await _disasterReportService.HardDeleteAsync(id);
             return NoContent();
         }
-       
+
+      
         [HttpPost("{reportId}/approve")]
-        public async Task<IActionResult> ApproveReportAsync(int reportId)
+        public async Task<IActionResult> ApproveReportAsync(int reportId, [FromBody] ApproveWithTopicDto topicDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid approvedBy))
@@ -160,12 +174,17 @@ namespace DisasterReport.API.Controllers
 
             try
             {
-                await _disasterReportService.ApproveReportAsync(reportId, approvedBy);
+                // Set the AdminId from logged-in user
+                if (topicDto.NewTopic != null)
+                {
+                    topicDto.NewTopic.AdminId = approvedBy;
+                }
+
+                await _disasterReportService.ApproveReportAsync(reportId, topicDto);
                 return Ok(new { message = "Report approved successfully." });
             }
             catch (Exception ex)
             {
-                // Log error if needed
                 return StatusCode(500, new { message = "Failed to approve report", error = ex.Message });
             }
         }

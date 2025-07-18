@@ -15,6 +15,8 @@ public interface IDisasterReportService
 
     Task<IEnumerable<DisasterReportDto>> GetMyReportsAsync(Guid reporterId);
     Task<IEnumerable<DisasterReportDto>> GetMyDeletedReportsAsync(Guid reporterId);
+    Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId);
+    Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId);
 
     Task<IEnumerable<DisasterReportDto>> GetDeletedReportsAsync(string category);
 
@@ -38,7 +40,7 @@ public interface IDisasterReportService
 
     Task<IEnumerable<DisasterReportDto>> GetReportsByTownshipAsync(string townshipName);
 
-    Task ApproveReportAsync(int reportId, Guid approvedBy);
+    Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto);
 
     Task RejectReportAsync(int reportId, Guid rejectedBy);
 }
