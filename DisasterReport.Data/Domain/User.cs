@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace DisasterReport.Data.Domain;
+﻿namespace DisasterReport.Data.Domain;
 
 public partial class User
 {
@@ -18,6 +15,8 @@ public partial class User
     public bool IsBlacklistedUser { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<BlacklistEntry> BlacklistEntries { get; set; } = new List<BlacklistEntry>();
 

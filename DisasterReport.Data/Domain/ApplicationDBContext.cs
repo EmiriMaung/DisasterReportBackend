@@ -6,10 +6,6 @@ namespace DisasterReport.Data.Domain;
 
 public partial class ApplicationDBContext : DbContext
 {
-    public ApplicationDBContext()
-    {
-    }
-
     public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
         : base(options)
     {
@@ -50,12 +46,6 @@ public partial class ApplicationDBContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        // Do nothing here. We will inject it from Program.cs
-    }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

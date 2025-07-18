@@ -1,5 +1,4 @@
-﻿using DisasterReport.Data.Models;
-using DisasterReport.Services.Models.UserDTO;
+﻿using DisasterReport.Services.Models.UserDTO;
 
 namespace DisasterReport.Services.Services.Interfaces
 {
@@ -15,7 +14,7 @@ namespace DisasterReport.Services.Services.Interfaces
 
         Task<UserDto?> GetUsersByEmailAsync(string email);
 
-        Task UpdateUserAsync(UpdateUserDto userDto);
+        Task UpdateUserAsync(Guid id, UpdateUserDto userDto);
 
         Task DeleteUserAsync(Guid id);
     }

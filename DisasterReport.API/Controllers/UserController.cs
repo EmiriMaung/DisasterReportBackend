@@ -16,7 +16,7 @@ namespace DisasterReport.API.Controllers
             _userService = userService;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
             var users = await _userService.GetAllUsersAsync();
@@ -26,6 +26,7 @@ namespace DisasterReport.API.Controllers
             }
             return Ok(users);
         }
+
 
         [HttpGet("active")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActiveUsers()
@@ -37,6 +38,7 @@ namespace DisasterReport.API.Controllers
             }
             return Ok(users);
         }
+
 
         [HttpGet("admins")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAdmins()
@@ -62,6 +64,7 @@ namespace DisasterReport.API.Controllers
             return Ok(user);
         }
 
+
         [HttpGet("email")]
         public async Task<ActionResult<UserDto>> GetUserByEmail([FromQuery] string email)
         {
@@ -70,6 +73,7 @@ namespace DisasterReport.API.Controllers
 
             return Ok(user);
         }
+
 
         [HttpGet("me")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
@@ -88,18 +92,21 @@ namespace DisasterReport.API.Controllers
             return Ok(user);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto updateUserDto)
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto updateUserDto)
         {
-            await _userService.UpdateUserAsync(updateUserDto);
-            return NoContent();
+            await _userService.UpdateUserAsync(id, updateUserDto);
+            return Ok("Updated successfully!");
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             await _userService.DeleteUserAsync(id);
-            return NoContent();
+            //return NoContent();
+            return Ok("Deleted successfully");
         }
     }
 }

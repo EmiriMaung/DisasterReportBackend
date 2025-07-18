@@ -1,5 +1,4 @@
 ﻿using DisasterReport.Data.Domain;
-using DisasterReport.Data.Models;
 using DisasterReport.Data.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,7 +25,7 @@ namespace DisasterReport.Data.Repositories.Implementations
             return await _context.Users
                 .Where(u => !u.IsBlacklistedUser)
                 .Where(u => u.RoleId == 2)
-                .Include(u => u.Role)
+                .Include(u => u.Role)  
                 .Include(u => u.Organizations)
                 .ToListAsync();
         }
@@ -64,12 +63,21 @@ namespace DisasterReport.Data.Repositories.Implementations
 
         public async Task DeleteUserAsync(Guid id)
         {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users
+                .Include(u => u.RefreshTokens)
+                .Include(u => u.ExternalLogins)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
             if (user != null)
             {
+                _context.RefreshTokens.RemoveRange(user.RefreshTokens);
+                _context.ExternalLogins.RemoveRange(user.ExternalLogins);
+
                 _context.Users.Remove(user);
+
                 await _context.SaveChangesAsync();
             }
         }
+
     }
 }
