@@ -15,5 +15,6 @@ namespace DisasterReport.Data.Repositories
         Task<OrganizationMember?> GetByOrgAndUserAsync(int orgId, Guid userId);
         Task<IEnumerable<OrganizationMember>> GetByOrganizationIdAsync(int orgId);
         Task<bool> SaveChangesAsync();
+        Task<List<OrganizationMember>> GetUserOrganizationsWithOrgAsync(Guid userId);
     }
 }

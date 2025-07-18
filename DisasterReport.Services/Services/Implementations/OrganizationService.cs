@@ -44,6 +44,12 @@ namespace DisasterReport.Services.Services
 
         public async Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId)
         {
+            // ✅ Check if user already has an active (non-rejected) organization
+            if (await UserHasActiveOrganizationAsync(creatorUserId))
+            {
+                throw new InvalidOperationException("You already have an active organization (pending, approved, or blacklisted).");
+            }
+
             var organization = new Organization
             {
                 Name = dto.Name,
@@ -304,6 +310,12 @@ namespace DisasterReport.Services.Services
         public Task<bool> InviteMemberAsync(int orgId, InviteMemberDto dto, Guid inviterUserId)
         {
             throw new NotImplementedException();
+        }
+        public async Task<bool> UserHasActiveOrganizationAsync(Guid userId)
+        {
+            var organizations = await _organizationMemberRepo.GetUserOrganizationsWithOrgAsync(userId);
+
+            return organizations.Any(m => m.Organization.Status != (int)Status.Rejected);
         }
     }
 }

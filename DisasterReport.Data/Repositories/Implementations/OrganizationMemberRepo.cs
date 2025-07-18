@@ -48,5 +48,13 @@ namespace DisasterReport.Data.Repositories
         {
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<List<OrganizationMember>> GetUserOrganizationsWithOrgAsync(Guid userId)
+        {
+            return await _context.OrganizationMembers
+                .Include(m => m.Organization)
+                .Where(m => m.UserId == userId)
+                .ToListAsync();
+        }
+
     }
 }
