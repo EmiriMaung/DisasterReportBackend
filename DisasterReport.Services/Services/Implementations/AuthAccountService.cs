@@ -3,6 +3,7 @@ using DisasterReport.Services.Models.AuthDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.ComponentModel.DataAnnotations;
 
 namespace DisasterReport.Services.Services.Implementations
 {
@@ -11,12 +12,14 @@ namespace DisasterReport.Services.Services.Implementations
         private readonly ApplicationDBContext _context;
         private readonly IJwtService _jwtService;
         private readonly IConfiguration _config;
+        private readonly IPasswordHasherService passwordHasher;
 
-        public AuthAccountService(ApplicationDBContext context, IJwtService jwtService, IConfiguration config)
+        public AuthAccountService(ApplicationDBContext context, IJwtService jwtService, IConfiguration config, IPasswordHasherService passwordHasherService)
         {
             _context = context;
             _jwtService = jwtService;
-            _config = config; // Assign injected IConfiguration
+            _config = config;
+            passwordHasher = passwordHasherService;
         }
 
         public async Task<TokenResultDto> LoginOrRegisterExternalAsync(OAuthUserInfoDto userInfo)
@@ -78,6 +81,93 @@ namespace DisasterReport.Services.Services.Implementations
             }
 
             // Generate JWTs
+            var accessToken = _jwtService.GenerateAccessToken(user);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                Token = refreshToken,
+                UserId = user.Id,
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.RefreshTokens.Add(refreshTokenEntity);
+            await _context.SaveChangesAsync();
+
+            return new TokenResultDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+            };
+        }
+
+        public async Task<TokenResultDto> RegisterAsync(RegisterDto registerDto)
+        {
+            var ExistingUser = _context.Users
+                .FirstOrDefault(u => u.Email == registerDto.Email);
+
+            if (ExistingUser != null)
+                throw new Exception("Email is already Registered.");
+
+            var defaultRole = _context.UserRoles.FirstOrDefault(r => r.Id == 2);
+            if (defaultRole == null)
+                throw new Exception("Default user role not found.");
+
+            var passwordHash = passwordHasher.HashPassword(registerDto.Password);
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = registerDto.Email,
+                Name = registerDto.Name,
+                RoleId = defaultRole.Id,
+                PasswordHash = passwordHash,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            _context.SaveChangesAsync();
+
+            user.Role = defaultRole;
+
+            var accessToken = _jwtService.GenerateAccessToken(user);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                Token = refreshToken,
+                UserId = user.Id,
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.RefreshTokens.Add(refreshTokenEntity);
+            await _context.SaveChangesAsync();
+
+            return new TokenResultDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+            };
+        }
+
+
+        public async Task<TokenResultDto> LoginAsync(LoginDto dto)
+        {
+            var user = await _context.Users
+        .Include(u => u.Role)
+        .FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+            if (user == null || string.IsNullOrEmpty(user.PasswordHash))
+                throw new Exception("Invalid email or password.");
+
+            var isValid = passwordHasher.VerifyPassword(dto.Password, user.PasswordHash);
+            if (!isValid)
+                throw new Exception("Invalid email or password.");
+
             var accessToken = _jwtService.GenerateAccessToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
 

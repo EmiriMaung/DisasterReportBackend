@@ -85,18 +85,69 @@ public class AuthController : ControllerBase
     }
 
 
-    [Authorize]
-    [HttpGet("me")]
-    public IActionResult Me()
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        return Ok(new
+        try
         {
-            id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
-            email = User.FindFirst(ClaimTypes.Email)?.Value,
-            name = User.FindFirst("name")?.Value,
-            role = User.FindFirst(ClaimTypes.Role)?.Value,
-            profilePicture = User.FindFirst("profilePicture")?.Value
-        });
+            var tokens = await _authAccountService.RegisterAsync(dto);
+
+            // Set cookies if needed (optional)
+            Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = tokens.ExpiresAt
+            });
+
+            Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
+
+            return Ok(tokens);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        try
+        {
+            var tokens = await _authAccountService.LoginAsync(dto);
+
+            // Optional: Set cookies
+            Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = tokens.ExpiresAt
+            });
+
+            Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
+
+            return Ok(tokens);
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
     }
 
 
@@ -117,6 +168,21 @@ public class AuthController : ControllerBase
         Response.Cookies.Delete("refresh_token");
 
         return Ok(new { message = "Logged out successfully." });
+    }
+
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        return Ok(new
+        {
+            id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+            email = User.FindFirst(ClaimTypes.Email)?.Value,
+            name = User.FindFirst("name")?.Value,
+            role = User.FindFirst(ClaimTypes.Role)?.Value,
+            profilePicture = User.FindFirst("profilePicture")?.Value
+        });
     }
 
 

@@ -353,6 +353,7 @@ public partial class ApplicationDBContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.ProfilePictureUrl).HasMaxLength(500);
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)

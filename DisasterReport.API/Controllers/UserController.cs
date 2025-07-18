@@ -1,5 +1,4 @@
-﻿using DisasterReport.Data.Models;
-using DisasterReport.Services.Models.UserDTO;
+﻿using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
