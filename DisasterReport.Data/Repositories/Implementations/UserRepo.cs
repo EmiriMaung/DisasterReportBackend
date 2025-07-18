@@ -57,27 +57,49 @@ namespace DisasterReport.Data.Repositories.Implementations
 
         public async Task UpdateUserAsync(User user)
         {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine($"Error updating user: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task DeleteUserAsync(Guid id)
         {
-            var user = await _context.Users
-                .Include(u => u.RefreshTokens)
-                .Include(u => u.ExternalLogins)
-                .FirstOrDefaultAsync(u => u.Id == id);
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            if (user != null)
+            try
             {
-                _context.RefreshTokens.RemoveRange(user.RefreshTokens);
-                _context.ExternalLogins.RemoveRange(user.ExternalLogins);
+                var user = await _context.Users
+                    .Include(u => u.RefreshTokens)
+                    .Include(u => u.ExternalLogins)
+                    .FirstOrDefaultAsync(u => u.Id == id);
 
-                _context.Users.Remove(user);
+                if (user != null)
+                {
+                    _context.RefreshTokens.RemoveRange(user.RefreshTokens);
+                    _context.ExternalLogins.RemoveRange(user.ExternalLogins);
 
-                await _context.SaveChangesAsync();
+                    _context.Users.Remove(user);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine($"Error deleting user: {ex.Message}");
+                throw;
             }
         }
-
     }
 }
