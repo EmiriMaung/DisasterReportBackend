@@ -16,6 +16,7 @@ namespace DisasterReport.Services.Services.Implementations
         private readonly ILocationRepo _locationRepo;
         private readonly IImpactUrlRepo _impactUrlRepo;
         private readonly ICloudinaryService _cloudinaryService;
+        private readonly IDisasterTopicService _disasterTopicService;
 
 
         private readonly IMemoryCache _cache;
@@ -25,13 +26,15 @@ namespace DisasterReport.Services.Services.Implementations
             ICloudinaryService cloudinaryService,
             IImpactUrlRepo impactUrlRepo,
             ILocationRepo locationRepo,
-            IMemoryCache memoryCache)
+            IMemoryCache memoryCache,
+            IDisasterTopicService disasterTopicService)
         {
             _postRepo = postRepo;
             _cloudinaryService = cloudinaryService;
             _impactUrlRepo = impactUrlRepo;
             _locationRepo = locationRepo;
             _cache = memoryCache;
+            _disasterTopicService = disasterTopicService;
         }
 
         public async Task<IEnumerable<DisasterReportDto>> GetAllReportsAsync()
@@ -73,31 +76,31 @@ namespace DisasterReport.Services.Services.Implementations
             return dtoList;
         }
 
-        //public async Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId)
-        //{
-        //    var cacheKey = $"reports_by_reporter_{reporterId}";
+        public async Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId)
+        {
+            var cacheKey = $"reports_by_reporter_{reporterId}";
 
-        //    if (_cache.TryGetValue(cacheKey, out List<DisasterReportDto> cachedReports))
-        //    {
-        //        return cachedReports;
-        //    }
+            if (_cache.TryGetValue(cacheKey, out List<DisasterReportDto> cachedReports))
+            {
+                return cachedReports;
+            }
 
-        //    var reports = await _postRepo.GetAllPostsByReporterId(reporterId);
-        //    var dtoList = await MapToDtoListAsync(reports);
+            var reports = await _postRepo.GetAllPostsByReporterId(reporterId);
+            var dtoList = await MapToDtoListAsync(reports);
 
-        //    var cacheOptions = new MemoryCacheEntryOptions()
-        //        .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); 
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
 
-        //    _cache.Set(cacheKey, dtoList, cacheOptions);
+            _cache.Set(cacheKey, dtoList, cacheOptions);
 
-        //    return dtoList;
-        //}
+            return dtoList;
+        }
 
-        //public async Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId)
-        //{
-        //    var reports = await _postRepo.GetDeletedPostsByReporterId(reporterId);
-        //    return await MapToDtoListAsync(reports);
-        //}
+        public async Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId)
+        {
+            var reports = await _postRepo.GetDeletedPostsByReporterId(reporterId);
+            return await MapToDtoListAsync(reports);
+        }
         public async Task<IEnumerable<DisasterReportDto>> GetMyReportsAsync(Guid reporterId)
         {
             var cacheKey = $"reports_by_reporter_{reporterId}";
@@ -197,8 +200,8 @@ namespace DisasterReport.Services.Services.Implementations
                     // DisasterTopicsId = report.DisasterTopicsId,
                     IsUrgent = report.IsUrgent,
                     IsDeleted = false,
-                    ReportedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
+                    ReportedAt = DateTime.Now,
+                    //UpdatedAt = DateTime.UtcNow,
                     ImpactUrls = uploadedFiles.Select(f => new ImpactUrl
                     {
                         ImageUrl = f.ImageUrl,
@@ -285,9 +288,8 @@ namespace DisasterReport.Services.Services.Implementations
                 report.Description = reportDto.Description;
                 report.Category = reportDto.Category;
                 // report.DisasterTopicsId = reportDto.DisasterTopicsId;
-                report.UpdatedAt = reportDto.UpdateAt ?? DateTime.UtcNow;
+                report.UpdatedAt = reportDto.UpdateAt ?? DateTime.Now;
                 report.IsUrgent = reportDto.IsUrgent;
-                report.UpdatedAt = DateTime.UtcNow;
                 report.LocationId = existingLocation.Id;
 
                 report.ImpactUrls = uploadedFiles.Select(f => new ImpactUrl
@@ -416,20 +418,97 @@ namespace DisasterReport.Services.Services.Implementations
         {
             var reports = await _postRepo.SearchReportsAsync(keyword, category, region, isUrgent);
             return await MapToDtoListAsync(reports);
-        } 
+        }
 
-        public async Task ApproveReportAsync(int reportId, Guid approvedBy)
+        public async Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto)
         {
-            await _postRepo.ApproveReportAsync(reportId, approvedBy);
-            await _postRepo.SaveChangesAsync();
+            using var transaction = await _postRepo.DbContext.Database.BeginTransactionAsync();
 
-            var report = await _postRepo.GetPostByIdAsync(reportId);
-            if (report != null)
+            try
             {
+                var report = await _postRepo.GetPostByIdAsync(reportId);
+                if (report == null) throw new Exception("Report not found");
+
+                int topicId;
+
+                if (topicDto.ExistingTopicId.HasValue)
+                {
+                    // Check if the topic exists
+                    var existingTopic = await _postRepo.DbContext.DisasterTopics
+                        .FirstOrDefaultAsync(t => t.Id == topicDto.ExistingTopicId.Value);
+
+                    if (existingTopic != null)
+                    {
+                        topicId = existingTopic.Id;
+                    }
+                    else if (topicDto.NewTopic != null)
+                    {
+                        var newTopic = new DisasterTopic
+                        {
+                            TopicName = topicDto.NewTopic.TopicName,
+                            AdminId = topicDto.NewTopic.AdminId,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdateAt = DateTime.UtcNow
+                        };
+
+                        _postRepo.DbContext.DisasterTopics.Add(newTopic);
+                        await _postRepo.DbContext.SaveChangesAsync();
+
+                        topicId = newTopic.Id;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Topic ID not found and new topic info is missing.");
+                    }
+                }
+                else if (topicDto.NewTopic != null)
+                {
+                    var existingTopic = await _postRepo.DbContext.DisasterTopics
+                        .FirstOrDefaultAsync(t => t.TopicName.ToLower() == topicDto.NewTopic.TopicName.ToLower());
+
+                    if (existingTopic != null)
+                    {
+                        topicId = existingTopic.Id;
+                    }
+                    else
+                    {
+                        var newTopic = new DisasterTopic
+                        {
+                            TopicName = topicDto.NewTopic.TopicName,
+                            AdminId = topicDto.NewTopic.AdminId,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdateAt = DateTime.UtcNow
+                        };
+
+                        _postRepo.DbContext.DisasterTopics.Add(newTopic);
+                        await _postRepo.DbContext.SaveChangesAsync();
+
+                        topicId = newTopic.Id;
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Must provide either existing topic ID or new topic details.");
+                }
+
+                report.Status = 1;
+                report.UpdatedAt = DateTime.UtcNow;
+                report.DisasterTopicsId = topicId;
+
+                await _postRepo.UpdatePostAsync(report);
+                await _postRepo.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
                 ClearReportCache(report.Id, report.ReporterId);
             }
-
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception("Failed to approve report. Transaction rolled back.", ex);
+            }
         }
+
 
         public async Task RejectReportAsync(int reportId, Guid rejectedBy)
         {
@@ -514,7 +593,7 @@ namespace DisasterReport.Services.Services.Implementations
             _cache.Remove($"report_{reportId}");
             _cache.Remove($"reports_by_reporter_{reporterId}");
             _cache.Remove("all_reports");
-            _cache.Remove("urgent_reports"); // only if your system tracks urgent reports separately
+            _cache.Remove("urgent_reports");
         }
 
     }
