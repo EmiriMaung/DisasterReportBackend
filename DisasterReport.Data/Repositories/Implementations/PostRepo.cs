@@ -30,6 +30,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
+            .Include(r => r.Reporter)
             .ToListAsync();
     }
 
@@ -45,6 +46,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
+            .Include(r => r.Reporter)
             .ToListAsync();
     }
 
@@ -60,6 +62,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
+            .Include(r => r.Reporter)
             .ToListAsync();
     }
 
@@ -72,6 +75,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
+            .Include(r => r.Reporter)
             .Include(r => r.SupportTypes).ToListAsync();
     }
 
@@ -84,6 +88,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
+            .Include(r => r.Reporter)
             .Include(r => r.SupportTypes).ToListAsync();
     }
 
@@ -97,7 +102,9 @@ public class PostRepo : IPostRepo
             .Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
-            .Include(r => r.SupportTypes).ToListAsync();
+            .Include(r => r.SupportTypes)
+             .Include(r => r.Reporter)
+            .ToListAsync();
     }
     public async Task SoftDeleteReportAsync(int reportId)
     {
@@ -125,6 +132,8 @@ public class PostRepo : IPostRepo
             .Include(r => r.ImpactUrls)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
+            .Include(r => r.Comments)
+            .Include(r => r.Reporter)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
@@ -179,6 +188,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
+            .Include(r => r.Reporter)
             .Include(r => r.SupportTypes).ToListAsync();
     }
 
@@ -191,6 +201,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
+            .Include(r => r.Reporter)
             .Include(r => r.SupportTypes).ToListAsync();
     }
     public async Task AddPostAsync(DisastersReport report)
