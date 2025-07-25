@@ -17,16 +17,19 @@ namespace DisasterReport.Data.Repositories.Implementations
             return await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Organizations)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<User>> GetAllActiveUsersAsync()
         {
             return await _context.Users
-                .Where(u => !u.IsBlacklistedUser)
                 .Where(u => u.RoleId == 2)
+                .Where(u => !_context.BlacklistEntries
+                    .Any(be => be.UserId == u.Id && !be.IsDeleted))
                 .Include(u => u.Role)  
                 .Include(u => u.Organizations)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -36,6 +39,18 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Where(u => u.Role.RoleName == "Admin")
                 .Include(u => u.Role)
                 .Include(u => u.Organizations)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<User>> GetAllBlacklistedUsers()
+        {
+            return await _context.Users
+                .Where(u => _context.BlacklistEntries
+                    .Any(be => be.UserId == u.Id && !be.IsDeleted))
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -73,6 +88,8 @@ namespace DisasterReport.Data.Repositories.Implementations
             }
         }
 
+        //Actually, we don't delete users in our app. This is just for testing purposes.
+        //We have to use gmail again and again cause of insufficient gamil account.
         public async Task DeleteUserAsync(Guid id)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -82,12 +99,14 @@ namespace DisasterReport.Data.Repositories.Implementations
                 var user = await _context.Users
                     .Include(u => u.RefreshTokens)
                     .Include(u => u.ExternalLogins)
+                    .Include(u => u.BlacklistEntries)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
                 if (user != null)
                 {
                     _context.RefreshTokens.RemoveRange(user.RefreshTokens);
                     _context.ExternalLogins.RemoveRange(user.ExternalLogins);
+                    _context.BlacklistEntries.RemoveRange(user.BlacklistEntries);
 
                     _context.Users.Remove(user);
                     await _context.SaveChangesAsync();

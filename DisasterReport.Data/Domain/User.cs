@@ -15,8 +15,6 @@ public partial class User
 
     public string? ProfilePictureUrl { get; set; }
 
-    public bool IsBlacklistedUser { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

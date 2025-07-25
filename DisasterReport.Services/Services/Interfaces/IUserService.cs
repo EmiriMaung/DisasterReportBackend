@@ -10,6 +10,8 @@ namespace DisasterReport.Services.Services.Interfaces
 
         Task<IEnumerable<UserDto>> GetAllAdminsAsync();
 
+        Task<IEnumerable<UserDto>> GetAllBlacklistedUsersAsync();
+
         Task<UserDto?> GetUserByIdAsync(Guid id);
 
         Task<UserDto?> GetUsersByEmailAsync(string email);

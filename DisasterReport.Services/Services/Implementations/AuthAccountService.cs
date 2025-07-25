@@ -33,31 +33,39 @@ namespace DisasterReport.Services.Services.Implementations
 
             if (login != null)
             {
-                // Existing login found
+                // Existing external login found
                 user = login.User;
+
+                if (await IsUserBlacklistedAsync(user.Id))
+                    throw new Exception("This account is blacklisted.");
             }
             else
             {
-                // Check if the user already exists by email
+                // Try to find user by email
                 user = await _context.Users
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == userInfo.Email);
 
+                if (user != null)
+                {
+                    if (await IsUserBlacklistedAsync(user.Id))
+                        throw new Exception("This account is blacklisted.");
+                }
+
                 if (user == null)
                 {
                     var adminEmails = _config["Admin:Email"]
-                    ?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                    ?? Array.Empty<string>();
+                        ?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        ?? Array.Empty<string>();
 
                     var isAdmin = adminEmails.Contains(userInfo.Email, StringComparer.OrdinalIgnoreCase);
-
 
                     user = new User
                     {
                         Id = Guid.NewGuid(),
                         Email = userInfo.Email,
                         Name = userInfo.Name,
-                        RoleId = isAdmin ? 1 : 2, // 1 = Admin, 2 = User
+                        RoleId = isAdmin ? 1 : 2,
                         ProfilePictureUrl = userInfo.ProfilePictureUrl,
                         CreatedAt = DateTime.UtcNow
                     };
@@ -68,7 +76,7 @@ namespace DisasterReport.Services.Services.Implementations
                     user.Role = await _context.UserRoles.FindAsync(user.RoleId);
                 }
 
-                // Add external login for new or existing user
+                // Link external login to user
                 var externalLogin = new ExternalLogin
                 {
                     Provider = userInfo.Provider,
@@ -80,7 +88,7 @@ namespace DisasterReport.Services.Services.Implementations
                 await _context.SaveChangesAsync();
             }
 
-            // Generate JWTs
+            // ✅ Generate tokens only if user is not blacklisted
             var accessToken = _jwtService.GenerateAccessToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
 
@@ -102,6 +110,97 @@ namespace DisasterReport.Services.Services.Implementations
                 ExpiresAt = DateTime.UtcNow.AddMinutes(10)
             };
         }
+
+        //public async Task<TokenResultDto> LoginOrRegisterExternalAsync(OAuthUserInfoDto userInfo)
+        //{
+        //    var login = _context.ExternalLogins
+        //        .Include(x => x.User)
+        //        .ThenInclude(u => u.Role)
+        //        .FirstOrDefault(x => x.Provider == userInfo.Provider && x.ProviderKey == userInfo.ProviderKey);
+
+        //    User user;
+
+        //    if (login != null)
+        //    {
+        //        // Existing login found
+        //        user = login.User;
+
+        //        if (await IsUserBlacklistedAsync(user.Id))
+        //            throw new Exception("This account is blacklisted.");
+
+        //    }
+        //    else
+        //    {
+        //        // Check if the user already exists by email
+        //        user = await _context.Users
+        //            .Include(u => u.Role)
+        //            .FirstOrDefaultAsync(u => u.Email == userInfo.Email);
+
+        //        if (user != null)
+        //        {
+        //            if (await IsUserBlacklistedAsync(user.Id))
+        //                throw new Exception("This account is blacklisted.");
+        //        }
+
+        //        if (user == null)
+        //        {
+        //            var adminEmails = _config["Admin:Email"]
+        //            ?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        //            ?? Array.Empty<string>();
+
+        //            var isAdmin = adminEmails.Contains(userInfo.Email, StringComparer.OrdinalIgnoreCase);
+
+
+        //            user = new User
+        //            {
+        //                Id = Guid.NewGuid(),
+        //                Email = userInfo.Email,
+        //                Name = userInfo.Name,
+        //                RoleId = isAdmin ? 1 : 2, // 1 = Admin, 2 = User
+        //                ProfilePictureUrl = userInfo.ProfilePictureUrl,
+        //                CreatedAt = DateTime.UtcNow
+        //            };
+
+        //            _context.Users.Add(user);
+        //            await _context.SaveChangesAsync();
+
+        //            user.Role = await _context.UserRoles.FindAsync(user.RoleId);
+        //        }
+
+        //        // Add external login for new or existing user
+        //        var externalLogin = new ExternalLogin
+        //        {
+        //            Provider = userInfo.Provider,
+        //            ProviderKey = userInfo.ProviderKey,
+        //            UserId = user.Id
+        //        };
+
+        //        _context.ExternalLogins.Add(externalLogin);
+        //        await _context.SaveChangesAsync();
+        //    }
+
+        //    // Generate JWTs
+        //    var accessToken = _jwtService.GenerateAccessToken(user);
+        //    var refreshToken = _jwtService.GenerateRefreshToken();
+
+        //    var refreshTokenEntity = new RefreshToken
+        //    {
+        //        Token = refreshToken,
+        //        UserId = user.Id,
+        //        ExpiresAt = DateTime.UtcNow.AddDays(30),
+        //        CreatedAt = DateTime.UtcNow
+        //    };
+
+        //    _context.RefreshTokens.Add(refreshTokenEntity);
+        //    await _context.SaveChangesAsync();
+
+        //    return new TokenResultDto
+        //    {
+        //        AccessToken = accessToken,
+        //        RefreshToken = refreshToken,
+        //        ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+        //    };
+        //}
 
         public async Task<TokenResultDto> RegisterAsync(RegisterDto registerDto)
         {
@@ -165,6 +264,12 @@ namespace DisasterReport.Services.Services.Implementations
             if (!isValid)
                 throw new Exception("Invalid email or password.");
 
+            var isBlacklisted = await _context.BlacklistEntries
+                .AnyAsync(be => be.UserId == user.Id && !be.IsDeleted);
+
+            if (await IsUserBlacklistedAsync(user.Id))
+                throw new Exception("This account is blacklisted.");
+
             var accessToken = _jwtService.GenerateAccessToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
 
@@ -186,5 +291,12 @@ namespace DisasterReport.Services.Services.Implementations
                 ExpiresAt = DateTime.UtcNow.AddMinutes(10)
             };
         }
+
+        private async Task<bool> IsUserBlacklistedAsync(Guid userId)
+        {
+            return await _context.BlacklistEntries
+                .AnyAsync(be => be.UserId == userId && !be.IsDeleted);
+        }
+
     }
 }
