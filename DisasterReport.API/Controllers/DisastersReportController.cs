@@ -8,7 +8,7 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class DisastersReportController : ControllerBase
     {
         private readonly IDisasterReportService _disasterReportService;
@@ -20,7 +20,7 @@ namespace DisasterReport.API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetAllReportsAsync()
-        {
+       {
             var reports = await _disasterReportService.GetAllReportsAsync();
             return Ok(reports);
         }
@@ -85,15 +85,23 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetReportsByStatusAsync(status);
             return Ok(reports);
         }
-
+        [HttpGet("topic/{topicId}")]
+        public async Task<IActionResult> GetReportsByTopic(int topicId)
+        {
+            var reports = await _disasterReportService.GetReportsByTopicIdAsync(topicId);
+            return Ok(reports);
+        }
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<DisasterReportDto>>> SearchReportsAsync(
             [FromQuery] string? keyword,
             [FromQuery] string? category,
+            [FromQuery] int? topicId,
+            [FromQuery] string? township,
             [FromQuery] string? region,
             [FromQuery] bool? isUrgent)
+
         {
-            var reports = await _disasterReportService.SearchReportsAsync(keyword, category, region, isUrgent);
+            var reports = await _disasterReportService.SearchReportsAsync(keyword, category, region,township, isUrgent,topicId);
             return Ok(reports);
         }
 
@@ -174,7 +182,6 @@ namespace DisasterReport.API.Controllers
 
             try
             {
-                // Set the AdminId from logged-in user
                 if (topicDto.NewTopic != null)
                 {
                     topicDto.NewTopic.AdminId = approvedBy;
@@ -208,6 +215,14 @@ namespace DisasterReport.API.Controllers
                 return StatusCode(500, new { message = "Failed to reject report", error = ex.Message });
             }
         }
+        [HttpGet("{reportId}/related")]
+        public async Task<IActionResult> GetRelatedReportsAsync(int reportId)
+        {
+            var relatedReports = await _disasterReportService.GetRelatedReportsByTopicAsync(reportId);
+
+            return Ok(relatedReports);
+        }
+
 
     }
 }

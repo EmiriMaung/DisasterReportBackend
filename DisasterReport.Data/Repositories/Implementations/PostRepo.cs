@@ -134,21 +134,40 @@ public class PostRepo : IPostRepo
             .Include(r => r.SupportTypes)
             .Include(r => r.Comments)
             .Include(r => r.Reporter)
+            .Include(r=>r.DisasterTopics)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
-    public async Task<List<DisastersReport>> SearchReportsAsync(string? keyword, string? category, string? region, bool? isUrgent)
+    public async Task<List<DisastersReport>> SearchReportsAsync(string? keyword, string? category, string? region,string? township, bool? isUrgent,int? topicId)
     {
-        var query = _context.DisastersReports.AsQueryable();
+        var query = _context.DisastersReports
+            .AsNoTracking()
+            .Include(r => r.Location)
+            .Include(r => r.Comments)
+            .Include(r => r.ImpactUrls)
+            .Include(r => r.DonateRequests)
+            .Include(r => r.DisasterTopics)
+            .Include(r => r.ImpactTypes)
+            .Include(r => r.SupportTypes)
+            .Include(r => r.Reporter) 
+            .Include(r=> r.DisasterTopics)
+            .Where(r => !r.IsDeleted && r.Status == 1) 
+            .AsQueryable();
 
         if (!string.IsNullOrEmpty(keyword))
             query = query.Where(r => r.Title.Contains(keyword) || r.Description.Contains(keyword));
+
+        if (topicId.HasValue)
+            query = query.Where(r => r.DisasterTopicsId == topicId.Value);
 
         if (!string.IsNullOrEmpty(category))
             query = query.Where(r => r.Category == category);
 
         if (!string.IsNullOrEmpty(region))
             query = query.Where(r => r.Location.RegionName == region);
+
+        if (!string.IsNullOrEmpty(township))
+            query = query.Where(r => r.Location.TownshipName == township);
 
         if (isUrgent.HasValue)
             query = query.Where(r => r.IsUrgent == isUrgent.Value);
@@ -203,6 +222,19 @@ public class PostRepo : IPostRepo
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
             .Include(r => r.SupportTypes).ToListAsync();
+    }
+    public async Task<List<DisastersReport>> GetReportsByTopicIdAsync(int topicId)
+    {
+        return await _context.DisastersReports
+            .Where(r => r.DisasterTopicsId == topicId)
+            .Include(r => r.Location)
+            .Include(r => r.Reporter)
+            .Include(r => r.DisasterTopics)
+            .Include(r => r.ImpactTypes)
+            .Include(r => r.SupportTypes)
+            .Include(r => r.ImpactUrls)
+            .OrderByDescending(r => r.ReportedAt)
+            .ToListAsync();
     }
     public async Task AddPostAsync(DisastersReport report)
     {

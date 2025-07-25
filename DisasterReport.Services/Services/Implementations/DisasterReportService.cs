@@ -414,9 +414,9 @@ namespace DisasterReport.Services.Services.Implementations
             }
         }
 
-        public async Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region, bool? isUrgent)
+        public async Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region,string? township, bool? isUrgent, int? topicId)
         {
-            var reports = await _postRepo.SearchReportsAsync(keyword, category, region, isUrgent);
+            var reports = await _postRepo.SearchReportsAsync(keyword, category, region, township, isUrgent, topicId);
             return await MapToDtoListAsync(reports);
         }
 
@@ -587,6 +587,72 @@ namespace DisasterReport.Services.Services.Implementations
                 }).ToList() ?? new List<SupportTypeDto>()
 
             }).ToList();
+        }
+
+        public async Task<IEnumerable<DisasterReportDto>> GetRelatedReportsByTopicAsync(int reportId)
+        {
+            // Step 1: Get current report
+            var currentReport = await _postRepo.DbContext.DisastersReports
+                .FirstOrDefaultAsync(r => r.Id == reportId);
+
+            if (currentReport == null || currentReport.DisasterTopicsId == null)
+            {
+                var allReports = await _postRepo.DbContext.DisastersReports
+                    .OrderByDescending(r => r.ReportedAt)
+                    .Take(10)
+                    .Include(r => r.Location)
+                    .Include(r => r.Reporter)
+                    .Include(r => r.DisasterTopics)
+                    .Include(r => r.ImpactUrls)
+                    .Include(r => r.ImpactTypes)
+                    .Include(r => r.SupportTypes)
+                    .ToListAsync();
+
+                return await MapToDtoListAsync(allReports);
+            }
+
+            var topicId = currentReport.DisasterTopicsId;
+
+            // Step 2: Related reports
+            var relatedReports = await _postRepo.DbContext.DisastersReports
+                .Where(r => r.DisasterTopicsId == topicId && r.Id != reportId)
+                .Include(r => r.Location)
+                .Include(r => r.Reporter)
+                .Include(r => r.DisasterTopics)
+                .Include(r => r.ImpactUrls)
+                .Include(r => r.ImpactTypes)
+                .Include(r => r.SupportTypes)
+                .ToListAsync();
+
+            var resultList = relatedReports;
+
+            // Step 3: If not enough related reports, fill from fallback
+            if (relatedReports.Count < 10)
+            {
+                int remaining = 10 - relatedReports.Count;
+
+                var fallbackReports = await _postRepo.DbContext.DisastersReports
+                    .Where(r => r.Id != reportId && r.DisasterTopicsId != topicId) // not same topic
+                    .OrderByDescending(r => r.ReportedAt)
+                    .Take(remaining)
+                    .Include(r => r.Location)
+                    .Include(r => r.Reporter)
+                    .Include(r => r.DisasterTopics)
+                    .Include(r => r.ImpactUrls)
+                    .Include(r => r.ImpactTypes)
+                    .Include(r => r.SupportTypes)
+                    .ToListAsync();
+
+                resultList.AddRange(fallbackReports);
+            }
+
+            // Step 4: Return only 10 reports
+            return await MapToDtoListAsync(resultList.Take(10).ToList());
+        }
+        public async Task<IEnumerable<DisasterReportDto>> GetReportsByTopicIdAsync(int topicId)
+        {
+            var reports = await _postRepo.GetReportsByTopicIdAsync(topicId);
+            return await MapToDtoListAsync(reports);
         }
         private void ClearReportCache(int reportId, Guid reporterId)
         {

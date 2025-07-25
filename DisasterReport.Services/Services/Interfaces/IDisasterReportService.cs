@@ -14,8 +14,11 @@ public interface IDisasterReportService
     Task<IEnumerable<DisasterReportDto>> GetUrgentReportsAsync();
 
     Task<IEnumerable<DisasterReportDto>> GetMyReportsAsync(Guid reporterId);
+
     Task<IEnumerable<DisasterReportDto>> GetMyDeletedReportsAsync(Guid reporterId);
+
     Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId);
+
     Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId);
 
     Task<IEnumerable<DisasterReportDto>> GetDeletedReportsAsync(string category);
@@ -34,14 +37,19 @@ public interface IDisasterReportService
 
     Task<IEnumerable<DisasterReportDto>> GetReportsByStatusAsync(int status);
 
-    Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region, bool? isUrgent);
+    Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region, string? township, bool? isUrgent, int? topicId);
 
     Task<IEnumerable<DisasterReportDto>> GetReportsByRegionAsync(string regionName);
 
     Task<IEnumerable<DisasterReportDto>> GetReportsByTownshipAsync(string townshipName);
 
+    Task<IEnumerable<DisasterReportDto>> GetReportsByTopicIdAsync(int topicId);
+
     Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto);
 
     Task RejectReportAsync(int reportId, Guid rejectedBy);
+
+    Task<IEnumerable<DisasterReportDto>> GetRelatedReportsByTopicAsync(int reportId);
+
 }
 

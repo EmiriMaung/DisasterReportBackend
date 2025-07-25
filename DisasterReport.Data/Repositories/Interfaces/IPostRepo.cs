@@ -23,9 +23,10 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task SoftDeleteReportAsync(int reportId);
         Task RestoreDeletedReportAsync(int reportId);
         Task HardDeleteReportAsync(DisastersReport report);
-        Task<List<DisastersReport>> SearchReportsAsync(string? keyword, string? category, string? region, bool? isUrgent);
+        Task<List<DisastersReport>> SearchReportsAsync(string? keyword, string? category, string? region,string? township, bool? isUrgent, int? topicId);
         Task ApproveReportAsync(int reportId, Guid approvedBy);
         Task RejectReportAsync(int reportId, Guid rejectedBy);
+        Task<List<DisastersReport>> GetReportsByTopicIdAsync(int topicId);
         Task SaveChangesAsync();
         ApplicationDBContext DbContext { get; }
     }
