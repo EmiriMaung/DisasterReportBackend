@@ -10,10 +10,12 @@ namespace DisasterReport.Services.Services.Implementations
     {
         private readonly IUserRepo _userRepo;
         private readonly IMemoryCache _cache;
-        public UserService(IUserRepo userRepo, IMemoryCache cache)
+        private readonly IBlacklistEntryRepo _blacklistEntryRepo;
+        public UserService(IUserRepo userRepo, IMemoryCache cache, IBlacklistEntryRepo blacklistEntryRepo)
         {
             _userRepo = userRepo;
             _cache = cache;
+            _blacklistEntryRepo = blacklistEntryRepo;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -26,14 +28,16 @@ namespace DisasterReport.Services.Services.Implementations
             }
 
             var users = await _userRepo.GetAllUsersAsync();
-            
-            var userDto = users
-                .Select(MapToDto)
-                .ToList();
 
-            _cache.Set(cacheKey, userDto, TimeSpan.FromMinutes(10));
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDtos.Add(await MapToDtoAsync(user)); // Check blacklist here
+            }
 
-            return userDto;
+            _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
+
+            return userDtos;
         }
 
 
@@ -48,13 +52,15 @@ namespace DisasterReport.Services.Services.Implementations
 
             var users = await _userRepo.GetAllActiveUsersAsync();
             
-            var userDto = users
-                .Select(MapToDto)
-                .ToList();
+            var userDots = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDots.Add(await MapToDtoAsync(user));
+            }
 
-            _cache.Set(cacheKey, userDto, TimeSpan.FromMinutes(10));
+            _cache.Set(cacheKey, userDots, TimeSpan.FromMinutes(10));
 
-            return userDto;
+            return userDots;
         }
 
 
@@ -68,14 +74,39 @@ namespace DisasterReport.Services.Services.Implementations
             }
 
             var users = await _userRepo.GetAllAdminsAsync();
-            
-            var userDto = users
-                .Select(MapToDto)
-                .ToList();
 
-            _cache.Set(cacheKey, userDto, TimeSpan.FromMinutes(10));
+            var userDots = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDots.Add(await MapToDtoAsync(user));
+            }
 
-            return userDto;
+            _cache.Set(cacheKey, userDots, TimeSpan.FromMinutes(10));
+
+            return userDots;
+        }
+
+
+        public async Task<IEnumerable<UserDto>> GetAllBlacklistedUsersAsync()
+        {
+            string cacheKey = "AllBlacklistedUsers";
+
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<UserDto> cachedUsers))
+            {
+                return cachedUsers;
+            }
+
+            var users = await _userRepo.GetAllBlacklistedUsers();
+
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDtos.Add(await MapToDtoAsync(user));
+            }
+
+            _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
+
+            return userDtos;
         }
 
 
@@ -94,7 +125,7 @@ namespace DisasterReport.Services.Services.Implementations
                 return null;
             }
 
-            var userDto = MapToDto(user);
+            var userDto = await MapToDtoAsync(user);
 
             _cache.Set(cacheKey, userDto, TimeSpan.FromMinutes(10));
 
@@ -117,7 +148,7 @@ namespace DisasterReport.Services.Services.Implementations
                 return null;
             }
 
-            var userDto = MapToDto(user);
+            var userDto = await MapToDtoAsync(user);
 
             _cache.Set(cacheKey, userDto, TimeSpan.FromMinutes(10));
 
@@ -142,9 +173,18 @@ namespace DisasterReport.Services.Services.Implementations
             await _userRepo.UpdateUserAsync(user);
 
             _cache.Remove($"User:{user.Id}");
+
+            var updatedUser = await _userRepo.GetUserByIdAsync(user.Id);
+            if (updatedUser != null)
+            {
+                var updatedDto = await MapToDtoAsync(updatedUser);
+                _cache.Set($"User:{user.Id}", updatedDto, TimeSpan.FromMinutes(10));
+            }
         }
 
 
+        //Actually, we don't delete users in our app. This is just for testing purposes.
+        //We have to use gmail again and again cause of insufficient gamil account.
         public async Task DeleteUserAsync(Guid id)
         {
             await _userRepo.DeleteUserAsync(id);
@@ -153,8 +193,10 @@ namespace DisasterReport.Services.Services.Implementations
         }
 
 
-        private static UserDto MapToDto(User user)
+        private async Task<UserDto> MapToDtoAsync(User user)
         {
+            bool isBlacklisted = await _blacklistEntryRepo.IsUserBlacklistedAsync(user.Id);
+
             return new UserDto
             {
                 Id = user.Id,
@@ -162,7 +204,7 @@ namespace DisasterReport.Services.Services.Implementations
                 Name = user.Name,
                 RoleName = user.Role?.RoleName,
                 ProfilePictureUrl = user.ProfilePictureUrl,
-                IsBlacklistedUser = user.IsBlacklistedUser,
+                IsBlacklistedUser = isBlacklisted,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
                 OrganizationNames = user.Organizations?.Select(o => o.Name).ToList() ?? new List<string>()

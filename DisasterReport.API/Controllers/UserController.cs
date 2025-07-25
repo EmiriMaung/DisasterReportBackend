@@ -51,6 +51,18 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [HttpGet("blacklisted")]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllBlacklistedUsers()
+        {
+            var users = await _userService.GetAllBlacklistedUsersAsync();
+            if (users == null)
+            {
+                return NotFound("No blacklisted users found.");
+            }
+            return Ok(users);
+        }
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetUserById(Guid id)
         {
@@ -100,11 +112,12 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        //Actually, we don't delete users in our app. This is just for testing purposes.
+        //We have to use gmail again and again cause of insufficient gamil account.
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             await _userService.DeleteUserAsync(id);
-            //return NoContent();
             return Ok("Deleted successfully");
         }
     }
