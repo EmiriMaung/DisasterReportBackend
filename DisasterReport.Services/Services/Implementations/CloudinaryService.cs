@@ -135,5 +135,33 @@ namespace DisasterReport.Services.Services
                 throw new Exception(deletionResult.Error.Message);
             }
         }
+
+        public async Task<ImageUploadResult> UploadProfilePictureAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                throw new ArgumentException("Image file is empty or missing.");
+            }
+
+            await using var stream = file.OpenReadStream();
+
+            var uploadParams = new ImageUploadParams()
+            {
+                File = new FileDescription(file.FileName, stream),
+                // 1. Store profile pictures in a dedicated folder
+                Folder = "user_profiles",
+                // 2. Apply a transformation to create a 300x300 square, focusing on the face
+                Transformation = new Transformation().Width(300).Height(300).Crop("fill").Gravity("face")
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+
+            if (uploadResult.Error != null)
+            {
+                throw new Exception($"Cloudinary upload failed: {uploadResult.Error.Message}");
+            }
+
+            return uploadResult;
+        }
     }
 }
