@@ -14,5 +14,6 @@ namespace DisasterReport.Services.Services
         //For disaster report
         Task<List<ImpactUrlDto>> UploadFilesAsync(List<IFormFile> files);
         Task DeleteFilesAsync(List<string> publicIds);
+        Task<CloudinaryDotNet.Actions.ImageUploadResult> UploadProfilePictureAsync(IFormFile file);
     }
 }

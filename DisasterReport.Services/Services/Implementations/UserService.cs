@@ -11,11 +11,13 @@ namespace DisasterReport.Services.Services.Implementations
         private readonly IUserRepo _userRepo;
         private readonly IMemoryCache _cache;
         private readonly IBlacklistEntryRepo _blacklistEntryRepo;
-        public UserService(IUserRepo userRepo, IMemoryCache cache, IBlacklistEntryRepo blacklistEntryRepo)
+        private readonly ICloudinaryService _cloudinaryService;
+        public UserService(IUserRepo userRepo, IMemoryCache cache, IBlacklistEntryRepo blacklistEntryRepo, ICloudinaryService cloudinaryService)
         {
             _userRepo = userRepo;
             _cache = cache;
             _blacklistEntryRepo = blacklistEntryRepo;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -180,6 +182,36 @@ namespace DisasterReport.Services.Services.Implementations
                 var updatedDto = await MapToDtoAsync(updatedUser);
                 _cache.Set($"User:{user.Id}", updatedDto, TimeSpan.FromMinutes(10));
             }
+        }
+
+
+        // In UserService.cs
+
+        public async Task<UserDto?> UpdateCurrentUserAsync(Guid userId, UpdateUserFormDto dto)
+        {
+            var user = await _userRepo.GetUserByIdAsync(userId);
+            if (user == null) return null;
+
+            user.Name = dto.Name;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            // If a new picture was uploaded, call your CloudinaryService
+            if (dto.ProfilePicture != null)
+            {
+                var uploadResult = await _cloudinaryService.UploadProfilePictureAsync(dto.ProfilePicture);
+                user.ProfilePictureUrl = uploadResult.SecureUrl.ToString();
+            }
+
+            await _userRepo.UpdateUserAsync(user);
+
+            // Invalidate and update the cache
+            var cacheKey = $"User:{user.Id}";
+            _cache.Remove(cacheKey);
+
+            var updatedDto = await MapToDtoAsync(user);
+            _cache.Set(cacheKey, updatedDto, TimeSpan.FromMinutes(10));
+
+            return updatedDto;
         }
 
 
