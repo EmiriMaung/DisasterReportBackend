@@ -8,7 +8,7 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class DisastersReportController : ControllerBase
     {
         private readonly IDisasterReportService _disasterReportService;

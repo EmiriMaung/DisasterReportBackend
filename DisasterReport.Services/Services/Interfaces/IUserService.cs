@@ -18,6 +18,8 @@ namespace DisasterReport.Services.Services.Interfaces
 
         Task UpdateUserAsync(Guid id, UpdateUserDto userDto);
 
+        Task<UserDto?> UpdateCurrentUserAsync(Guid userId, UpdateUserFormDto dto);
+
         Task DeleteUserAsync(Guid id);
     }
 }

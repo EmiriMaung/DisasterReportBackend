@@ -104,6 +104,26 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateCurrentUser([FromForm] UpdateUserFormDto dto)
+        {
+            var userIdClaim = User.FindFirst("id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var updatedUserDto = await _userService.UpdateCurrentUserAsync(userId, dto);
+
+            if (updatedUserDto == null)
+            {
+                return NotFound("User not found or update failed.");
+            }
+            return Ok(updatedUserDto);
+        }
+
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto updateUserDto)
         {
