@@ -27,6 +27,8 @@ namespace DisasterReport.Data
             services.AddScoped<IImpactUrlRepo, ImpactUrlRepo>();
             services.AddScoped<IUserRepo, UserRepo>();
             services.AddScoped<IBlacklistEntryRepo, BlacklistEntryRepo>();
+            services.AddScoped<ISupportTypeRepo, SupportTypeRepo>();
+            services.AddScoped<IImpactTypeRepo, ImpactTypeRepo>();
             return services;
         }
     }
