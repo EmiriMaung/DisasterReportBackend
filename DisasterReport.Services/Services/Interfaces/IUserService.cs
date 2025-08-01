@@ -1,14 +1,23 @@
-﻿using DisasterReport.Services.Models.UserDTO;
+﻿using DisasterReport.Services.Models.Common;
+using DisasterReport.Services.Models.UserDTO;
 
 namespace DisasterReport.Services.Services.Interfaces
 {
     public interface IUserService
     {
+        Task<PaginatedResult<UserDto>> GetPaginatedUsersAsync(int page, int pageSize);
+
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
+
+        Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(int page, int pageSize);
+
+        Task<PaginatedResult<UserDto>> GetPaginatedActiveUsersAsync(int page, int pageSize);
 
         Task<IEnumerable<UserDto>> GetAllActiveUsersAsync();
 
         Task<IEnumerable<UserDto>> GetAllAdminsAsync();
+
+        Task<PaginatedResult<UserDto>> GetPaginatedBlacklistedUsersAsync(int page, int pageSize);
 
         Task<IEnumerable<UserDto>> GetAllBlacklistedUsersAsync();
 
@@ -16,7 +25,7 @@ namespace DisasterReport.Services.Services.Interfaces
 
         Task<UserDto?> GetUsersByEmailAsync(string email);
 
-        Task UpdateUserAsync(Guid id, UpdateUserDto userDto);
+        Task<UserDto?> UpdateUserAsync(Guid id, UpdateUserFormDto dto);
 
         Task<UserDto?> UpdateCurrentUserAsync(Guid userId, UpdateUserFormDto dto);
 
