@@ -12,6 +12,23 @@ namespace DisasterReport.Data.Repositories.Implementations
             _context = context;
         }
 
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedUsersAsync(int page, int pageSize)
+        {
+            var query = _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .AsNoTracking();
+
+            int totalCount = await query.CountAsync();
+
+            var users = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (users, totalCount);
+        }
+
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
             return await _context.Users
@@ -19,6 +36,41 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Include(u => u.Organizations)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(int page, int pageSize)
+        {
+            var query = _context.Users
+                .Where(u => u.RoleId == 2)
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .AsNoTracking();
+            int totalCount = await query.CountAsync();
+            var users = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return (users, totalCount);
+        }
+
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedActiveUsersAsync(int page, int pageSize)
+        {
+            var query = _context.Users
+                .Where(u => u.RoleId == 2)
+                .Where(u => !_context.BlacklistEntries
+                    .Any(be => be.UserId == u.Id && !be.IsDeleted))
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .AsNoTracking();
+
+            int total = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, total);
         }
 
         public async Task<IEnumerable<User>> GetAllActiveUsersAsync()
@@ -42,6 +94,26 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedBlacklistedUsersAsync(int page, int pageSize)
+        {
+            var query = _context.Users
+                .Where(u => _context.BlacklistEntries.Any(be => be.UserId == u.Id && !be.IsDeleted))
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .AsNoTracking();
+
+            int total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, total);
+        }
+
 
         public async Task<IEnumerable<User>> GetAllBlacklistedUsers()
         {

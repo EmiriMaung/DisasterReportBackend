@@ -1,5 +1,6 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Data.Repositories.Interfaces;
+using DisasterReport.Services.Models.Common;
 using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
@@ -18,6 +19,28 @@ namespace DisasterReport.Services.Services.Implementations
             _cache = cache;
             _blacklistEntryRepo = blacklistEntryRepo;
             _cloudinaryService = cloudinaryService;
+        }
+
+        public async Task<PaginatedResult<UserDto>> GetPaginatedUsersAsync(int page, int pageSize)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var (users, totalCount) = await _userRepo.GetPaginatedUsersAsync(page, pageSize);
+
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDtos.Add(await MapToDtoAsync(user));
+            }
+
+            return new PaginatedResult<UserDto>
+            {
+                Items = userDtos,
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = totalCount
+            };
         }
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -40,6 +63,57 @@ namespace DisasterReport.Services.Services.Implementations
             _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
 
             return userDtos;
+        }
+
+        public async Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(int page, int pageSize)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+            var (users, totalCount) = await _userRepo.GetPaginatedNormalUsersAsync(page, pageSize);
+
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDtos.Add(await MapToDtoAsync(user));
+            }
+
+            return new PaginatedResult<UserDto>
+            {
+                Items = userDtos,
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = totalCount
+            };
+        }
+
+
+        public async Task<PaginatedResult<UserDto>> GetPaginatedActiveUsersAsync(int page, int pageSize)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var (users, total) = await _userRepo.GetPaginatedActiveUsersAsync(page, pageSize);
+
+            var userDtos = users.Select(user => new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name,
+                RoleName = user.Role?.RoleName,
+                ProfilePictureUrl = user.ProfilePictureUrl,
+                CreatedAt = user.CreatedAt,
+                OrganizationNames = user.Organizations?.Select(o => o.Name).ToList() ?? new List<string>(),
+                IsBlacklistedUser = false
+
+            }).ToList();
+
+            return new PaginatedResult<UserDto>
+            {
+                Items = userDtos,
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = total
+            };
         }
 
 
@@ -86,6 +160,29 @@ namespace DisasterReport.Services.Services.Implementations
             _cache.Set(cacheKey, userDots, TimeSpan.FromMinutes(10));
 
             return userDots;
+        }
+
+
+        public async Task<PaginatedResult<UserDto>> GetPaginatedBlacklistedUsersAsync(int page, int pageSize)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var (users, total) = await _userRepo.GetPaginatedBlacklistedUsersAsync(page, pageSize);
+
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
+            {
+                userDtos.Add(await MapToDtoAsync(user));
+            }
+
+            return new PaginatedResult<UserDto>
+            {
+                Items = userDtos,
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = total
+            };
         }
 
 
@@ -158,34 +255,31 @@ namespace DisasterReport.Services.Services.Implementations
         }
 
 
-        public async Task UpdateUserAsync(Guid id, UpdateUserDto userDto)
+        public async Task<UserDto?> UpdateUserAsync(Guid id, UpdateUserFormDto dto)
         {
             var user = await _userRepo.GetUserByIdAsync(id);
-            if (user == null)
-                return;
+            if (user == null) return null;
 
-            if (!string.IsNullOrWhiteSpace(userDto.Name))
-                user.Name = userDto.Name;
-
-            if (!string.IsNullOrWhiteSpace(userDto.ProfilePictureUrl))
-                user.ProfilePictureUrl = userDto.ProfilePictureUrl;
-
+            user.Name = dto.Name;
             user.UpdatedAt = DateTime.UtcNow;
+
+            if (dto.ProfilePicture != null)
+            {
+                var uploadResult = await _cloudinaryService.UploadProfilePictureAsync(dto.ProfilePicture);
+                user.ProfilePictureUrl = uploadResult.SecureUrl.ToString();
+            }
 
             await _userRepo.UpdateUserAsync(user);
 
-            _cache.Remove($"User:{user.Id}");
+            var cacheKey = $"User:{user.Id}";
+            _cache.Remove(cacheKey);
 
-            var updatedUser = await _userRepo.GetUserByIdAsync(user.Id);
-            if (updatedUser != null)
-            {
-                var updatedDto = await MapToDtoAsync(updatedUser);
-                _cache.Set($"User:{user.Id}", updatedDto, TimeSpan.FromMinutes(10));
-            }
+            var updatedDto = await MapToDtoAsync(user);
+            _cache.Set(cacheKey, updatedDto, TimeSpan.FromMinutes(10));
+
+            return updatedDto;
         }
 
-
-        // In UserService.cs
 
         public async Task<UserDto?> UpdateCurrentUserAsync(Guid userId, UpdateUserFormDto dto)
         {

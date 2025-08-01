@@ -1,4 +1,3 @@
-
 using DisasterReport.Data;
 using DisasterReport.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -124,8 +123,9 @@ namespace DisasterReport.API
 
             app.UseCors();
 
-            app.UseAuthorization();
+            app.UseAuthentication();
 
+            app.UseAuthorization();
 
             app.MapControllers();
 
