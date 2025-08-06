@@ -9,10 +9,12 @@
         public class BlacklistEntryService : IBlacklistEntryService
         {
             private readonly IBlacklistEntryRepo _blacklistEntryRepo;
+            private readonly IUserRepo _userRepo;
             private readonly IMemoryCache _cache;
-            public BlacklistEntryService(IBlacklistEntryRepo blacklistEntryRepo, IMemoryCache cache)
+            public BlacklistEntryService(IBlacklistEntryRepo blacklistEntryRepo, IUserRepo userRepo, IMemoryCache cache)
             {
                 _blacklistEntryRepo = blacklistEntryRepo;
+                _userRepo = userRepo;
                 _cache = cache;
             }
 
@@ -61,16 +63,21 @@
 
             public async Task AddAsync(CreateBlacklistEntryDto dto)
             {
-                var entry = new BlacklistEntry
+                bool isAlreadyInBlacklist = await _blacklistEntryRepo.IsUserBlacklistedAsync(dto.UserId);
+                
+                if (isAlreadyInBlacklist)
+                {
+                    throw new InvalidOperationException("This user is already blacklisted.");
+                }
+
+                var blacklistEntry = new BlacklistEntry
                 {
                     UserId = dto.UserId,
                     Reason = dto.Reason,
                     CreatedAdminId = dto.CreatedAdminId,
-                    CreatedAt = DateTime.UtcNow,
-                    IsDeleted = false
+                    CreatedAt = DateTime.Now,
                 };
-
-                await _blacklistEntryRepo.AddAsync(entry);
+                await _blacklistEntryRepo.AddAsync(blacklistEntry);
             }
 
 
@@ -99,14 +106,20 @@
             }
 
 
-            public async Task SoftDeleteAsync(int id, Guid adminId)
+        public async Task SoftDeleteAsync(Guid userId, Guid adminId)
+        {
+            var user = await _userRepo.GetUserByIdAsync(userId);
+            if (user == null)
             {
-                await _blacklistEntryRepo.SoftDeleteAsync(id, adminId);
-                _cache.Remove($"BlacklistEntry_{id}");
+                throw new KeyNotFoundException("User not found.");
             }
+            await _blacklistEntryRepo.SoftDeleteByUserIdAsync(userId, adminId);
+
+            _cache.Remove($"User:{userId}");
+        }
 
 
-            public async Task<bool> IsUserBlacklistedAsync(Guid userId)
+        public async Task<bool> IsUserBlacklistedAsync(Guid userId)
             {
                 return await _blacklistEntryRepo.IsUserBlacklistedAsync(userId);
             }

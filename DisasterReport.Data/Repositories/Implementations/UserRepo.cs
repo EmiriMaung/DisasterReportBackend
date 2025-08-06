@@ -39,13 +39,65 @@ namespace DisasterReport.Data.Repositories.Implementations
         }
 
 
-        public async Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(int page, int pageSize)
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        )
         {
             var query = _context.Users
                 .Where(u => u.RoleId == 2)
                 .Include(u => u.Role)
                 .Include(u => u.Organizations)
                 .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var searchTerm = searchQuery.Trim().ToLower();
+
+                if (searchTerm.Contains("@"))
+                {
+                    query = query.Where(u =>
+                        u.Name.ToLower().Contains(searchTerm) ||
+                        u.Email.ToLower().Contains(searchTerm)
+                    );
+                }
+                else
+                {
+                    var nameSearchPattern = $"%{searchTerm}%";
+                    var emailLocalPartSearchPattern = $"%{searchTerm}%@%";
+
+                    query = query.Where(u =>
+                        EF.Functions.Like(u.Name.ToLower(), nameSearchPattern) ||
+                        EF.Functions.Like(u.Email.ToLower(), emailLocalPartSearchPattern)
+                    );
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLowerInvariant())
+                {
+                    case "name":
+                        query = sortOrder?.ToLowerInvariant() == "desc"
+                            ? query.OrderByDescending(u => u.Name)
+                            : query.OrderBy(u => u.Name);
+                        break;
+
+                    default:
+                        query = sortOrder?.ToLowerInvariant() == "asc"
+                            ? query.OrderBy(u => u.CreatedAt)
+                            : query.OrderByDescending(u => u.CreatedAt);
+                        break;
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(u => u.CreatedAt);
+            }
+
             int totalCount = await query.CountAsync();
             var users = await query
                 .Skip((page - 1) * pageSize)
@@ -54,7 +106,14 @@ namespace DisasterReport.Data.Repositories.Implementations
             return (users, totalCount);
         }
 
-        public async Task<(List<User> Items, int TotalCount)> GetPaginatedActiveUsersAsync(int page, int pageSize)
+
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedActiveUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        )
         {
             var query = _context.Users
                 .Where(u => u.RoleId == 2)
@@ -63,6 +122,51 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Include(u => u.Role)
                 .Include(u => u.Organizations)
                 .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var searchTerm = searchQuery.Trim().ToLower();
+
+                if (searchTerm.Contains("@"))
+                {
+                    query = query.Where(u =>
+                        u.Name.ToLower().Contains(searchTerm) ||
+                        u.Email.ToLower().Contains(searchTerm)
+                    );
+                }
+                else
+                {
+                    var nameSearchPattern = $"%{searchTerm}%";
+                    var emailLocalPartSearchPattern = $"%{searchTerm}%@%";
+
+                    query = query.Where(u =>
+                        EF.Functions.Like(u.Name.ToLower(), nameSearchPattern) ||
+                        EF.Functions.Like(u.Email.ToLower(), emailLocalPartSearchPattern)
+                    );
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLowerInvariant())
+                {
+                    case "name":
+                        query = sortOrder?.ToLowerInvariant() == "desc"
+                            ? query.OrderByDescending(u => u.Name)
+                            : query.OrderBy(u => u.Name);
+                        break;
+
+                    default:
+                        query = sortOrder?.ToLowerInvariant() == "asc"
+                            ? query.OrderBy(u => u.CreatedAt)
+                            : query.OrderByDescending(u => u.CreatedAt);
+                        break;
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(u => u.CreatedAt);
+            }
 
             int total = await query.CountAsync();
             var items = await query
@@ -79,11 +183,80 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Where(u => u.RoleId == 2)
                 .Where(u => !_context.BlacklistEntries
                     .Any(be => be.UserId == u.Id && !be.IsDeleted))
-                .Include(u => u.Role)  
+                .Include(u => u.Role)
                 .Include(u => u.Organizations)
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedAdminsAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        )
+        {
+            var query = _context.Users
+                .Where(u => u.Role.RoleName == "Admin")
+                .Include(u => u.Role)
+                .Include(u => u.Organizations)
+                .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var searchTerm = searchQuery.Trim().ToLower();
+
+                if (searchTerm.Contains("@"))
+                {
+                    query = query.Where(u =>
+                        u.Name.ToLower().Contains(searchTerm) ||
+                        u.Email.ToLower().Contains(searchTerm)
+                    );
+                }
+                else
+                {
+                    var nameSearchPattern = $"%{searchTerm}%";
+                    var emailLocalPartSearchPattern = $"%{searchTerm}%@%";
+
+                    query = query.Where(u =>
+                        EF.Functions.Like(u.Name.ToLower(), nameSearchPattern) ||
+                        EF.Functions.Like(u.Email.ToLower(), emailLocalPartSearchPattern)
+                    );
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLowerInvariant())
+                {
+                    case "name":
+                        query = sortOrder?.ToLowerInvariant() == "desc"
+                            ? query.OrderByDescending(u => u.Name)
+                            : query.OrderBy(u => u.Name);
+                        break;
+
+                    default:
+                        query = sortOrder?.ToLowerInvariant() == "asc"
+                            ? query.OrderBy(u => u.CreatedAt)
+                            : query.OrderByDescending(u => u.CreatedAt);
+                        break;
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(u => u.CreatedAt);
+            }
+
+            int total = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, total);
+        }
+
 
         public async Task<IEnumerable<User>> GetAllAdminsAsync()
         {
@@ -96,13 +269,65 @@ namespace DisasterReport.Data.Repositories.Implementations
         }
 
 
-        public async Task<(List<User> Items, int TotalCount)> GetPaginatedBlacklistedUsersAsync(int page, int pageSize)
+        public async Task<(List<User> Items, int TotalCount)> GetPaginatedBlacklistedUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        )
         {
             var query = _context.Users
                 .Where(u => _context.BlacklistEntries.Any(be => be.UserId == u.Id && !be.IsDeleted))
                 .Include(u => u.Role)
                 .Include(u => u.Organizations)
                 .AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+            {
+                var searchTerm = searchQuery.Trim().ToLower();
+
+                if (searchTerm.Contains("@"))
+                {
+                    query = query.Where(u =>
+                        u.Name.ToLower().Contains(searchTerm) ||
+                        u.Email.ToLower().Contains(searchTerm)
+                    );
+                }
+                else
+                {
+                    var nameSearchPattern = $"%{searchTerm}%";
+                    var emailLocalPartSearchPattern = $"%{searchTerm}%@%";
+
+                    query = query.Where(u =>
+                        EF.Functions.Like(u.Name.ToLower(), nameSearchPattern) ||
+                        EF.Functions.Like(u.Email.ToLower(), emailLocalPartSearchPattern)
+                    );
+                }
+            }
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLowerInvariant())
+                {
+                    case "name":
+                        query = sortOrder?.ToLowerInvariant() == "desc"
+                            ? query.OrderByDescending(u => u.Name)
+                            : query.OrderBy(u => u.Name);
+                        break;
+
+                    default:
+                        query = sortOrder?.ToLowerInvariant() == "asc"
+                            ? query.OrderBy(u => u.CreatedAt)
+                            : query.OrderByDescending(u => u.CreatedAt);
+                        break;
+                }
+            }
+            else
+            {
+                query = query.OrderByDescending(u => u.CreatedAt);
+            }
+
 
             int total = await query.CountAsync();
 

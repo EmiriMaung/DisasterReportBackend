@@ -57,7 +57,7 @@ namespace DisasterReport.Services.Services.Implementations
             var userDtos = new List<UserDto>();
             foreach (var user in users)
             {
-                userDtos.Add(await MapToDtoAsync(user)); // Check blacklist here
+                userDtos.Add(await MapToDtoAsync(user));
             }
 
             _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
@@ -65,11 +65,11 @@ namespace DisasterReport.Services.Services.Implementations
             return userDtos;
         }
 
-        public async Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(int page, int pageSize)
+        public async Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(int page, int pageSize, string? searchQuery, string? sortBy, string? sortOrder)
         {
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
-            var (users, totalCount) = await _userRepo.GetPaginatedNormalUsersAsync(page, pageSize);
+            var (users, totalCount) = await _userRepo.GetPaginatedNormalUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
 
             var userDtos = new List<UserDto>();
             foreach (var user in users)
@@ -86,13 +86,18 @@ namespace DisasterReport.Services.Services.Implementations
             };
         }
 
-
-        public async Task<PaginatedResult<UserDto>> GetPaginatedActiveUsersAsync(int page, int pageSize)
+        public async Task<PaginatedResult<UserDto>> GetPaginatedActiveUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        )
         {
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
-            var (users, total) = await _userRepo.GetPaginatedActiveUsersAsync(page, pageSize);
+            var (users, total) = await _userRepo.GetPaginatedActiveUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
 
             var userDtos = users.Select(user => new UserDto
             {
@@ -140,6 +145,41 @@ namespace DisasterReport.Services.Services.Implementations
         }
 
 
+        public async Task<PaginatedResult<UserDto>> GetPaginatedAdminsAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        )
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 10;
+
+            var (users, total) = await _userRepo.GetPaginatedAdminsAsync(page, pageSize, searchQuery, sortBy, sortOrder);
+
+            var userDtos = users.Select(user => new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name,
+                RoleName = user.Role?.RoleName,
+                ProfilePictureUrl = user.ProfilePictureUrl,
+                CreatedAt = user.CreatedAt,
+                IsBlacklistedUser = false
+
+            }).ToList();
+
+            return new PaginatedResult<UserDto>
+            {
+                Items = userDtos,
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = total
+            };
+        }
+
+
         public async Task<IEnumerable<UserDto>> GetAllAdminsAsync()
         {
             string cacheKey = "AllAdmins";
@@ -163,12 +203,18 @@ namespace DisasterReport.Services.Services.Implementations
         }
 
 
-        public async Task<PaginatedResult<UserDto>> GetPaginatedBlacklistedUsersAsync(int page, int pageSize)
+        public async Task<PaginatedResult<UserDto>> GetPaginatedBlacklistedUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        )
         {
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
-            var (users, total) = await _userRepo.GetPaginatedBlacklistedUsersAsync(page, pageSize);
+            var (users, total) = await _userRepo.GetPaginatedBlacklistedUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
 
             var userDtos = new List<UserDto>();
             foreach (var user in users)

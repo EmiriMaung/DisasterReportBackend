@@ -36,17 +36,29 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpGet("normal/paginated")]
-        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedNormalUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedNormalUsers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchQuery = null,
+            [FromQuery] string? sortBy = "CreatedAt",
+            [FromQuery] string? sortOrder = "desc"
+        )
         {
-            var result = await _userService.GetPaginatedNormalUsersAsync(page, pageSize);
+            var result = await _userService.GetPaginatedNormalUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
             return Ok(result);
         }
 
 
         [HttpGet("active/paginated")]
-        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedActiveUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedActiveUsers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchQuery = null,
+            [FromQuery] string? sortBy = "CreatedAt",
+            [FromQuery] string? sortOrder = "desc"
+            )
         {
-            var result = await _userService.GetPaginatedActiveUsersAsync(page, pageSize);
+            var result = await _userService.GetPaginatedActiveUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
             return Ok(result);
         }
 
@@ -63,6 +75,21 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [HttpGet("admins/paginated")]
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedAdmins(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchQuery = null,
+            [FromQuery] string? sortBy = "CreatedAt",
+            [FromQuery] string? sortOrder = "desc"
+        )
+        {
+            var result = await _userService.GetPaginatedAdminsAsync(page, pageSize, searchQuery, sortBy, sortOrder);
+            return Ok(result);
+        }
+
+
+
         [HttpGet("admins")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAdmins()
         {
@@ -76,9 +103,15 @@ namespace DisasterReport.API.Controllers
 
 
         [HttpGet("blacklisted/paginated")]
-        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedBlacklistedUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedBlacklistedUsers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchQuery = null,
+            [FromQuery] string? sortBy = "CreatedAt",
+            [FromQuery] string? sortOrder = "desc"
+        )
         {
-            var result = await _userService.GetPaginatedBlacklistedUsersAsync(page, pageSize);
+            var result = await _userService.GetPaginatedBlacklistedUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
             return Ok(result);
         }
 

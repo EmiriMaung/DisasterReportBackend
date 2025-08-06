@@ -17,7 +17,7 @@ namespace DisasterReport.Data.Repositories.Interfaces
 
         Task UpdateAsync(BlacklistEntry entry);
 
-        Task SoftDeleteAsync(int id, Guid adminId);
+        Task SoftDeleteByUserIdAsync(Guid id, Guid adminId);
 
         Task<bool> IsUserBlacklistedAsync(Guid userId);
     }
