@@ -17,9 +17,9 @@ public partial class BlacklistEntry
 
     public DateTime CreatedAt { get; set; }
 
-    public DateTime? UpdateAt { get; set; }
-
     public bool IsDeleted { get; set; }
+
+    public DateTime? UpdateAt { get; set; }
 
     public virtual User User { get; set; } = null!;
 }

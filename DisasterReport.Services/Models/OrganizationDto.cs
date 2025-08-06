@@ -18,8 +18,9 @@ namespace DisasterReport.Services.Models
         public bool IsBlackListedOrg { get; set; }
         public Status Status { get; set; }  // use an enum 
         public Guid? ApprovedBy { get; set; }
+        public string? ApprovedByName { get; set; } // NEW FIELD
         public DateTime? ApprovedAt { get; set; }
-
+        public DateTime CreatedAt { get; set; } //NEW FIELD
         public List<OrganizationDocDto>? Docs { get; set; } = new List<OrganizationDocDto>();
         public List<OrganizationMemberDto>? Members { get; set; } = new List<OrganizationMemberDto>();
     }
