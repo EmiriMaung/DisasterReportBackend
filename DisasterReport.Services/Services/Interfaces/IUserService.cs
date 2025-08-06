@@ -9,15 +9,43 @@ namespace DisasterReport.Services.Services.Interfaces
 
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
 
-        Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(int page, int pageSize);
+        Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
 
-        Task<PaginatedResult<UserDto>> GetPaginatedActiveUsersAsync(int page, int pageSize);
+        Task<PaginatedResult<UserDto>> GetPaginatedActiveUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
+
 
         Task<IEnumerable<UserDto>> GetAllActiveUsersAsync();
 
+        Task<PaginatedResult<UserDto>> GetPaginatedAdminsAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
+
+
         Task<IEnumerable<UserDto>> GetAllAdminsAsync();
 
-        Task<PaginatedResult<UserDto>> GetPaginatedBlacklistedUsersAsync(int page, int pageSize);
+        Task<PaginatedResult<UserDto>> GetPaginatedBlacklistedUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
 
         Task<IEnumerable<UserDto>> GetAllBlacklistedUsersAsync();
 

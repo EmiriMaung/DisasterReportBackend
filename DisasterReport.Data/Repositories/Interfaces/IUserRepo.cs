@@ -8,15 +8,41 @@ namespace DisasterReport.Data.Repositories.Interfaces
 
         Task<IEnumerable<User>> GetAllUsersAsync();
 
-        Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(int page, int pageSize);
+        Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
 
-        Task<(List<User> Items, int TotalCount)> GetPaginatedActiveUsersAsync(int page, int pageSize);
+        Task<(List<User> Items, int TotalCount)> GetPaginatedActiveUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
 
         Task<IEnumerable<User>> GetAllActiveUsersAsync();
 
+        Task<(List<User> Items, int TotalCount)> GetPaginatedAdminsAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
+
         Task<IEnumerable<User>> GetAllAdminsAsync();
 
-        Task<(List<User> Items, int TotalCount)> GetPaginatedBlacklistedUsersAsync(int page, int pageSize);
+        Task<(List<User> Items, int TotalCount)> GetPaginatedBlacklistedUsersAsync(
+            int page,
+            int pageSize,
+            string? searchQuery,
+            string? sortBy,
+            string? sortOrder
+        );
 
         Task<IEnumerable<User>> GetAllBlacklistedUsers();
 

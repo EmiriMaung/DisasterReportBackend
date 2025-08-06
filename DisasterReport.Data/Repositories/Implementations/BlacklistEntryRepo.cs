@@ -42,12 +42,12 @@ namespace DisasterReport.Data.Repositories.Implementations
             await _context.SaveChangesAsync();
         }
 
-
-        public async Task SoftDeleteAsync(int id, Guid adminId)
+        public async Task SoftDeleteByUserIdAsync(Guid userId, Guid adminId)
         {
-            var entry = await _context.BlacklistEntries.FindAsync(id);
+            var entry = await _context.BlacklistEntries
+                .FirstOrDefaultAsync(be => be.UserId == userId && !be.IsDeleted);
 
-            if (entry != null && !entry.IsDeleted)
+            if (entry != null)
             {
                 entry.IsDeleted = true;
                 entry.UpdatedAdminId = adminId;
@@ -62,7 +62,7 @@ namespace DisasterReport.Data.Repositories.Implementations
         public async Task<bool> IsUserBlacklistedAsync(Guid userId)
         {
             return await _context.BlacklistEntries
-                                .AnyAsync(be => be.UserId == userId);
+                                .AnyAsync(be => be.UserId == userId && !be.IsDeleted);
         }
     }
 }
