@@ -99,18 +99,11 @@ namespace DisasterReport.Services.Services.Implementations
 
             var (users, total) = await _userRepo.GetPaginatedActiveUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
 
-            var userDtos = users.Select(user => new UserDto
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
             {
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.Name,
-                RoleName = user.Role?.RoleName,
-                ProfilePictureUrl = user.ProfilePictureUrl,
-                CreatedAt = user.CreatedAt,
-                OrganizationNames = user.Organizations?.Select(o => o.Name).ToList() ?? new List<string>(),
-                IsBlacklistedUser = false
-
-            }).ToList();
+                userDtos.Add(await MapToDtoAsync(user));
+            }
 
             return new PaginatedResult<UserDto>
             {
@@ -158,17 +151,11 @@ namespace DisasterReport.Services.Services.Implementations
 
             var (users, total) = await _userRepo.GetPaginatedAdminsAsync(page, pageSize, searchQuery, sortBy, sortOrder);
 
-            var userDtos = users.Select(user => new UserDto
+            var userDtos = new List<UserDto>();
+            foreach (var user in users)
             {
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.Name,
-                RoleName = user.Role?.RoleName,
-                ProfilePictureUrl = user.ProfilePictureUrl,
-                CreatedAt = user.CreatedAt,
-                IsBlacklistedUser = false
-
-            }).ToList();
+                userDtos.Add(await MapToDtoAsync(user));
+            }
 
             return new PaginatedResult<UserDto>
             {
@@ -379,7 +366,13 @@ namespace DisasterReport.Services.Services.Implementations
                 IsBlacklistedUser = isBlacklisted,
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt,
-                OrganizationNames = user.Organizations?.Select(o => o.Name).ToList() ?? new List<string>()
+                OrganizationNames = user.Organizations?
+                    .Select(o => new OrganizationInfoDto
+                    {
+                        Id = o.Id,
+                        Name = o.Name
+                    })
+                    .ToList() ?? new List<OrganizationInfoDto>()
             };
         }
     }
