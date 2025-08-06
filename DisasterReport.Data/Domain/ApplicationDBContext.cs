@@ -57,9 +57,7 @@ public partial class ApplicationDBContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Reason).HasMaxLength(255);
-            entity.Property(e => e.UpdateAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.User).WithMany(p => p.BlacklistEntries)
                 .HasForeignKey(d => d.UserId)
@@ -272,6 +270,9 @@ public partial class ApplicationDBContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Organiza__3214EC07A956E791");
 
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.OrganizationEmail).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).HasMaxLength(30);
