@@ -13,11 +13,17 @@ namespace DisasterReport.Services.Models
         public int DisasterReportId { get; set; }
         public string? Content { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string UserName { get; set; }
+        public string? UserProfilePictureUrl { get; set; }
     }
     public class CreateCommentDto
     {
         public int DisasterReportId { get; set; }
         public string? Content { get; set; }
+    }
+    public class UpdateCommentDto
+    {
+        public string Content { get; set; }
     }
 
 }
