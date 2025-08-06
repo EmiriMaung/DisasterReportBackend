@@ -24,6 +24,8 @@ namespace DisasterReport.Services
             services.AddScoped<IBlacklistEntryService, BlacklistEntryService>();
             services.AddScoped<IDisasterTopicService, DisasterTopicService>();
             services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<ISupportTypeService, SupportTypeService>();
+            services.AddScoped<IImpactTypeService, ImpactTypeService>();
 
             //Add Cloudinary
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));

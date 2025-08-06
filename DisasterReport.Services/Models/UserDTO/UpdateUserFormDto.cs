@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace DisasterReport.Services.Models.UserDTO
 {
-    public class UpdateUserDto
+    public class UpdateUserFormDto
     {
-        public string? Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public IFormFile? ProfilePicture { get; set; }
     }

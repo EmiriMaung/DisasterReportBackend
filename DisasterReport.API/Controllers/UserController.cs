@@ -1,4 +1,5 @@
-﻿using DisasterReport.Services.Models.UserDTO;
+﻿using DisasterReport.Services.Models.Common;
+using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,6 +16,14 @@ namespace DisasterReport.API.Controllers
             _userService = userService;
         }
 
+        [HttpGet("all/paginated")]
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _userService.GetPaginatedUsersAsync(page, pageSize);
+            return Ok(result);
+        }
+
+
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
@@ -24,6 +33,21 @@ namespace DisasterReport.API.Controllers
                 return NotFound("No users found.");
             }
             return Ok(users);
+        }
+
+        [HttpGet("normal/paginated")]
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedNormalUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _userService.GetPaginatedNormalUsersAsync(page, pageSize);
+            return Ok(result);
+        }
+
+
+        [HttpGet("active/paginated")]
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedActiveUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _userService.GetPaginatedActiveUsersAsync(page, pageSize);
+            return Ok(result);
         }
 
 
@@ -48,6 +72,14 @@ namespace DisasterReport.API.Controllers
                 return NotFound("No admin found.");
             }
             return Ok(users);
+        }
+
+
+        [HttpGet("blacklisted/paginated")]
+        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedBlacklistedUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _userService.GetPaginatedBlacklistedUsersAsync(page, pageSize);
+            return Ok(result);
         }
 
 
@@ -104,11 +136,34 @@ namespace DisasterReport.API.Controllers
         }
 
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto updateUserDto)
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateCurrentUser([FromForm] UpdateUserFormDto dto)
         {
-            await _userService.UpdateUserAsync(id, updateUserDto);
-            return Ok("Updated successfully!");
+            var userIdClaim = User.FindFirst("id") ?? User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var updatedUserDto = await _userService.UpdateCurrentUserAsync(userId, dto);
+
+            if (updatedUserDto == null)
+            {
+                return NotFound("User not found or update failed.");
+            }
+            return Ok(updatedUserDto);
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromForm] UpdateUserFormDto dto)
+        {
+            var updatedUserDto = await _userService.UpdateUserAsync(id, dto);
+            if (updatedUserDto == null)
+            {
+                return NotFound("User not found or update failed.");
+            }
+            return Ok(updatedUserDto);
         }
 
 

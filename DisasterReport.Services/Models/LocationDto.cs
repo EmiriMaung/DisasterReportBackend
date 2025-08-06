@@ -8,7 +8,7 @@ namespace DisasterReport.Services.Models
 {
     public class LocationDto
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string TownshipName { get; set; } = null!;
         public string RegionName { get; set; } = null!;
         public decimal Latitude { get; set; }
