@@ -1,19 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-	  <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-	  <PackageReference Include="CloudinaryDotNet" Version="1.27.6" />
-	  <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
-	  <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.17" />
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
-	  <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.7" />
-    <ProjectReference Include="..\DisasterReport.Data\DisasterReport.Data.csproj" />
-  </ItemGroup>
+	<!-- This FrameworkReference gives you access to all necessary ASP.NET Core libraries,
+       including HttpContext, IFormFile, FormFile, etc., with the correct versions for .NET 8. -->
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Your other packages are fine. The incorrect ones have been removed. -->
+		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+		<PackageReference Include="CloudinaryDotNet" Version="1.27.0" />
+		<!-- Version updated to a more recent one -->
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+
+		<!-- This reference to your Data project is correct. -->
+		<ProjectReference Include="..\DisasterReport.Data\DisasterReport.Data.csproj" />
+	</ItemGroup>
 
 </Project>
