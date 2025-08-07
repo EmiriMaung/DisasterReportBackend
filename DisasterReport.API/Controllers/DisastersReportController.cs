@@ -1,4 +1,5 @@
-﻿using DisasterReport.Services.Models;
+﻿using DisasterReport.Data.Domain;
+using DisasterReport.Services.Models;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+   // [Authorize]
     public class DisastersReportController : ControllerBase
     {
         private readonly IDisasterReportService _disasterReportService;
@@ -221,6 +222,15 @@ namespace DisasterReport.API.Controllers
             var relatedReports = await _disasterReportService.GetRelatedReportsByTopicAsync(reportId);
 
             return Ok(relatedReports);
+        }
+        [HttpGet("map-reports")]
+        public async Task<IActionResult> GetDisasterReportsForMap([FromQuery] ReportFilterDto filter)
+        
+        {
+            
+            
+            var result = await _disasterReportService.GetDisasterReportsForMapAsync(filter);
+            return Ok(result);
         }
 
 

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace DisasterReport.Data.Repositories;
 
 public class PostRepo : IPostRepo
@@ -252,7 +251,19 @@ public class PostRepo : IPostRepo
         _context.DisastersReports.Remove(report);
         await Task.CompletedTask;
     }
-
+    public async Task<List<DisasterReportMapDto>> GetFilteredDisasterReportsAsync(ReportFilterDto filter)
+    {
+        return await _context.DisasterReportMapDtos
+            .FromSqlInterpolated($@"
+                EXEC sp_GetFilteredDisasterReportsForMap 
+                    @TopicId = {filter.TopicId}, 
+                    @TownshipName = {filter.TownshipName}, 
+                    @RegionName = {filter.RegionName}, 
+                    @StartDate = {filter.StartDate}, 
+                    @EndDate = {filter.EndDate}, 
+                    @IsUrgent = {filter.IsUrgent}")
+            .ToListAsync();
+    }
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
