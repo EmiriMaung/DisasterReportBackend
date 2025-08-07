@@ -1,5 +1,6 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Data.Repositories;
+using DisasterReport.Data.Repositories.Interfaces;
 using DisasterReport.Services.Enums;
 using DisasterReport.Services.Models;
 using System;
@@ -16,17 +17,20 @@ namespace DisasterReport.Services.Services
         private readonly IOrganizationDocRepo _organizationDocRepo;
         private readonly IOrganizationMemberRepo _organizationMemberRepo;
         private readonly ICloudinaryService _cloudinaryService;
+        private readonly IUserRepo _userRepo;
 
         public OrganizationService(
             IOrganizationRepo organizationRepo,
             IOrganizationDocRepo organizationDocRepo,
             IOrganizationMemberRepo organizationMemberRepo,
-            ICloudinaryService cloudinaryService)
+            ICloudinaryService cloudinaryService,
+            IUserRepo userRepo)
         {
             _organizationRepo = organizationRepo;
             _organizationDocRepo = organizationDocRepo;
             _organizationMemberRepo = organizationMemberRepo;
             _cloudinaryService = cloudinaryService;
+            _userRepo = userRepo;
         }
         public async Task<bool> ApproveOrganizationAsync(int orgId, Guid adminUserId)
         {
@@ -87,7 +91,8 @@ namespace DisasterReport.Services.Services
                 OrganizationId = organization.Id,
                 UserId = creatorUserId,
                 RoleInOrg = "Owner",
-                JoinedAt = DateTime.UtcNow
+                JoinedAt = DateTime.UtcNow,
+                IsAccepted = true
             };
             await _organizationMemberRepo.AddAsync(ownerMember);
             await _organizationMemberRepo.SaveChangesAsync();
@@ -110,6 +115,7 @@ namespace DisasterReport.Services.Services
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
                 ApprovedAt = org.ApprovedAt,
+                CreatedAt = org.CreatedAt,
                 Docs = null,   // No detailed docs here
                 Members = null // No detailed members here
             }).ToList();
@@ -188,6 +194,19 @@ namespace DisasterReport.Services.Services
             var org = await _organizationRepo.GetDetailsByIdAsync(id);
             if (org == null)
                 return null;
+            string? approverName = null;
+            if (org.ApprovedBy != null)
+            {
+                var approverUser = await _userRepo.GetUserByIdAsync(org.ApprovedBy.Value);
+                if (approverUser != null)
+                {
+                    // Assume user has FullName property or fallback to Email
+                    approverName = !string.IsNullOrEmpty(approverUser.Name)
+                        ? approverUser.Name
+                        : approverUser.Email;
+                }
+            }
+
             var dto = new OrganizationDto
             {
                 Id = org.Id,
@@ -198,6 +217,7 @@ namespace DisasterReport.Services.Services
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
+                ApprovedByName = approverName,
                 ApprovedAt = org.ApprovedAt,
                 Docs = new List<OrganizationDocDto>(),
                 Members = new List<OrganizationMemberDto>()

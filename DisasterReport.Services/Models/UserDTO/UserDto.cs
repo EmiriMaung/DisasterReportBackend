@@ -18,6 +18,6 @@
 
         public DateTime? UpdatedAt { get; set; }
 
-        public List<string> OrganizationNames { get; set; } = new List<string>();
+        public List<OrganizationInfoDto> OrganizationNames { get; set; } = new List<OrganizationInfoDto>();
     }
 }

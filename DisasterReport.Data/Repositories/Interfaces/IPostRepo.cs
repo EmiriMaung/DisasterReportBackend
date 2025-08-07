@@ -27,8 +27,11 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task ApproveReportAsync(int reportId, Guid approvedBy);
         Task RejectReportAsync(int reportId, Guid rejectedBy);
         Task<List<DisastersReport>> GetReportsByTopicIdAsync(int topicId);
+        Task<List<DisasterReportMapDto>> GetFilteredDisasterReportsAsync(ReportFilterDto filter);//for sp
+
         Task SaveChangesAsync();
         ApplicationDBContext DbContext { get; }
+
     }
 
 }

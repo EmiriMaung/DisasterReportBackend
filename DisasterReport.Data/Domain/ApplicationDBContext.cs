@@ -47,6 +47,8 @@ public partial class ApplicationDBContext : DbContext
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
 
+    public DbSet<DisasterReportMapDto> DisasterReportMapDtos { get; set; }// for sp
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<BlacklistEntry>(entity =>
@@ -57,9 +59,7 @@ public partial class ApplicationDBContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Reason).HasMaxLength(255);
-            entity.Property(e => e.UpdateAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+            entity.Property(e => e.UpdateAt).HasColumnType("datetime");
 
             entity.HasOne(d => d.User).WithMany(p => p.BlacklistEntries)
                 .HasForeignKey(d => d.UserId)
@@ -272,6 +272,9 @@ public partial class ApplicationDBContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Organiza__3214EC07A956E791");
 
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.OrganizationEmail).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).HasMaxLength(30);
@@ -304,6 +307,7 @@ public partial class ApplicationDBContext : DbContext
 
             entity.HasIndex(e => e.UserId, "UQ_OrganizationMember_UserId").IsUnique();
 
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.InvitedEmail).HasMaxLength(255);
             entity.Property(e => e.JoinedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -317,7 +321,6 @@ public partial class ApplicationDBContext : DbContext
 
             entity.HasOne(d => d.User).WithOne(p => p.OrganizationMember)
                 .HasForeignKey<OrganizationMember>(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Organizat__UserI__4BAC3F29");
         });
 
@@ -370,6 +373,10 @@ public partial class ApplicationDBContext : DbContext
 
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
+
+        modelBuilder.Entity<DisasterReportMapDto>()
+       .HasNoKey()
+       .ToView(null); // Important: EF should not treat it as a table/view
 
         OnModelCreatingPartial(modelBuilder);
     }
