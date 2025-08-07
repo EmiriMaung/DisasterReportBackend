@@ -307,6 +307,7 @@ public partial class ApplicationDBContext : DbContext
 
             entity.HasIndex(e => e.UserId, "UQ_OrganizationMember_UserId").IsUnique();
 
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.InvitedEmail).HasMaxLength(255);
             entity.Property(e => e.JoinedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -320,7 +321,6 @@ public partial class ApplicationDBContext : DbContext
 
             entity.HasOne(d => d.User).WithOne(p => p.OrganizationMember)
                 .HasForeignKey<OrganizationMember>(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Organizat__UserI__4BAC3F29");
         });
 

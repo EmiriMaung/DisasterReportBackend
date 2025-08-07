@@ -34,8 +34,9 @@ namespace DisasterReport.Data.Repositories
         public async Task<IEnumerable<OrganizationMember>> GetByOrganizationIdAsync(int orgId)
         {
             return await _context.OrganizationMembers
-            .Where(m => m.OrganizationId == orgId)
-            .ToListAsync();
+                .Include(m => m.User) // ✅ Necessary to get registered user's email
+                .Where(m => m.OrganizationId == orgId)
+                .ToListAsync();
         }
 
         public async Task<OrganizationMember?> GetByTokenAsync(Guid token)

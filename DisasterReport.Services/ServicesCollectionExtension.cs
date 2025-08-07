@@ -18,6 +18,7 @@ namespace DisasterReport.Services
             services.AddScoped<IPasswordHasherService, PasswordHasherService>();
 
             services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<IOrganizationMemberService, OrganizationMemberService>();
 
             services.AddScoped<IDisasterReportService, DisasterReportService>();
             services.AddScoped<IUserService, UserService>();

@@ -91,7 +91,8 @@ namespace DisasterReport.Services.Services
                 OrganizationId = organization.Id,
                 UserId = creatorUserId,
                 RoleInOrg = "Owner",
-                JoinedAt = DateTime.UtcNow
+                JoinedAt = DateTime.UtcNow,
+                IsAccepted = true
             };
             await _organizationMemberRepo.AddAsync(ownerMember);
             await _organizationMemberRepo.SaveChangesAsync();
