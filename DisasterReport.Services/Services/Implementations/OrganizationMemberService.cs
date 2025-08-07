@@ -3,11 +3,6 @@ using DisasterReport.Data.Repositories;
 using DisasterReport.Data.Repositories.Interfaces;
 using DisasterReport.Services.Enums;
 using DisasterReport.Services.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DisasterReport.Services.Services
 {
@@ -16,32 +11,35 @@ namespace DisasterReport.Services.Services
         private readonly IOrganizationRepo _organizationRepo;
         private readonly IOrganizationMemberRepo _orgMemberRepo;
         private readonly IUserRepo _userRepo;
+        private readonly InvitationNotificationService _invitationNotificationService;
 
         public OrganizationMemberService(
             IOrganizationRepo organizationRepo,
             IOrganizationMemberRepo orgMemberRepo,
-            IUserRepo userRepo)
+            IUserRepo userRepo,
+            InvitationNotificationService invitationNotificationService)
         {
             _organizationRepo = organizationRepo;
             _orgMemberRepo = orgMemberRepo;
             _userRepo = userRepo;
+            _invitationNotificationService = invitationNotificationService;
         }
 
         public async Task<bool> AcceptInvitationAsync(AcceptInvitationDto dto, Guid userId)
         {
             var member = await _orgMemberRepo.GetByTokenAsync(dto.Token);
             if (member == null)
-                throw new Exception("Invalid or expired invitation token.");
+                throw new InvalidOperationException("Invalid or expired invitation token.");
 
             if (member.IsAccepted)
-                throw new Exception("Invitation already accepted.");
+                throw new InvalidOperationException("Invitation already accepted.");
 
             if (member.UserId != null && member.UserId != userId)
-                throw new Exception("Invitation was not intended for you.");
+                throw new InvalidOperationException("Invitation was not intended for you.");
 
             var user = await _userRepo.GetUserByIdAsync(userId);
             if (user == null)
-                throw new Exception("User not found.");
+                throw new InvalidOperationException("User not found.");
 
             // Update member entry
             member.UserId = userId;
@@ -88,12 +86,12 @@ namespace DisasterReport.Services.Services
             // Check organization exists and is approved
             var org = await _organizationRepo.GetByIdAsync(organizationId);
             if (org == null || org.Status != (int)Status.Approved)
-                throw new Exception("Organization not found or not approved.");
+                throw new InvalidOperationException("Organization not found or not approved.");
 
             // Check inviter is owner
             var ownerMember = await _orgMemberRepo.GetByOrgAndUserAsync(organizationId, ownerUserId);
             if (ownerMember == null || ownerMember.RoleInOrg?.ToLower() != "owner")
-                throw new Exception("Only owner can invite members.");
+                throw new UnauthorizedAccessException("Only owner can invite members.");
 
             // Check if invited user exists
             var invitedUser = await _userRepo.GetUsersByEmailAsync(dto.InvitedEmail);
@@ -101,7 +99,7 @@ namespace DisasterReport.Services.Services
             {
                 var existingMember = await _orgMemberRepo.GetByOrgAndUserAsync(organizationId, invitedUser.Id);
                 if (existingMember != null)
-                    throw new Exception("User is already a member.");
+                    throw new InvalidOperationException("User is already a member.");
             }
 
             // Create invitation entity
@@ -119,7 +117,16 @@ namespace DisasterReport.Services.Services
             await _orgMemberRepo.AddAsync(invitation);
             var saved = await _orgMemberRepo.SaveChangesAsync();
 
-            // TODO: Send notification or email invite here
+            if (saved && invitedUser != null)
+            {
+                // Send SignalR notification
+                await _invitationNotificationService.NotifyUserAsync(
+                    invitedUser.Id.ToString(),
+                    org.Name,
+                    ownerMember.UserId.ToString());
+            }
+
+            // TODO: Optionally, send email invite for unregistered users here
 
             return saved;
         }
@@ -128,11 +135,10 @@ namespace DisasterReport.Services.Services
         {
             var member = await _orgMemberRepo.GetByOrgAndUserAsync(organizationId, userId);
             if (member == null)
-                throw new Exception("Member not found in this organization.");
+                throw new InvalidOperationException("Member not found in this organization.");
 
             await _orgMemberRepo.RemoveAsync(member);
             return await _orgMemberRepo.SaveChangesAsync();
         }
-        
     }
 }

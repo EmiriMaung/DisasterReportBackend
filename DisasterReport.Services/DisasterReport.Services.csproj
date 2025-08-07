@@ -22,6 +22,7 @@
 
 		<!-- This reference to your Data project is correct. -->
 		<ProjectReference Include="..\DisasterReport.Data\DisasterReport.Data.csproj" />
+		<ProjectReference Include="..\DisasterReport.Shared\DisasterReport.Shared.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 using DisasterReport.Data;
 using DisasterReport.Services;
+using DisasterReport.WebApi.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -14,6 +15,7 @@ namespace DisasterReport.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddSignalR();
 
             // Add services to the container.
             // 1 . Read Connection string 
@@ -96,18 +98,43 @@ namespace DisasterReport.API
                     RoleClaimType = ClaimTypes.Role
                 };
 
+                //options.Events = new JwtBearerEvents
+                //{
+                //    OnMessageReceived = context =>
+                //    {
+                //        // Read token from cookie instead of header
+                //        if (context.Request.Cookies.TryGetValue("access_token", out var token))
+                //        {
+                //            context.Token = token;
+                //        }
+                //        return Task.CompletedTask;
+                //    }
+                //};
+
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
                     {
-                        // Read token from cookie instead of header
-                        if (context.Request.Cookies.TryGetValue("access_token", out var token))
+                        // Try to get token from query string (for SignalR)
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        // This must match your hub endpoint path (case-sensitive)
+                        var isHubRequest = path.StartsWithSegments("/hubs/notification");
+
+                        if (!string.IsNullOrEmpty(accessToken) && isHubRequest)
                         {
-                            context.Token = token;
+                            context.Token = accessToken;
                         }
+                        else if (context.Request.Cookies.TryGetValue("access_token", out var cookieToken))
+                        {
+                            context.Token = cookieToken;
+                        }
+
                         return Task.CompletedTask;
                     }
                 };
+
             });
 
             var app = builder.Build();
@@ -128,6 +155,8 @@ namespace DisasterReport.API
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapHub<NotificationHub>("/hubs/notification");
 
             app.Run();
         }
