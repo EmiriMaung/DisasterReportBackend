@@ -33,6 +33,10 @@ public class DisasterReportDto
     public List<SupportTypeDto> SupportTypes { get; set; } = new();
     public List<ImpactUrlDto> ImpactUrls { get; set; } = new();
 
+    // ✅ New fields
+    public bool IsOrganizationMember { get; set; }
+    public string? OrganizationName { get; set; }
+    public string? OrganizationLogoUrl { get; set; }
 }
 
 public class AddDisasterReportDto

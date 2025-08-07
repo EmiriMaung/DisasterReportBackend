@@ -7,6 +7,7 @@ using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.Linq;
 
 namespace DisasterReport.Services.Services.Implementations
 {
@@ -524,70 +525,93 @@ namespace DisasterReport.Services.Services.Implementations
         }
         private async Task<List<DisasterReportDto>> MapToDtoListAsync(List<DisastersReport> reports)
         {
-            return reports.Select(report => new DisasterReportDto
+            // Reporter ID list ထုတ်ယူ
+            var reporterIds = reports
+                .Where(r => r.ReporterId != Guid.Empty)
+                .Select(r => r.ReporterId)
+                .Distinct()
+                .ToList();
+
+            // Org member တွေ fetch
+            var orgMembers = await _postRepo.DbContext.OrganizationMembers
+                .Include(m => m.Organization)
+                .Where(m => reporterIds.Contains((Guid)m.UserId))
+                .ToListAsync();
+
+            return reports.Select(report =>
             {
-                Id = report.Id,
-                Title = report.Title,
-                Description = report.Description,
-                Category = report.Category,
-                ReporterId = report.ReporterId,
-                UpdatedAt = report.UpdatedAt,
-                ReportedAt = report.ReportedAt,
-                LocationId = report.LocationId,
-                DisasterTopicsId = report.DisasterTopicsId,
-                Status = report.Status,
-                StatusName = EnumHelper.GetStatusName((int)report.Status),
-                IsUrgent = report.IsUrgent,
-                IsDeleted = report.IsDeleted,
+                var orgMember = orgMembers.FirstOrDefault(m => m.UserId == report.ReporterId);
 
-                Location = report.Location == null ? null : new LocationDto
+                return new DisasterReportDto
                 {
-                    Id = report.Location.Id,
-                    TownshipName = report.Location.TownshipName,
-                    RegionName = report.Location.RegionName,
-                    Latitude = (decimal)report.Location.Latitude,
-                    Longitude = (decimal)report.Location.Longitude
-                },
+                    Id = report.Id,
+                    Title = report.Title,
+                    Description = report.Description,
+                    Category = report.Category,
+                    ReporterId = report.ReporterId,
+                    UpdatedAt = report.UpdatedAt,
+                    ReportedAt = report.ReportedAt,
+                    LocationId = report.LocationId,
+                    DisasterTopicsId = report.DisasterTopicsId,
+                    Status = report.Status,
+                    StatusName = EnumHelper.GetStatusName((int)report.Status),
+                    IsUrgent = report.IsUrgent,
+                    IsDeleted = report.IsDeleted,
 
-                DisasterTopic = report.DisasterTopics == null ? null : new DisasterTopicDto
-                {
-                    Id = report.DisasterTopics.Id,
-                    TopicName = report.DisasterTopics.TopicName
-                },
+                    Location = report.Location == null ? null : new LocationDto
+                    {
+                        Id = report.Location.Id,
+                        TownshipName = report.Location.TownshipName,
+                        RegionName = report.Location.RegionName,
+                        Latitude = (decimal)report.Location.Latitude,
+                        Longitude = (decimal)report.Location.Longitude
+                    },
 
-                Reporter = report.Reporter == null ? null : new UserDto
-                {
-                    Id = report.Reporter.Id,
-                    Name = report.Reporter.Name,
-                    Email = report.Reporter.Email,
-                    ProfilePictureUrl=report.Reporter.ProfilePictureUrl
-                },
+                    DisasterTopic = report.DisasterTopics == null ? null : new DisasterTopicDto
+                    {
+                        Id = report.DisasterTopics.Id,
+                        TopicName = report.DisasterTopics.TopicName
+                    },
 
-                ImpactUrls = report.ImpactUrls?.Select(i => new ImpactUrlDto
-                {
-                    Id = i.Id,
-                    DisasterReportId = i.DisasterReportId,
-                    ImageUrl = i.ImageUrl,
-                    FileType = i.FileType,
-                    PublicId = i.PublicId,
-                    FileSizeKb = i.FileSizeKb,
-                    UploadedAt = i.UploadedAt
-                }).ToList() ?? new List<ImpactUrlDto>(),
+                    Reporter = report.Reporter == null ? null : new UserDto
+                    {
+                        Id = report.Reporter.Id,
+                        Name = report.Reporter.Name,
+                        Email = report.Reporter.Email,
+                        ProfilePictureUrl = report.Reporter.ProfilePictureUrl
+                    },
 
-                ImpactTypes = report.ImpactTypes?.Select(i => new ImpactTypeDto
-                {
-                    Id = i.Id,
-                    Name = i.Name
-                }).ToList() ?? new List<ImpactTypeDto>(),
+                    ImpactUrls = report.ImpactUrls?.Select(i => new ImpactUrlDto
+                    {
+                        Id = i.Id,
+                        DisasterReportId = i.DisasterReportId,
+                        ImageUrl = i.ImageUrl,
+                        FileType = i.FileType,
+                        PublicId = i.PublicId,
+                        FileSizeKb = i.FileSizeKb,
+                        UploadedAt = i.UploadedAt
+                    }).ToList() ?? new List<ImpactUrlDto>(),
 
-                SupportTypes = report.SupportTypes?.Select(s => new SupportTypeDto
-                {
-                    Id = s.Id,
-                    Name = s.Name
-                }).ToList() ?? new List<SupportTypeDto>()
+                    ImpactTypes = report.ImpactTypes?.Select(i => new ImpactTypeDto
+                    {
+                        Id = i.Id,
+                        Name = i.Name
+                    }).ToList() ?? new List<ImpactTypeDto>(),
 
+                    SupportTypes = report.SupportTypes?.Select(s => new SupportTypeDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name
+                    }).ToList() ?? new List<SupportTypeDto>(),
+
+                    // ✅ Organization member info
+                    IsOrganizationMember = orgMember != null,
+                    OrganizationName = orgMember?.Organization?.Name,
+                    OrganizationLogoUrl = orgMember?.Organization?.OrganizationDocs?.FirstOrDefault()?.ImageUrl
+                };
             }).ToList();
         }
+
 
         public async Task<IEnumerable<DisasterReportDto>> GetRelatedReportsByTopicAsync(int reportId)
         {
