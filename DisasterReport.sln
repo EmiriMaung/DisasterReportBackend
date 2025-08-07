@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisasterReport.Data", "Disa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisasterReport.Services", "DisasterReport.Services\DisasterReport.Services.csproj", "{6489D545-4086-47CA-93E7-F61C63DF27E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisasterReport.Shared", "DisasterReport.Shared\DisasterReport.Shared.csproj", "{596F15F3-9BA4-42BC-9CBC-DBD714D6C710}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{6489D545-4086-47CA-93E7-F61C63DF27E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6489D545-4086-47CA-93E7-F61C63DF27E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6489D545-4086-47CA-93E7-F61C63DF27E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{596F15F3-9BA4-42BC-9CBC-DBD714D6C710}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{596F15F3-9BA4-42BC-9CBC-DBD714D6C710}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{596F15F3-9BA4-42BC-9CBC-DBD714D6C710}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{596F15F3-9BA4-42BC-9CBC-DBD714D6C710}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
