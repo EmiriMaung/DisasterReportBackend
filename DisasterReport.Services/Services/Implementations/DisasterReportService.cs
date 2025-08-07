@@ -615,7 +615,7 @@ namespace DisasterReport.Services.Services.Implementations
 
             // Step 2: Related reports
             var relatedReports = await _postRepo.DbContext.DisastersReports
-                .Where(r => r.DisasterTopicsId == topicId && r.Id != reportId)
+                .Where(r => r.DisasterTopicsId == topicId && r.Id != reportId && r.Status==1)
                 .Include(r => r.Location)
                 .Include(r => r.Reporter)
                 .Include(r => r.DisasterTopics)
@@ -653,6 +653,10 @@ namespace DisasterReport.Services.Services.Implementations
         {
             var reports = await _postRepo.GetReportsByTopicIdAsync(topicId);
             return await MapToDtoListAsync(reports);
+        }
+        public async Task<List<DisasterReportMapDto>> GetDisasterReportsForMapAsync(ReportFilterDto filter)
+        {
+            return await _postRepo.GetFilteredDisasterReportsAsync(filter);
         }
         private void ClearReportCache(int reportId, Guid reporterId)
         {

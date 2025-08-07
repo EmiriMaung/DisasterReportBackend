@@ -47,6 +47,8 @@ public partial class ApplicationDBContext : DbContext
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
 
+    public DbSet<DisasterReportMapDto> DisasterReportMapDtos { get; set; }// for sp
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<BlacklistEntry>(entity =>
@@ -371,6 +373,10 @@ public partial class ApplicationDBContext : DbContext
 
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
+
+        modelBuilder.Entity<DisasterReportMapDto>()
+       .HasNoKey()
+       .ToView(null); // Important: EF should not treat it as a table/view
 
         OnModelCreatingPartial(modelBuilder);
     }

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using DisasterReport.Data.Domain;
+using DisasterReport.Services.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DisasterReport.Services.Models;
 
 namespace DisasterReport.Services.Services.Interfaces;
 
@@ -50,6 +51,8 @@ public interface IDisasterReportService
     Task RejectReportAsync(int reportId, Guid rejectedBy);
 
     Task<IEnumerable<DisasterReportDto>> GetRelatedReportsByTopicAsync(int reportId);
+
+    Task<List<DisasterReportMapDto>> GetDisasterReportsForMapAsync(ReportFilterDto filter);
 
 }
 
