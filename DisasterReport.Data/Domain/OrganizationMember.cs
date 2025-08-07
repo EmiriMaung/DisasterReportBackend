@@ -9,7 +9,7 @@ public partial class OrganizationMember
 
     public int OrganizationId { get; set; }
 
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
 
     public string? RoleInOrg { get; set; }
 
@@ -21,7 +21,9 @@ public partial class OrganizationMember
 
     public Guid? InvitationToken { get; set; }
 
+    public DateTime? CreatedAt { get; set; }
+
     public virtual Organization Organization { get; set; } = null!;
 
-    public virtual User User { get; set; } = null!;
+    public virtual User? User { get; set; }
 }
