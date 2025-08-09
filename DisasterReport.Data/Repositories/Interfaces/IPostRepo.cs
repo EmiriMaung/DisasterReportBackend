@@ -13,7 +13,8 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task<List<DisastersReport>> GetAllPostsByReporterId(Guid reporterId);
         Task<List<DisastersReport>> GetDeletedPostsByReporterId(Guid reporterId);
         Task<DisastersReport?> GetPostByIdAsync(int id);
-        Task<List<DisastersReport>> GetReportsByStatusAsync(int status);
+        Task<(int total, int approve, int pending, int reject)> GetReportCountsByStatusAsync();
+        Task<List<DisastersReport>> GetReportsByStatusAsync(int? status);
         Task<List<DisastersReport>> GetReportsByRegionAsync(string regionName);
         Task<List<DisastersReport>> GetReportsByTownshipAsync(string townshipName);
         Task<List<DisastersReport>> GetPendingReportsAsync();

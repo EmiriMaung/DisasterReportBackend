@@ -1,5 +1,6 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Services.Models;
+using DisasterReport.Services.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +37,9 @@ public interface IDisasterReportService
 
     Task HardDeleteAsync(int id);
 
-    Task<IEnumerable<DisasterReportDto>> GetReportsByStatusAsync(int status);
+    Task<ReportStatusCountDto> CountReportsByStatusAsync();
+
+    Task<PagedResponse<DisasterReportDto>> GetReportsByStatusAsync(int? status, int pageNumber = 1, int pageSize = 18);
 
     Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region, string? township, bool? isUrgent, int? topicId);
 
