@@ -1,5 +1,6 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Services.Models;
+using DisasterReport.Services.Models.Common;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -80,10 +81,21 @@ namespace DisasterReport.API.Controllers
 
             return Ok(report);
         }
-        [HttpGet("status/{status}")]
-        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetReportsByStatusAsync(int status)
+
+        [HttpGet("countreportbystatus")]
+        public async Task<ActionResult<ReportStatusCountDto>> CountReportByStatus()
         {
-            var reports = await _disasterReportService.GetReportsByStatusAsync(status);
+            var result = await _disasterReportService.CountReportsByStatusAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("status")]
+        public async Task<ActionResult<PagedResponse<DisasterReportDto>>> GetReportsByStatusAsync(
+        [FromQuery] int? status,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 18)
+        {
+            var reports = await _disasterReportService.GetReportsByStatusAsync(status, pageNumber, pageSize);
             return Ok(reports);
         }
         [HttpGet("topic/{topicId}")]

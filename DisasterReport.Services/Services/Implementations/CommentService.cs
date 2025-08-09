@@ -31,7 +31,7 @@ namespace DisasterReport.Services.Services.Implementations
                 UserId = userId,
                 DisasterReportId = createDto.DisasterReportId,
                 Content = createDto.Content.Trim(),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             _context.Comments.Add(entity);

@@ -69,8 +69,16 @@ public class UpdateDisasterReportDto
 }
 public class ApproveWithTopicDto
 {
-    public int? ExistingTopicId { get; set; }  // use if existing
-    public CreateDisasterTopicDto? NewTopic { get; set; }  // use if creating new one
+    public int? ExistingTopicId { get; set; } 
+    public CreateDisasterTopicDto? NewTopic { get; set; }  
+}
+
+public class ReportStatusCountDto
+{
+    public int Total { get; set; }
+    public int Approve { get; set; }
+    public int Pending { get; set; }
+    public int Reject { get; set; }
 }
 
 

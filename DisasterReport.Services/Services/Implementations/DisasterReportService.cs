@@ -3,6 +3,7 @@ using DisasterReport.Data.Repositories;
 using DisasterReport.Data.Repositories.Interfaces;
 using DisasterReport.Services.Enums;
 using DisasterReport.Services.Models;
+using DisasterReport.Services.Models.Common;
 using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -164,10 +165,37 @@ namespace DisasterReport.Services.Services.Implementations
             var reports = await _postRepo.GetReportsByTownshipAsync(townshipName);
             return await MapToDtoListAsync(reports);
         }
-        public async Task<IEnumerable<DisasterReportDto>> GetReportsByStatusAsync(int status)
+
+        public async Task<ReportStatusCountDto> CountReportsByStatusAsync()
         {
-            var reports = await _postRepo.GetReportsByStatusAsync(status);
-            return await MapToDtoListAsync(reports);
+            var counts = await _postRepo.GetReportCountsByStatusAsync();
+
+            return new ReportStatusCountDto
+            {
+                Total = counts.total,
+                Approve = counts.approve,
+                Pending = counts.pending,
+                Reject = counts.reject
+            };
+        }
+        public async Task<PagedResponse<DisasterReportDto>> GetReportsByStatusAsync(int? status, int pageNumber = 1, int pageSize = 18)
+        {
+            var allReports = await _postRepo.GetReportsByStatusAsync(status);
+
+            var totalRecords = allReports.Count;
+            var pagedData = allReports
+                .OrderByDescending(r => r.ReportedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var reportDtos = await MapToDtoListAsync(pagedData);
+
+            return new PagedResponse<DisasterReportDto>(
+                reportDtos,
+                pageNumber,
+                pageSize,
+                totalRecords);
         }
         public async Task AddReportAsync(AddDisasterReportDto report,Guid reporterId)
         {

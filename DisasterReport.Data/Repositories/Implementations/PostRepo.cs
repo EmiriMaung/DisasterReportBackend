@@ -90,11 +90,23 @@ public class PostRepo : IPostRepo
             .Include(r => r.Reporter)
             .Include(r => r.SupportTypes).ToListAsync();
     }
-
-    public async Task<List<DisastersReport>> GetReportsByStatusAsync(int status)
+    public async Task<(int total, int approve, int pending, int reject)> GetReportCountsByStatusAsync()
     {
-        return await _context.DisastersReports.Where(r => r.Status == status && !r.IsDeleted)
-            .AsNoTracking()
+        var total = await _context.DisastersReports.CountAsync();
+        var approve = await _context.DisastersReports.CountAsync(r => r.Status == 0);
+        var pending = await _context.DisastersReports.CountAsync(r => r.Status == 1);
+        var reject = await _context.DisastersReports.CountAsync(r => r.Status == 2);
+
+        return (total, approve, pending, reject);
+    }
+    public async Task<List<DisastersReport>> GetReportsByStatusAsync(int? status)
+    {
+        var query = _context.DisastersReports
+            .Where(r => !r.IsDeleted)
+            .AsNoTracking();
+
+        // Include statements
+        query = query
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
@@ -102,9 +114,19 @@ public class PostRepo : IPostRepo
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
-             .Include(r => r.Reporter)
-            .ToListAsync();
+            .Include(r => r.Reporter); // this line is safe now
+
+        // Filter by status
+        if (status.HasValue)
+        {
+            query = query.Where(r => r.Status == status.Value);
+        }
+
+        return await query.ToListAsync();
     }
+
+
+
     public async Task SoftDeleteReportAsync(int reportId)
     {
         var report = await _context.DisastersReports.FindAsync(reportId);
