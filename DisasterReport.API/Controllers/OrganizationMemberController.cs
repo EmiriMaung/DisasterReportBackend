@@ -74,7 +74,6 @@ namespace DisasterReport.WebAPI.Controllers
             return Ok(org);
         }
 
-
         // Utility to extract user ID from JWT
         private Guid GetUserId()
         {
