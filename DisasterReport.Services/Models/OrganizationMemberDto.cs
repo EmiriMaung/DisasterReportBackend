@@ -30,6 +30,7 @@ namespace DisasterReport.Services.Models
         public int OrganizationId { get; set; }
         public string OrganizationName { get; set; } = null!;
         public string? RoleInOrg { get; set; }
+        public int? Status { get; set; }
     }
 
 }

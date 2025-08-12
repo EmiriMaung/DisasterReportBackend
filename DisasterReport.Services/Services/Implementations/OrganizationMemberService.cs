@@ -77,7 +77,8 @@ namespace DisasterReport.Services.Services
             {
                 OrganizationId = orgMember.OrganizationId,
                 OrganizationName = orgMember.Organization.Name,
-                RoleInOrg = orgMember.RoleInOrg
+                RoleInOrg = orgMember.RoleInOrg,
+                Status = orgMember.Organization.Status
             };
         }
 
