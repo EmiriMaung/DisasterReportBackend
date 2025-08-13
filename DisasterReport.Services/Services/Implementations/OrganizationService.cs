@@ -3,6 +3,7 @@ using DisasterReport.Data.Repositories;
 using DisasterReport.Data.Repositories.Interfaces;
 using DisasterReport.Services.Enums;
 using DisasterReport.Services.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,12 +49,13 @@ namespace DisasterReport.Services.Services
 
         public async Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId)
         {
-            // ✅ Check if user already has an active (non-rejected) organization
+            // 1️⃣ Check if user already has an active (non-rejected) organization
             if (await UserHasActiveOrganizationAsync(creatorUserId))
             {
                 throw new InvalidOperationException("You already have an active organization (pending, approved, or blacklisted).");
             }
 
+            // 2️⃣ Create Organization entity
             var organization = new Organization
             {
                 Name = dto.Name,
@@ -64,28 +66,56 @@ namespace DisasterReport.Services.Services
                 IsBlackListedOrg = false
             };
 
-            // Add Organization entity
+            // 3️⃣ Save Organization to get its Id
             await _organizationRepo.AddAsync(organization);
-            await _organizationRepo.SaveChangesAsync(); // Save to get organization.Id
+            await _organizationRepo.SaveChangesAsync();
 
-            // Upload docs and save OrganizationDoc entities
-            foreach (var file in dto.Documents)
+            // 4️⃣ Upload split files (NRC front/back, Certificate)
+            var splitFiles = new List<IFormFile?> { dto.NrcFront, dto.NrcBack, dto.Certificate };
+            var splitFileLabels = new List<string> { "NRC Front", "NRC Back", "Certificate" };
+
+            for (int i = 0; i < splitFiles.Count; i++)
             {
+                var file = splitFiles[i];
+                if (file == null) continue;
+
                 var uploadResult = await _cloudinaryService.UploadFileAsync(file);
+
                 var orgDoc = new OrganizationDoc
                 {
                     OrganizationId = organization.Id,
                     ImageUrl = uploadResult.SecureUrl,
-                    FileName = uploadResult.FileName,
+                    FileName = uploadResult.FileName ?? splitFileLabels[i],
                     FileType = uploadResult.FileType,
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _organizationDocRepo.AddAsync(orgDoc);
             }
+
+            // 5️⃣ Upload any additional documents
+            if (dto.Documents != null && dto.Documents.Count > 0)
+            {
+                foreach (var file in dto.Documents)
+                {
+                    var uploadResult = await _cloudinaryService.UploadFileAsync(file);
+                    var orgDoc = new OrganizationDoc
+                    {
+                        OrganizationId = organization.Id,
+                        ImageUrl = uploadResult.SecureUrl,
+                        FileName = uploadResult.FileName,
+                        FileType = uploadResult.FileType,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _organizationDocRepo.AddAsync(orgDoc);
+                }
+            }
+
+            // 6️⃣ Save all OrganizationDocs
             await _organizationDocRepo.SaveChangesAsync();
 
-            // Add creator as Owner in OrganizationMembers
+            // 7️⃣ Add creator as Owner in OrganizationMembers
             var ownerMember = new OrganizationMember
             {
                 OrganizationId = organization.Id,
@@ -97,6 +127,7 @@ namespace DisasterReport.Services.Services
             await _organizationMemberRepo.AddAsync(ownerMember);
             await _organizationMemberRepo.SaveChangesAsync();
 
+            // 8️⃣ Return the new Organization Id
             return organization.Id;
         }
 

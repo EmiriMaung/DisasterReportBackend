@@ -1,10 +1,5 @@
 ﻿using DisasterReport.Services.Enums;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DisasterReport.Services.Models
 {
@@ -31,9 +26,10 @@ namespace DisasterReport.Services.Models
         public string OrganizationEmail { get; set; } = null!;
         public string? Description { get; set; }
         public string PhoneNumber { get; set; } = null!;
-
-        // For file uploads (e.g., documents to verify the org)
-        public List<IFormFile> Documents { get; set; } = new();
+        public IFormFile? NrcFront { get; set; }   // must match frontend key
+        public IFormFile? NrcBack { get; set; }    // must match frontend key
+        public IFormFile? Certificate { get; set; } // must match frontend key
+        public List<IFormFile> Documents { get; set; } = new(); //optional
     }
 
     public class UpdateOrganizationDto
