@@ -11,6 +11,7 @@ namespace DisasterReport.Data.Repositories.Interfaces
     {
         Task<List<DisastersReport>> GetAllPostsWithMaterialsAsync();
         Task<List<DisastersReport>> GetAllPostsByReporterId(Guid reporterId);
+        Task<List<DisastersReport>> GetPendingRejectReportByReporterIdAsync(Guid reporterId);
         Task<List<DisastersReport>> GetDeletedPostsByReporterId(Guid reporterId);
         Task<DisastersReport?> GetPostByIdAsync(int id);
         Task<(int total, int approve, int pending, int reject)> GetReportCountsByStatusAsync();

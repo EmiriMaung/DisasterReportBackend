@@ -20,6 +20,7 @@ public interface IDisasterReportService
     Task<IEnumerable<DisasterReportDto>> GetMyDeletedReportsAsync(Guid reporterId);
 
     Task<IEnumerable<DisasterReportDto>> GetAllReportsByReporterIdAsync(Guid reporterId);
+    Task<IEnumerable<DisasterReportDto>> GetPendingRejectReportByReporterIdAsync(Guid reporterId);
 
     Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId);
 
