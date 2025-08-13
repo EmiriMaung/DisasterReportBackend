@@ -141,5 +141,39 @@ namespace DisasterReport.Services.Services
             await _orgMemberRepo.RemoveAsync(member);
             return await _orgMemberRepo.SaveChangesAsync();
         }
+        public async Task<bool> RejectInvitationAsync(Guid token, Guid userId)
+        {
+            var member = await _orgMemberRepo.GetByTokenAsync(token);
+            if (member == null)
+                throw new InvalidOperationException("Invalid or expired invitation token.");
+
+            if (member.IsAccepted)
+                throw new InvalidOperationException("Cannot reject an already accepted invitation.");
+
+            if (member.UserId != null && member.UserId != userId)
+                throw new InvalidOperationException("This invitation was not intended for you.");
+
+            // Option 1: Remove the invitation entirely
+            await _orgMemberRepo.RemoveAsync(member);
+
+            // Option 2 (optional): Keep record and mark as rejected
+            // member.IsRejected = true;
+
+            return await _orgMemberRepo.SaveChangesAsync();
+        }
+        public async Task<List<PendingInvitationDto>> GetPendingInvitationsAsync(Guid userId)
+        {
+            var invitations = await _orgMemberRepo.GetUserOrganizationsWithOrgAsync(userId);
+
+            return invitations
+                .Where(i => !i.IsAccepted) // only pending
+                .Select(i => new PendingInvitationDto
+                {
+                    OrganizationId = i.OrganizationId,
+                    OrganizationName = i.Organization?.Name ?? "",
+                    Token = (Guid)i.InvitationToken
+                })
+                .ToList();
+        }
     }
 }
