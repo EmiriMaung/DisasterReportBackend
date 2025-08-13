@@ -32,5 +32,11 @@ namespace DisasterReport.Services.Models
         public string? RoleInOrg { get; set; }
         public int? Status { get; set; }
     }
+    public class PendingInvitationDto
+    {
+        public int OrganizationId { get; set; }
+        public string OrganizationName { get; set; } = null!;
+        public Guid Token { get; set; }
+    }
 
 }

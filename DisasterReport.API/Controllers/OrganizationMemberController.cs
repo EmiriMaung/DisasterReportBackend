@@ -74,6 +74,29 @@ namespace DisasterReport.WebAPI.Controllers
             return Ok(org);
         }
 
+        // POST: /api/OrganizationMember/reject
+        [HttpPost("reject")]
+        [Authorize]
+        public async Task<IActionResult> RejectInvitation([FromBody] AcceptInvitationDto dto)
+        {
+            var userId = GetUserId(); // from JWT
+
+            var success = await _memberService.RejectInvitationAsync(dto.Token, userId);
+            if (!success)
+                return BadRequest("Failed to reject invitation.");
+
+            return Ok("Invitation rejected.");
+        }
+        // GET: /api/OrganizationMember/user/{userId}/pending-invitations
+        [HttpGet("user/{userId}/pending-invitations")]
+        [Authorize]
+        public async Task<IActionResult> GetPendingInvitations(Guid userId)
+        {
+            var invitations = await _memberService.GetPendingInvitationsAsync(userId);
+            return Ok(invitations);
+        }
+
+
         // Utility to extract user ID from JWT
         private Guid GetUserId()
         {
