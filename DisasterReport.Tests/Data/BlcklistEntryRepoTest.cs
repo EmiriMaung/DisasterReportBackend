@@ -77,6 +77,8 @@ namespace DisasterReport.Tests.Data
             var userId = Guid.NewGuid();
             var adminId = Guid.NewGuid();
 
+            var unblockedReason = "Test reason for unblocking.";
+
             var entry = new BlacklistEntry
             {
                 UserId = userId,
@@ -87,7 +89,7 @@ namespace DisasterReport.Tests.Data
             await context.SaveChangesAsync();
 
             var repo = new BlacklistEntryRepo(context);
-            await repo.SoftDeleteByUserIdAsync(userId, adminId);
+            await repo.SoftDeleteByUserIdAsync(userId, adminId, unblockedReason);
 
             var deleted = await context.BlacklistEntries.FirstOrDefaultAsync(e => e.UserId == userId);
             Assert.True(deleted!.IsDeleted);

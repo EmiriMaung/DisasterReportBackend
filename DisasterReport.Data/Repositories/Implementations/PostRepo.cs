@@ -253,7 +253,7 @@ public class PostRepo : IPostRepo
     }
     public async Task<List<DisasterReportMapDto>> GetFilteredDisasterReportsAsync(ReportFilterDto filter)
     {
-        return await _context.DisasterReportMapDtos
+        return await _context.Set<DisasterReportMapDto>()
             .FromSqlInterpolated($@"
                 EXEC sp_GetFilteredDisasterReportsForMap 
                     @TopicId = {filter.TopicId}, 

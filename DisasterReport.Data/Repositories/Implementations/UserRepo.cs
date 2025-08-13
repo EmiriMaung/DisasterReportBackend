@@ -12,31 +12,32 @@ namespace DisasterReport.Data.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<(List<User> Items, int TotalCount)> GetPaginatedUsersAsync(int page, int pageSize)
-        {
-            var query = _context.Users
-                .Include(u => u.Role)
-                .Include(u => u.Organizations)
-                .AsNoTracking();
+        //public async Task<(List<User> Items, int TotalCount)> GetPaginatedUsersAsync(int page, int pageSize)
+        //{
+        //    var query = _context.Users
+        //        .Include(u => u.Role)
+        //        .Include(u => u.Organizations)
+        //        .AsNoTracking();
 
-            int totalCount = await query.CountAsync();
+        //    int totalCount = await query.CountAsync();
 
-            var users = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+        //    var users = await query
+        //        .Skip((page - 1) * pageSize)
+        //        .Take(pageSize)
+        //        .ToListAsync();
 
-            return (users, totalCount);
-        }
+        //    return (users, totalCount);
+        //}
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
-        {
-            return await _context.Users
-                .Include(u => u.Role)
-                .Include(u => u.Organizations)
-                .AsNoTracking()
-                .ToListAsync();
-        }
+
+        //public async Task<IEnumerable<User>> GetAllUsersAsync()
+        //{
+        //    return await _context.Users
+        //        .Include(u => u.Role)
+        //        .Include(u => u.Organizations)
+        //        .AsNoTracking()
+        //        .ToListAsync();
+        //}
 
 
         public async Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(
@@ -177,17 +178,17 @@ namespace DisasterReport.Data.Repositories.Implementations
             return (items, total);
         }
 
-        public async Task<IEnumerable<User>> GetAllActiveUsersAsync()
-        {
-            return await _context.Users
-                .Where(u => u.RoleId == 2)
-                .Where(u => !_context.BlacklistEntries
-                    .Any(be => be.UserId == u.Id && !be.IsDeleted))
-                .Include(u => u.Role)
-                .Include(u => u.Organizations)
-                .AsNoTracking()
-                .ToListAsync();
-        }
+        //public async Task<IEnumerable<User>> GetAllActiveUsersAsync()
+        //{
+        //    return await _context.Users
+        //        .Where(u => u.RoleId == 2)
+        //        .Where(u => !_context.BlacklistEntries
+        //            .Any(be => be.UserId == u.Id && !be.IsDeleted))
+        //        .Include(u => u.Role)
+        //        .Include(u => u.Organizations)
+        //        .AsNoTracking()
+        //        .ToListAsync();
+        //}
 
         public async Task<(List<User> Items, int TotalCount)> GetPaginatedAdminsAsync(
             int page,
@@ -339,17 +340,23 @@ namespace DisasterReport.Data.Repositories.Implementations
             return (items, total);
         }
 
-
-        public async Task<IEnumerable<User>> GetAllBlacklistedUsers()
+        public async Task<Dictionary<Guid, string>> GetUserNamesByIdsAsync(List<Guid> userIds)
         {
             return await _context.Users
-                .Where(u => _context.BlacklistEntries
-                    .Any(be => be.UserId == u.Id && !be.IsDeleted))
-                .Include(u => u.Role)
-                .Include(u => u.Organizations)
-                .AsNoTracking()
-                .ToListAsync();
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.Name);
         }
+
+        //public async Task<IEnumerable<User>> GetAllBlacklistedUsers()
+        //{
+        //    return await _context.Users
+        //        .Where(u => _context.BlacklistEntries
+        //            .Any(be => be.UserId == u.Id && !be.IsDeleted))
+        //        .Include(u => u.Role)
+        //        .Include(u => u.Organizations)
+        //        .AsNoTracking()
+        //        .ToListAsync();
+        //}
 
         public async Task<User?> GetUserByIdAsync(Guid id)
         {
@@ -358,6 +365,20 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Include(u => u.Organizations)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
+
+
+        public async Task<Dictionary<Guid, AdminInfo>> GetAdminInfoByIdsAsync(IEnumerable<Guid> userIds)
+        {
+            if (userIds == null || !userIds.Any())
+            {
+                return new Dictionary<Guid, AdminInfo>();
+            }
+
+            return await _context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => new AdminInfo { Name = u.Name, ProfilePictureUrl = u.ProfilePictureUrl });
+        }
+
 
         public async Task<User?> GetUsersByEmailAsync(string email)
         {
