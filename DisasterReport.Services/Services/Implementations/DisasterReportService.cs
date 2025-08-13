@@ -97,6 +97,25 @@ namespace DisasterReport.Services.Services.Implementations
 
             return dtoList;
         }
+    
+
+        public async Task<IEnumerable<DisasterReportDto>> GetPendingRejectReportByReporterIdAsync(Guid reporterId)
+        {
+            var cacheKey = $"pending_reject_reports_by_reporter_{reporterId}";
+
+            if (_cache.TryGetValue(cacheKey, out List<DisasterReportDto> cachedReports))
+            {
+                return cachedReports;
+            }
+
+            var reports = await _postRepo.GetPendingRejectReportByReporterIdAsync(reporterId);
+            var dtoList = await MapToDtoListAsync(reports);
+
+            _cache.Set(cacheKey, dtoList, new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)));
+
+            return dtoList;
+        }
 
         public async Task<IEnumerable<DisasterReportDto>> GetDeletedReportsByReporterIdAsync(Guid reporterId)
         {
@@ -292,7 +311,7 @@ namespace DisasterReport.Services.Services.Implementations
                 if (report.ImpactUrls?.Any() == true)
                 {
                     foreach (var impactUrl in report.ImpactUrls)
-                    {
+                     {
                         await _impactUrlRepo.DeleteAsync(impactUrl.Id);
                     }
                     await _impactUrlRepo.SaveChangesAsync();
@@ -716,6 +735,7 @@ namespace DisasterReport.Services.Services.Implementations
             _cache.Remove($"reports_by_reporter_{reporterId}");
             _cache.Remove("all_reports");
             _cache.Remove("urgent_reports");
+            _cache.Remove($"pending_reject_reports_by_reporter_{reporterId}");
         }
 
     }

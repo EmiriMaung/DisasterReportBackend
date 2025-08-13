@@ -32,6 +32,23 @@ public class PostRepo : IPostRepo
             .Include(r => r.Reporter)
             .ToListAsync();
     }
+    public async Task<List<DisastersReport>> GetPendingRejectReportByReporterIdAsync(Guid reporterId)
+    {
+        return await _context.DisastersReports
+        .Where(r => r.ReporterId == reporterId
+         && !r.IsDeleted
+         && (r.Status == 0 || r.Status == 2))
+            .AsNoTracking()
+            .Include(r => r.Location)
+            .Include(r => r.Comments)
+            .Include(r => r.ImpactUrls)
+            .Include(r => r.DonateRequests)
+            .Include(r => r.DisasterTopics)
+            .Include(r => r.ImpactTypes)
+            .Include(r => r.SupportTypes)
+            .Include(r => r.Reporter)
+            .ToListAsync();
+    }
 
     public async Task<List<DisastersReport>> GetDeletedPostsByReporterId(Guid reporterId)
     {

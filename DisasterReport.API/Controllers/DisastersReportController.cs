@@ -22,7 +22,7 @@ namespace DisasterReport.API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetAllReportsAsync()
-       {
+        {
             var reports = await _disasterReportService.GetAllReportsAsync();
             return Ok(reports);
         }
@@ -46,16 +46,10 @@ namespace DisasterReport.API.Controllers
             return Ok(reports);
         }
 
-        [HttpGet("my-deleted-reports")]
-        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetMyDeletedReportsAsync()
+        [HttpGet("deleted-reports/{userId}")]
+        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetDeletedReportsByUserIdAsync(Guid userId)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid reporterId))
-            {
-                return Unauthorized("User ID claim is missing or invalid");
-            }
-
-            var reports = await _disasterReportService.GetMyDeletedReportsAsync(reporterId);
+            var reports = await _disasterReportService.GetMyDeletedReportsAsync(userId);
             return Ok(reports);
         }
         [HttpGet("reporter/{reporterId}")]
@@ -64,7 +58,12 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetAllReportsByReporterIdAsync(reporterId);
             return Ok(reports);
         }
-
+        [HttpGet("reporter/{reporterId}/pending-reject")]
+        public async Task<IActionResult> GetPendingRejectReportByReporterId(Guid reporterId)
+        {
+            var reports = await _disasterReportService.GetPendingRejectReportByReporterIdAsync(reporterId);
+            return Ok(reports);
+        }
         // GET: api/ReporterReports/reporter/{reporterId}/deleted
         [HttpGet("reporter/{reporterId}/deleted")]
         public async Task<IActionResult> GetDeletedReportsByReporter(Guid reporterId)
@@ -163,14 +162,14 @@ namespace DisasterReport.API.Controllers
         }
 
 
-        [HttpDelete("soft-delete/{id}")]
+        [HttpDelete("{id}/soft-delete")]
         public async Task<IActionResult> SoftDeleteAsync(int id)
         {
             await _disasterReportService.SoftDeleteAsync(id);
             return Ok("SoftDeleted successfully.");
         }
 
-        [HttpPatch("restore-deletedreport/{id}")]
+        [HttpPatch("{id}/restore-deletedreport")]
         public async Task<IActionResult> RestoreAsync(int id)
         {
             await _disasterReportService.RestoreReportAsync(id);
