@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace DisasterReport.Services.Models.BlacklistEntryDTO
 {
-    public class UpdateBlacklistEntryDto
+    public class UnblockUserDto
     {
-        public string Reason { get; set; } = null!;
-
-        public Guid UpdatedAdminId { get; set; }
+        public string UnblockedReason { get; set; } = null!;
     }
 }

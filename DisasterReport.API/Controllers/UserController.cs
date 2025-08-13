@@ -16,24 +16,24 @@ namespace DisasterReport.API.Controllers
             _userService = userService;
         }
 
-        [HttpGet("all/paginated")]
-        public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            var result = await _userService.GetPaginatedUsersAsync(page, pageSize);
-            return Ok(result);
-        }
+        //[HttpGet("all/paginated")]
+        //public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        //{
+        //    var result = await _userService.GetPaginatedUsersAsync(page, pageSize);
+        //    return Ok(result);
+        //}
 
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
-        {
-            var users = await _userService.GetAllUsersAsync();
-            if (users == null)
-            {
-                return NotFound("No users found.");
-            }
-            return Ok(users);
-        }
+        //[HttpGet("all")]
+        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
+        //{
+        //    var users = await _userService.GetAllUsersAsync();
+        //    if (users == null)
+        //    {
+        //        return NotFound("No users found.");
+        //    }
+        //    return Ok(users);
+        //}
 
         [HttpGet("normal/paginated")]
         public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedNormalUsers(
@@ -63,16 +63,16 @@ namespace DisasterReport.API.Controllers
         }
 
 
-        [HttpGet("active")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActiveUsers()
-        {
-            var users = await _userService.GetAllActiveUsersAsync();
-            if (users == null)
-            {
-                return NotFound("No users found.");
-            }
-            return Ok(users);
-        }
+        //[HttpGet("active")]
+        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActiveUsers()
+        //{
+        //    var users = await _userService.GetAllActiveUsersAsync();
+        //    if (users == null)
+        //    {
+        //        return NotFound("No users found.");
+        //    }
+        //    return Ok(users);
+        //}
 
 
         [HttpGet("admins/paginated")]
@@ -90,15 +90,23 @@ namespace DisasterReport.API.Controllers
 
 
 
-        [HttpGet("admins")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAdmins()
+        //[HttpGet("admins")]
+        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAdmins()
+        //{
+        //    var users = await _userService.GetAllAdminsAsync();
+        //    if (users == null)
+        //    {
+        //        return NotFound("No admin found.");
+        //    }
+        //    return Ok(users);
+        //}
+
+
+        [HttpGet("admins-list")]
+        public async Task<ActionResult<IEnumerable<AdminDto>>> GetAdminsForDropdown()
         {
-            var users = await _userService.GetAllAdminsAsync();
-            if (users == null)
-            {
-                return NotFound("No admin found.");
-            }
-            return Ok(users);
+            var admins = await _userService.GetAdminsForDropdownAsync();
+            return Ok(admins);
         }
 
 
@@ -116,16 +124,16 @@ namespace DisasterReport.API.Controllers
         }
 
 
-        [HttpGet("blacklisted")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllBlacklistedUsers()
-        {
-            var users = await _userService.GetAllBlacklistedUsersAsync();
-            if (users == null)
-            {
-                return NotFound("No blacklisted users found.");
-            }
-            return Ok(users);
-        }
+        //[HttpGet("blacklisted")]
+        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllBlacklistedUsers()
+        //{
+        //    var users = await _userService.GetAllBlacklistedUsersAsync();
+        //    if (users == null)
+        //    {
+        //        return NotFound("No blacklisted users found.");
+        //    }
+        //    return Ok(users);
+        //}
 
 
         [HttpGet("{id}")]

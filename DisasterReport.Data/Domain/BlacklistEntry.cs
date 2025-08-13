@@ -21,5 +21,7 @@ public partial class BlacklistEntry
 
     public DateTime? UpdateAt { get; set; }
 
+    public string? UpdatedReason { get; set; }
+
     public virtual User User { get; set; } = null!;
 }
