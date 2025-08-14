@@ -18,6 +18,8 @@ namespace DisasterReport.API
             builder.Services.AddSignalR();
 
             // Add services to the container.
+        
+
             // 1 . Read Connection string 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             // 2 . Register Data Layer 
