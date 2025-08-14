@@ -2,11 +2,17 @@
 
 namespace DisasterReport.Data.Repositories.Interfaces
 {
+    public class AdminInfo
+    {
+        public string Name { get; set; }
+        public string? ProfilePictureUrl { get; set; }
+    }
+
     public interface IUserRepo
     {
-        Task<(List<User> Items, int TotalCount)> GetPaginatedUsersAsync(int page, int pageSize);
+        //Task<(List<User> Items, int TotalCount)> GetPaginatedUsersAsync(int page, int pageSize);
 
-        Task<IEnumerable<User>> GetAllUsersAsync();
+        //Task<IEnumerable<User>> GetAllUsersAsync();
 
         Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(
             int page,
@@ -14,7 +20,7 @@ namespace DisasterReport.Data.Repositories.Interfaces
             string? searchQuery,
             string? sortBy,
             string? sortOrder
-        );
+        );  
 
         Task<(List<User> Items, int TotalCount)> GetPaginatedActiveUsersAsync(
             int page,
@@ -24,7 +30,7 @@ namespace DisasterReport.Data.Repositories.Interfaces
             string? sortOrder
         );
 
-        Task<IEnumerable<User>> GetAllActiveUsersAsync();
+        //Task<IEnumerable<User>> GetAllActiveUsersAsync();
 
         Task<(List<User> Items, int TotalCount)> GetPaginatedAdminsAsync(
             int page,
@@ -44,7 +50,11 @@ namespace DisasterReport.Data.Repositories.Interfaces
             string? sortOrder
         );
 
-        Task<IEnumerable<User>> GetAllBlacklistedUsers();
+        Task<Dictionary<Guid, string>> GetUserNamesByIdsAsync(List<Guid> userIds);
+
+        Task<Dictionary<Guid, AdminInfo>> GetAdminInfoByIdsAsync(IEnumerable<Guid> userIds);
+
+        //Task<IEnumerable<User>> GetAllBlacklistedUsers();
 
         Task<User?> GetUserByIdAsync(Guid id);
 

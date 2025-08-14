@@ -4,6 +4,7 @@ using DisasterReport.Services.Models.Common;
 using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace DisasterReport.Services.Services.Implementations
 {
@@ -13,6 +14,8 @@ namespace DisasterReport.Services.Services.Implementations
         private readonly IMemoryCache _cache;
         private readonly IBlacklistEntryRepo _blacklistEntryRepo;
         private readonly ICloudinaryService _cloudinaryService;
+        private static CancellationTokenSource _userListCacheTokenSource = new CancellationTokenSource();
+
         public UserService(IUserRepo userRepo, IMemoryCache cache, IBlacklistEntryRepo blacklistEntryRepo, ICloudinaryService cloudinaryService)
         {
             _userRepo = userRepo;
@@ -21,52 +24,59 @@ namespace DisasterReport.Services.Services.Implementations
             _cloudinaryService = cloudinaryService;
         }
 
-        public async Task<PaginatedResult<UserDto>> GetPaginatedUsersAsync(int page, int pageSize)
-        {
-            if (page <= 0) page = 1;
-            if (pageSize <= 0) pageSize = 10;
+        //public async Task<PaginatedResult<UserDto>> GetPaginatedUsersAsync(int page, int pageSize)
+        //{
+        //    if (page <= 0) page = 1;
+        //    if (pageSize <= 0) pageSize = 10;
 
-            var (users, totalCount) = await _userRepo.GetPaginatedUsersAsync(page, pageSize);
+        //    var (users, totalCount) = await _userRepo.GetPaginatedUsersAsync(page, pageSize);
 
-            var userDtos = new List<UserDto>();
-            foreach (var user in users)
-            {
-                userDtos.Add(await MapToDtoAsync(user));
-            }
+        //    var userDtos = new List<UserDto>();
+        //    foreach (var user in users)
+        //    {
+        //        userDtos.Add(await MapToDtoAsync(user));
+        //    }
 
-            return new PaginatedResult<UserDto>
-            {
-                Items = userDtos,
-                Page = page,
-                PageSize = pageSize,
-                TotalItems = totalCount
-            };
-        }
+        //    return new PaginatedResult<UserDto>
+        //    {
+        //        Items = userDtos,
+        //        Page = page,
+        //        PageSize = pageSize,
+        //        TotalItems = totalCount
+        //    };
+        //}
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
-        {
-            string cacheKey = "AllUsers";
+        //public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        //{
+        //    string cacheKey = "AllUsers";
 
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<UserDto> cachedUsers))
-            {
-                return cachedUsers;
-            }
+        //    if (_cache.TryGetValue(cacheKey, out IEnumerable<UserDto> cachedUsers))
+        //    {
+        //        return cachedUsers;
+        //    }
 
-            var users = await _userRepo.GetAllUsersAsync();
+        //    var users = await _userRepo.GetAllUsersAsync();
 
-            var userDtos = new List<UserDto>();
-            foreach (var user in users)
-            {
-                userDtos.Add(await MapToDtoAsync(user));
-            }
+        //    var userDtos = new List<UserDto>();
+        //    foreach (var user in users)
+        //    {
+        //        userDtos.Add(await MapToDtoAsync(user));
+        //    }
 
-            _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
+        //    _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
 
-            return userDtos;
-        }
+        //    return userDtos;
+        //}
 
         public async Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(int page, int pageSize, string? searchQuery, string? sortBy, string? sortOrder)
         {
+            var cacheKey = $"NormalUsers-Page{page}-PageSize{pageSize}-Search:{searchQuery}-SortBy:{sortBy}-SortOrder:{sortOrder}";
+
+            if (_cache.TryGetValue(cacheKey, out PaginatedResult<UserDto> cachedResult))
+            {
+                return cachedResult;
+            }
+
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
             var (users, totalCount) = await _userRepo.GetPaginatedNormalUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
@@ -77,14 +87,23 @@ namespace DisasterReport.Services.Services.Implementations
                 userDtos.Add(await MapToDtoAsync(user));
             }
 
-            return new PaginatedResult<UserDto>
+            var result =  new PaginatedResult<UserDto>
             {
                 Items = userDtos,
                 Page = page,
                 PageSize = pageSize,
                 TotalItems = totalCount
             };
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+            .AddExpirationToken(new CancellationChangeToken(_userListCacheTokenSource.Token));
+
+            _cache.Set(cacheKey, result, cacheOptions);
+
+            return result;
         }
+
 
         public async Task<PaginatedResult<UserDto>> GetPaginatedActiveUsersAsync(
             int page,
@@ -94,6 +113,13 @@ namespace DisasterReport.Services.Services.Implementations
             string? sortOrder
         )
         {
+            var cacheKey = $"ActiveUsers-Page{page}-PageSize{pageSize}-Search:{searchQuery}-SortBy:{sortBy}-SortOrder:{sortOrder}";
+
+            if (_cache.TryGetValue(cacheKey, out PaginatedResult<UserDto> cachedResult))
+            {
+                return cachedResult;
+            }
+
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
@@ -105,37 +131,45 @@ namespace DisasterReport.Services.Services.Implementations
                 userDtos.Add(await MapToDtoAsync(user));
             }
 
-            return new PaginatedResult<UserDto>
+            var result = new PaginatedResult<UserDto>
             {
                 Items = userDtos,
                 Page = page,
                 PageSize = pageSize,
                 TotalItems = total
             };
-        }
-
-
-        public async Task<IEnumerable<UserDto>> GetAllActiveUsersAsync()
-        {
-            string cacheKey = "AllActiveUsers";
-
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<UserDto> cachedUsers))
-            {
-                return cachedUsers;
-            }
-
-            var users = await _userRepo.GetAllActiveUsersAsync();
             
-            var userDots = new List<UserDto>();
-            foreach (var user in users)
-            {
-                userDots.Add(await MapToDtoAsync(user));
-            }
+            var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+            .AddExpirationToken(new CancellationChangeToken(_userListCacheTokenSource.Token));
 
-            _cache.Set(cacheKey, userDots, TimeSpan.FromMinutes(10));
+            _cache.Set(cacheKey, result, cacheOptions);
 
-            return userDots;
+            return result;
         }
+
+
+        //public async Task<IEnumerable<UserDto>> GetAllActiveUsersAsync()
+        //{
+        //    string cacheKey = "AllActiveUsers";
+
+        //    if (_cache.TryGetValue(cacheKey, out IEnumerable<UserDto> cachedUsers))
+        //    {
+        //        return cachedUsers;
+        //    }
+
+        //    var users = await _userRepo.GetAllActiveUsersAsync();
+            
+        //    var userDots = new List<UserDto>();
+        //    foreach (var user in users)
+        //    {
+        //        userDots.Add(await MapToDtoAsync(user));
+        //    }
+
+        //    _cache.Set(cacheKey, userDots, TimeSpan.FromMinutes(10));
+
+        //    return userDots;
+        //}
 
 
         public async Task<PaginatedResult<UserDto>> GetPaginatedAdminsAsync(
@@ -146,6 +180,13 @@ namespace DisasterReport.Services.Services.Implementations
             string? sortOrder
         )
         {
+            var cacheKey = $"Admins-Page{page}-PageSize{pageSize}-Search:{searchQuery}-SortBy:{sortBy}-SortOrder:{sortOrder}";
+
+            if (_cache.TryGetValue(cacheKey, out PaginatedResult<UserDto> cachedResult))
+            {
+                return cachedResult;
+            }
+
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
@@ -157,13 +198,33 @@ namespace DisasterReport.Services.Services.Implementations
                 userDtos.Add(await MapToDtoAsync(user));
             }
 
-            return new PaginatedResult<UserDto>
+            var result = new PaginatedResult<UserDto>
             {
                 Items = userDtos,
                 Page = page,
                 PageSize = pageSize,
                 TotalItems = total
             };
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+            .AddExpirationToken(new CancellationChangeToken(_userListCacheTokenSource.Token));
+
+            _cache.Set(cacheKey, result, cacheOptions);
+
+            return result;
+        }
+
+
+        public async Task<IEnumerable<AdminDto>> GetAdminsForDropdownAsync()
+        {
+            var admins = await _userRepo.GetAllAdminsAsync();
+
+            return admins.Select(u => new AdminDto
+            {
+                Id = u.Id,
+                Name = u.Name
+            });
         }
 
 
@@ -198,6 +259,13 @@ namespace DisasterReport.Services.Services.Implementations
             string? sortOrder
         )
         {
+            var cacheKey = $"BlacklistedUsers-Page{page}-PageSize{pageSize}-Search:{searchQuery}-SortBy:{sortBy}-SortOrder:{sortOrder}";
+
+            if (_cache.TryGetValue(cacheKey, out PaginatedResult<UserDto> cachedResult))
+            {
+                return cachedResult;
+            }
+
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
 
@@ -209,37 +277,45 @@ namespace DisasterReport.Services.Services.Implementations
                 userDtos.Add(await MapToDtoAsync(user));
             }
 
-            return new PaginatedResult<UserDto>
+            var result = new PaginatedResult<UserDto>
             {
                 Items = userDtos,
                 Page = page,
                 PageSize = pageSize,
                 TotalItems = total
             };
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5))
+            .AddExpirationToken(new CancellationChangeToken(_userListCacheTokenSource.Token));
+
+            _cache.Set(cacheKey, result, cacheOptions);
+
+            return result;
         }
 
 
-        public async Task<IEnumerable<UserDto>> GetAllBlacklistedUsersAsync()
-        {
-            string cacheKey = "AllBlacklistedUsers";
+        //public async Task<IEnumerable<UserDto>> GetAllBlacklistedUsersAsync()
+        //{
+        //    string cacheKey = "AllBlacklistedUsers";
 
-            if (_cache.TryGetValue(cacheKey, out IEnumerable<UserDto> cachedUsers))
-            {
-                return cachedUsers;
-            }
+        //    if (_cache.TryGetValue(cacheKey, out IEnumerable<UserDto> cachedUsers))
+        //    {
+        //        return cachedUsers;
+        //    }
 
-            var users = await _userRepo.GetAllBlacklistedUsers();
+        //    var users = await _userRepo.GetAllBlacklistedUsers();
 
-            var userDtos = new List<UserDto>();
-            foreach (var user in users)
-            {
-                userDtos.Add(await MapToDtoAsync(user));
-            }
+        //    var userDtos = new List<UserDto>();
+        //    foreach (var user in users)
+        //    {
+        //        userDtos.Add(await MapToDtoAsync(user));
+        //    }
 
-            _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
+        //    _cache.Set(cacheKey, userDtos, TimeSpan.FromMinutes(10));
 
-            return userDtos;
-        }
+        //    return userDtos;
+        //}
 
 
         public async Task<UserDto?> GetUserByIdAsync(Guid id)
@@ -267,7 +343,7 @@ namespace DisasterReport.Services.Services.Implementations
 
         public async Task<UserDto?> GetUsersByEmailAsync(string email)
         {
-            string cacheKey = cacheKey = $"UserEmail:{email}";
+            string cacheKey = $"UserEmail:{email}";
 
             if (_cache.TryGetValue(cacheKey, out UserDto cachedUser))
             {
@@ -304,11 +380,12 @@ namespace DisasterReport.Services.Services.Implementations
 
             await _userRepo.UpdateUserAsync(user);
 
-            var cacheKey = $"User:{user.Id}";
-            _cache.Remove(cacheKey);
-
+            var userCacheKey = $"User:{user.Id}";
+            _cache.Remove(userCacheKey);
             var updatedDto = await MapToDtoAsync(user);
-            _cache.Set(cacheKey, updatedDto, TimeSpan.FromMinutes(10));
+            _cache.Set(userCacheKey, updatedDto, TimeSpan.FromMinutes(10));
+
+            InvalidateUserListCache();
 
             return updatedDto;
         }
@@ -334,9 +411,10 @@ namespace DisasterReport.Services.Services.Implementations
             // Invalidate and update the cache
             var cacheKey = $"User:{user.Id}";
             _cache.Remove(cacheKey);
-
             var updatedDto = await MapToDtoAsync(user);
             _cache.Set(cacheKey, updatedDto, TimeSpan.FromMinutes(10));
+
+            InvalidateUserListCache();
 
             return updatedDto;
         }
@@ -349,6 +427,17 @@ namespace DisasterReport.Services.Services.Implementations
             await _userRepo.DeleteUserAsync(id);
 
             _cache.Remove($"User:{id}");
+            InvalidateUserListCache();
+        }
+
+
+        private void InvalidateUserListCache()
+        {
+            // Cancel the token, which expires all cache entries that are listening to it.
+            _userListCacheTokenSource.Cancel();
+
+            // Create a new token source for the next set of cache entries.
+            _userListCacheTokenSource = new CancellationTokenSource();
         }
 
 

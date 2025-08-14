@@ -14,15 +14,23 @@ namespace DisasterReport.Services.Models.BlacklistEntryDTO
 
         public string UserEmail { get; set; } = null!;
         
-        public string? UserName { get; set; }              
+        public string? UserName { get; set; }      
+        
+        public string? ProfilePictureUrl { get; set; }
 
-        public Guid CreatedAdminId { get; set; }
+        public Guid? CreatedAdminId { get; set; }
+
+        public string? CreatedAdminName { get; set; }
+
+        public string? Reason { get; set; } = null!;
+
+        public DateTime? CreatedAt { get; set; }
 
         public Guid? UpdatedAdminId { get; set; }
 
-        public string Reason { get; set; } = null!;
+        public string? UpdatedAdminName { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public string? UnblockReason { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
 

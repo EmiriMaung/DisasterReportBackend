@@ -17,6 +17,8 @@ namespace DisasterReport.API
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddSignalR();
 
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community; //for PDF export 
+
             // Add services to the container.
         
 

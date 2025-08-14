@@ -47,8 +47,13 @@ public class AuthController : ControllerBase
 
 
     [HttpGet("callback/{provider}")]
-    public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state)
+    public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
     {
+        if (!string.IsNullOrEmpty(error))
+        {
+            return Redirect(_config["ClientUrl"]);
+        }
+
         if (string.IsNullOrEmpty(code))
             return BadRequest(new { error = "Missing 'code' in query string." });
 
