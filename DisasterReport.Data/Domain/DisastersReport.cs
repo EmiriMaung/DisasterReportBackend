@@ -35,8 +35,6 @@ public partial class DisastersReport
 
     public virtual DisasterTopic? DisasterTopics { get; set; }
 
-    public virtual ICollection<DonateRequest> DonateRequests { get; set; } = new List<DonateRequest>();
-
     public virtual ICollection<ImpactUrl> ImpactUrls { get; set; } = new List<ImpactUrl>();
 
     public virtual Location Location { get; set; } = null!;

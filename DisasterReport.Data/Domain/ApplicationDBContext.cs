@@ -193,10 +193,9 @@ public partial class ApplicationDBContext : DbContext
             entity.Property(e => e.PaymentSlipUrl).HasMaxLength(500);
             entity.Property(e => e.SupportType).HasMaxLength(100);
 
-            entity.HasOne(d => d.DisasterReport).WithMany(p => p.DonateRequests)
-                .HasForeignKey(d => d.DisasterReportId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DonateReq__Disas__72C60C4A");
+            entity.HasOne(d => d.Organization).WithMany(p => p.DonateRequests)
+                .HasForeignKey(d => d.OrganizationId)
+                .HasConstraintName("FK_DonateRequests_Organizations");
 
             entity.HasOne(d => d.RequestedByUser).WithMany(p => p.DonateRequests)
                 .HasForeignKey(d => d.RequestedByUserId)
