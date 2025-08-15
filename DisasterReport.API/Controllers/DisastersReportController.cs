@@ -2,6 +2,7 @@
 using DisasterReport.Services.Models;
 using DisasterReport.Services.Models.Common;
 using DisasterReport.Services.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -14,10 +15,11 @@ namespace DisasterReport.API.Controllers
     public class DisastersReportController : ControllerBase
     {
         private readonly IDisasterReportService _disasterReportService;
-
-        public DisastersReportController(IDisasterReportService disasterReportService)
+        private readonly IHubContext<DisasterReportHub> _hubContext;
+        public DisastersReportController(IDisasterReportService disasterReportService, IHubContext<DisasterReportHub> hubContext)
         {
             _disasterReportService = disasterReportService ?? throw new ArgumentNullException(nameof(disasterReportService));
+            _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
         [HttpGet]
@@ -182,8 +184,8 @@ namespace DisasterReport.API.Controllers
             return NoContent();
         }
 
-      
         [HttpPost("{reportId}/approve")]
+        [Authorize] // Ensure only authenticated users can access this
         public async Task<IActionResult> ApproveReportAsync(int reportId, [FromBody] ApproveWithTopicDto topicDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -194,20 +196,24 @@ namespace DisasterReport.API.Controllers
 
             try
             {
+                // Set admin ID for new topic if provided
                 if (topicDto.NewTopic != null)
                 {
                     topicDto.NewTopic.AdminId = approvedBy;
                 }
 
-                await _disasterReportService.ApproveReportAsync(reportId, topicDto);
+                await _disasterReportService.ApproveReportAsync(reportId, topicDto, approvedBy);
                 return Ok(new { message = "Report approved successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Failed to approve report", error = ex.Message });
             }
         }
-
         [HttpPost("{reportId}/reject")]
         public async Task<IActionResult> RejectReportAsync(int reportId)
         {
@@ -221,6 +227,10 @@ namespace DisasterReport.API.Controllers
             {
                 await _disasterReportService.RejectReportAsync(reportId, rejectedBy);
                 return Ok(new { message = "Report rejected successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
@@ -243,7 +253,34 @@ namespace DisasterReport.API.Controllers
             var result = await _disasterReportService.GetDisasterReportsForMapAsync(filter);
             return Ok(result);
         }
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategoryCounts([FromQuery] int? year, [FromQuery] int? month)
+        {
+            return Ok(await _disasterReportService.GetCategoryCountsAsync(year, month));
+        }
+        //[HttpGet("categories")]
+        //public async Task<IActionResult> GetCategoryCounts([FromQuery] int? year, [FromQuery] int? month)
+        //{
+        //    var result = await _disasterReportService.GetCategoryCountsAsync(year, month);
 
+        //    // Send real-time update to all clients
+        //    await _hubContext.Clients.All.SendAsync("ReceiveCategoryCounts", new object[] { result });
 
+        //    return Ok(result);
+        //}
+        [HttpGet("report-count-last-7-days")]
+        public async Task<ActionResult<List<object>>> GetReportCountLast7Days()
+        {
+            var result = await _disasterReportService.GetReportCountLast7DaysAsync();
+
+            // Convert tuple to anonymous objects for JSON response
+            var response = result.Select(x => new
+            {
+                reportDate = x.ReportDate,
+                reportCount = x.ReportCount
+            }).ToList();
+
+            return Ok(response);
+        }
     }
 }

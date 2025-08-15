@@ -159,6 +159,7 @@ namespace DisasterReport.API
             app.MapControllers();
 
             app.MapHub<NotificationHub>("/hubs/notification");
+            app.MapHub<DisasterReportHub>("/disasterReportHub");
 
             app.Run();
         }

@@ -24,9 +24,13 @@ public class DisasterReportDto
     public bool IsUrgent { get; set; }
     public bool IsDeleted { get; set; }
     public int? DisasterTopicsId { get; set; }
+    public Guid? ProcessedBy {  get; set; }
+    public DateTime? ProcessedAt { get; set; }
+
 
     public LocationDto? Location { get; set; }
     public UserDto? Reporter { get; set; }
+    public UserDto? Processor { get; set; }
     public DisasterTopicDto? DisasterTopic { get; set; }
 
     public List<ImpactTypeDto> ImpactTypes { get; set; } = new();
@@ -75,6 +79,8 @@ public class ApproveWithTopicDto
 {
     public int? ExistingTopicId { get; set; } 
     public CreateDisasterTopicDto? NewTopic { get; set; }  
+    public Guid? ProcessBy {  get; set; }
+    public DateTime? ProcessAt { get; set; }
 }
 
 public class ReportStatusCountDto

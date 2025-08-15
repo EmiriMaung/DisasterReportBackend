@@ -50,11 +50,16 @@ public interface IDisasterReportService
 
     Task<IEnumerable<DisasterReportDto>> GetReportsByTopicIdAsync(int topicId);
 
-    Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto);
+    //Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto);
+    Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto, Guid adminId);
 
     Task RejectReportAsync(int reportId, Guid rejectedBy);
 
     Task<IEnumerable<DisasterReportDto>> GetRelatedReportsByTopicAsync(int reportId);
+
+    Task<List<CategoryCountDto>> GetCategoryCountsAsync(int? year = null, int? month = null);
+
+    Task<List<(DateTime ReportDate, int ReportCount)>> GetReportCountLast7DaysAsync();
 
     Task<List<DisasterReportMapDto>> GetDisasterReportsForMapAsync(ReportFilterDto filter);
 
