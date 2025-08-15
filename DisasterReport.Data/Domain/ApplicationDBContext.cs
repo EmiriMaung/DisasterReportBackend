@@ -46,7 +46,8 @@ public partial class ApplicationDBContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
-
+    public virtual DbSet<DisasterReportMapDto> DisasterReportMapDtos { get; set; }
+    public virtual DbSet<CategoryCountDto> CategoryCountDtos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<BlacklistEntry>(entity =>
@@ -122,6 +123,7 @@ public partial class ApplicationDBContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Disaster__3214EC0739C4D4CB");
 
             entity.Property(e => e.Category).HasMaxLength(225);
+            entity.Property(e => e.ProcessedAt).HasColumnType("datetime");
             entity.Property(e => e.ReportedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -372,6 +374,7 @@ public partial class ApplicationDBContext : DbContext
 
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
+        modelBuilder.Entity<CategoryCountDto>().HasNoKey();
 
         OnModelCreatingPartial(modelBuilder);
     }

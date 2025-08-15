@@ -59,5 +59,14 @@ namespace DisasterReport.Data.Domain
         public DateTime? EndDate { get; set; }
         public bool? IsUrgent { get; set; }
     }
+    public class CategoryCountDto
+    {
+        public int TopicId { get; set; }
+        public string TopicName { get; set; }
+        public string Category { get; set; }
+        public int ReportYear { get; set; }
+        public int ReportMonth { get; set; }
+        public int CategoryCount { get; set; }
+    }
 
 }

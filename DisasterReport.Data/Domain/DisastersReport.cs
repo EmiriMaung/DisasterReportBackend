@@ -31,6 +31,10 @@ public partial class DisastersReport
 
     public int? DisasterTopicsId { get; set; }
 
+    public Guid? ProcessedBy { get; set; }
+
+    public DateTime? ProcessedAt { get; set; }
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual DisasterTopic? DisasterTopics { get; set; }

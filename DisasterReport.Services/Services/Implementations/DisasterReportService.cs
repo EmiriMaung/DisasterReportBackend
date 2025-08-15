@@ -468,7 +468,8 @@ namespace DisasterReport.Services.Services.Implementations
             return await MapToDtoListAsync(reports);
         }
 
-        public async Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto)
+
+        public async Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto, Guid adminId)
         {
             using var transaction = await _postRepo.DbContext.Database.BeginTransactionAsync();
 
@@ -494,7 +495,7 @@ namespace DisasterReport.Services.Services.Implementations
                         var newTopic = new DisasterTopic
                         {
                             TopicName = topicDto.NewTopic.TopicName,
-                            AdminId = topicDto.NewTopic.AdminId,
+                            AdminId = adminId, // Use the passed adminId here
                             CreatedAt = DateTime.UtcNow,
                             UpdateAt = DateTime.UtcNow
                         };
@@ -523,7 +524,7 @@ namespace DisasterReport.Services.Services.Implementations
                         var newTopic = new DisasterTopic
                         {
                             TopicName = topicDto.NewTopic.TopicName,
-                            AdminId = topicDto.NewTopic.AdminId,
+                            AdminId = adminId, // Use the passed adminId here
                             CreatedAt = DateTime.UtcNow,
                             UpdateAt = DateTime.UtcNow
                         };
@@ -539,9 +540,12 @@ namespace DisasterReport.Services.Services.Implementations
                     throw new ArgumentException("Must provide either existing topic ID or new topic details.");
                 }
 
+                // Update the report with processing information
                 report.Status = 1;
                 report.UpdatedAt = DateTime.UtcNow;
                 report.DisasterTopicsId = topicId;
+                report.ProcessedBy = adminId; // Set the admin who processed this report
+                report.ProcessedAt = DateTime.UtcNow; // Set the processing time
 
                 await _postRepo.UpdatePostAsync(report);
                 await _postRepo.SaveChangesAsync();
@@ -556,20 +560,38 @@ namespace DisasterReport.Services.Services.Implementations
                 throw new Exception("Failed to approve report. Transaction rolled back.", ex);
             }
         }
-
-
+      
         public async Task RejectReportAsync(int reportId, Guid rejectedBy)
         {
-            await _postRepo.RejectReportAsync(reportId, rejectedBy);
-            await _postRepo.SaveChangesAsync();
+            using var transaction = await _postRepo.DbContext.Database.BeginTransactionAsync();
 
-            var report = await _postRepo.GetPostByIdAsync(reportId);
-            if (report != null)
+            try
             {
+                var report = await _postRepo.GetPostByIdAsync(reportId);
+                if (report == null)
+                {
+                    throw new ArgumentException("Report not found");
+                }
+
+                // Update report status and rejection info
+                report.Status = 2; // Assuming 2 means "Rejected"
+                report.UpdatedAt = DateTime.UtcNow;
+                report.ProcessedBy = rejectedBy;
+                report.ProcessedAt = DateTime.UtcNow;
+
+                await _postRepo.UpdatePostAsync(report);
+                await _postRepo.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 ClearReportCache(report.Id, report.ReporterId);
             }
-
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception("Failed to reject report. Transaction rolled back.", ex);
+            }
         }
+      
         private async Task<List<DisasterReportDto>> MapToDtoListAsync(List<DisastersReport> reports)
         {
             // Reporter ID list ထုတ်ယူ
@@ -579,15 +601,35 @@ namespace DisasterReport.Services.Services.Implementations
                 .Distinct()
                 .ToList();
 
-            // Org member တွေ fetch
+            // Processor ID list ထုတ်ယူ
+            var processorIds = reports
+                .Where(r => r.ProcessedBy != null)
+                .Select(r => (Guid)r.ProcessedBy)
+                .Distinct()
+                .ToList();
+
+            // Org member တွေ fetch (for both reporters and processors)
+            var allUserIds = reporterIds.Concat(processorIds).Distinct().ToList();
             var orgMembers = await _postRepo.DbContext.OrganizationMembers
                 .Include(m => m.Organization)
-                .Where(m => reporterIds.Contains((Guid)m.UserId))
+                .ThenInclude(o => o.OrganizationDocs)
+                .Where(m => allUserIds.Contains((Guid)m.UserId))
                 .ToListAsync();
+
+            // Fetch processor users
+            var processors = processorIds.Any()
+                ? await _postRepo.DbContext.Users
+                    .Where(u => processorIds.Contains(u.Id))
+                    .ToListAsync()
+                : new List<User>();
 
             return reports.Select(report =>
             {
                 var orgMember = orgMembers.FirstOrDefault(m => m.UserId == report.ReporterId);
+                var processor = processors.FirstOrDefault(u => u.Id == report.ProcessedBy);
+                var processorOrgMember = report.ProcessedBy != null
+                    ? orgMembers.FirstOrDefault(m => m.UserId == report.ProcessedBy)
+                    : null;
 
                 return new DisasterReportDto
                 {
@@ -604,6 +646,8 @@ namespace DisasterReport.Services.Services.Implementations
                     StatusName = EnumHelper.GetStatusName((int)report.Status),
                     IsUrgent = report.IsUrgent,
                     IsDeleted = report.IsDeleted,
+                    ProcessedBy = report.ProcessedBy,
+                    ProcessedAt = report.ProcessedAt,
 
                     Location = report.Location == null ? null : new LocationDto
                     {
@@ -626,6 +670,14 @@ namespace DisasterReport.Services.Services.Implementations
                         Name = report.Reporter.Name,
                         Email = report.Reporter.Email,
                         ProfilePictureUrl = report.Reporter.ProfilePictureUrl
+                    },
+
+                    Processor = processor == null ? null : new UserDto
+                    {
+                        Id = processor.Id,
+                        Name = processor.Name,
+                        Email = processor.Email,
+                        ProfilePictureUrl = processor.ProfilePictureUrl,
                     },
 
                     ImpactUrls = report.ImpactUrls?.Select(i => new ImpactUrlDto
@@ -651,15 +703,21 @@ namespace DisasterReport.Services.Services.Implementations
                         Name = s.Name
                     }).ToList() ?? new List<SupportTypeDto>(),
 
-                    // ✅ Organization member info
+                    // ✅ Organization member info for reporter
                     IsOrganizationMember = orgMember != null,
                     OrganizationName = orgMember?.Organization?.Name,
                     OrganizationLogoUrl = orgMember?.Organization?.OrganizationDocs?.FirstOrDefault()?.ImageUrl
                 };
             }).ToList();
         }
-
-
+        public async Task<List<CategoryCountDto>> GetCategoryCountsAsync(int? year = null, int? month = null)
+        {
+            return await _postRepo.GetCategoryCountsAsync(year, month);
+        }
+        public async Task<List<(DateTime ReportDate, int ReportCount)>> GetReportCountLast7DaysAsync()
+        {
+            return await _postRepo.GetReportCountLast7DaysAsync();
+        }
         public async Task<IEnumerable<DisasterReportDto>> GetRelatedReportsByTopicAsync(int reportId)
         {
             // Step 1: Get current report
