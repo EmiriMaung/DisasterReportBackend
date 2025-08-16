@@ -39,25 +39,85 @@ namespace DisasterReport.Services.Services.Implementations
             _disasterTopicService = disasterTopicService;
         }
 
-        public async Task<IEnumerable<DisasterReportDto>> GetAllReportsAsync()
-        {
-            const string cacheKey = "all_reports";
+        //public async Task<IEnumerable<DisasterReportDto>> GetAllReportsAsync()
+        //{
+        //    const string cacheKey = "all_reports";
 
-            if (_cache.TryGetValue(cacheKey, out List<DisasterReportDto> cachedReports))
+        //    if (_cache.TryGetValue(cacheKey, out List<DisasterReportDto> cachedReports))
+        //    {
+        //        return cachedReports;
+        //    }
+
+        //    var reports = await _postRepo.GetAllPostsWithMaterialsAsync();
+        //    var dtoList = await MapToDtoListAsync(reports);
+
+        //    var cacheOptions = new MemoryCacheEntryOptions()
+        //        .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); 
+
+        //    _cache.Set(cacheKey, dtoList, cacheOptions);
+
+        //    return dtoList;
+        //}
+        public async Task<PagedResponse<DisasterReportDto>> GetAllReportsAsync(int pageNumber = 1, int pageSize = 10)
+        {
+            string cacheKey = $"all_reports_{pageNumber}_{pageSize}";
+
+            if (_cache.TryGetValue(cacheKey, out PagedResponse<DisasterReportDto> cachedResponse))
             {
-                return cachedReports;
+                return cachedResponse;
             }
 
             var reports = await _postRepo.GetAllPostsWithMaterialsAsync();
-            var dtoList = await MapToDtoListAsync(reports);
+            var totalRecords = reports.Count();
+            var pagedReports = reports
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var dtoList = await MapToDtoListAsync(pagedReports);
+
+            var response = new PagedResponse<DisasterReportDto>(
+                dtoList,
+                pageNumber,
+                pageSize,
+                totalRecords
+            );
 
             var cacheOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); 
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
 
-            _cache.Set(cacheKey, dtoList, cacheOptions);
+            _cache.Set(cacheKey, response, cacheOptions);
 
-            return dtoList;
+            return response;
         }
+        public async Task<PagedResponse<DisasterReportDto>> SearchReportsAsync(
+            string? keyword,
+            string? category,
+            string? region,
+            string? township,
+            bool? isUrgent,
+            int? topicId,
+            int pageNumber = 1,
+            int pageSize = 10)
+        {
+            var reports = await _postRepo.SearchReportsAsync(keyword, category, region, township, isUrgent, topicId);
+            var totalRecords = reports.Count();
+            var pagedReports = reports
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var dtoList = await MapToDtoListAsync(pagedReports);
+
+            return new PagedResponse<DisasterReportDto>(
+                dtoList,
+                pageNumber,
+                pageSize,
+                totalRecords
+            );
+        }
+
+
         public async Task<IEnumerable<DisasterReportDto>> GetUrgentReportsAsync()
         {
             const string cacheKey = "all_reports";
@@ -462,11 +522,11 @@ namespace DisasterReport.Services.Services.Implementations
             }
         }
 
-        public async Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region,string? township, bool? isUrgent, int? topicId)
-        {
-            var reports = await _postRepo.SearchReportsAsync(keyword, category, region, township, isUrgent, topicId);
-            return await MapToDtoListAsync(reports);
-        }
+        //public async Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region,string? township, bool? isUrgent, int? topicId)
+        //{
+        //    var reports = await _postRepo.SearchReportsAsync(keyword, category, region, township, isUrgent, topicId);
+        //    return await MapToDtoListAsync(reports);
+        //}
 
 
         public async Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto, Guid adminId)
@@ -787,11 +847,34 @@ namespace DisasterReport.Services.Services.Implementations
         {
             return await _postRepo.GetFilteredDisasterReportsAsync(filter);
         }
+        private void ClearAllReportsCache()
+        {
+            // MemoryCache does not support enumeration directly, so we need to use reflection to access the keys.
+            if (_cache is MemoryCache memoryCache)
+            {
+                var cacheEntriesField = typeof(MemoryCache).GetProperty("EntriesCollection", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var cacheEntries = cacheEntriesField?.GetValue(memoryCache) as dynamic;
+
+                if (cacheEntries != null)
+                {
+                    foreach (var cacheItem in cacheEntries)
+                    {
+                        var cacheItemKey = cacheItem.GetType().GetProperty("Key")?.GetValue(cacheItem, null);
+                        if (cacheItemKey != null && cacheItemKey.ToString().StartsWith("all_reports_"))
+                        {
+                            _cache.Remove(cacheItemKey);
+                        }
+                    }
+                }
+            }
+        }
+
         private void ClearReportCache(int reportId, Guid reporterId)
         {
             _cache.Remove($"report_{reportId}");
             _cache.Remove($"reports_by_reporter_{reporterId}");
-            _cache.Remove("all_reports");
+            // _cache.Remove("all_reports");
+            ClearAllReportsCache();
             _cache.Remove("urgent_reports");
             _cache.Remove($"pending_reject_reports_by_reporter_{reporterId}");
         }

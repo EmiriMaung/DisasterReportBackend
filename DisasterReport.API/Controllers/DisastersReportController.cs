@@ -22,10 +22,42 @@ namespace DisasterReport.API.Controllers
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetAllReportsAsync()
+        //{
+        //    var reports = await _disasterReportService.GetAllReportsAsync();
+        //    return Ok(reports);
+        //}
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetAllReportsAsync()
+        public async Task<ActionResult<PagedResponse<DisasterReportDto>>> GetAllReportsAsync(
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10)
         {
-            var reports = await _disasterReportService.GetAllReportsAsync();
+            var reports = await _disasterReportService.GetAllReportsAsync(pageNumber, pageSize);
+            return Ok(reports);
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<PagedResponse<DisasterReportDto>>> SearchReportsAsync(
+            [FromQuery] string? keyword,
+            [FromQuery] string? category,
+            [FromQuery] int? topicId,
+            [FromQuery] string? township,
+            [FromQuery] string? region,
+            [FromQuery] bool? isUrgent,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var reports = await _disasterReportService.SearchReportsAsync(
+                keyword,
+                category,
+                region,
+                township,
+                isUrgent,
+                topicId,
+                pageNumber,
+                pageSize
+            );
             return Ok(reports);
         }
         [HttpGet("urgent")]
@@ -105,19 +137,19 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetReportsByTopicIdAsync(topicId);
             return Ok(reports);
         }
-        [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<DisasterReportDto>>> SearchReportsAsync(
-            [FromQuery] string? keyword,
-            [FromQuery] string? category,
-            [FromQuery] int? topicId,
-            [FromQuery] string? township,
-            [FromQuery] string? region,
-            [FromQuery] bool? isUrgent)
+        //[HttpGet("search")]
+        //public async Task<ActionResult<IEnumerable<DisasterReportDto>>> SearchReportsAsync(
+        //    [FromQuery] string? keyword,
+        //    [FromQuery] string? category,
+        //    [FromQuery] int? topicId,
+        //    [FromQuery] string? township,
+        //    [FromQuery] string? region,
+        //    [FromQuery] bool? isUrgent)
 
-        {
-            var reports = await _disasterReportService.SearchReportsAsync(keyword, category, region,township, isUrgent,topicId);
-            return Ok(reports);
-        }
+        //{
+        //    var reports = await _disasterReportService.SearchReportsAsync(keyword, category, region,township, isUrgent,topicId);
+        //    return Ok(reports);
+        //}
 
         [HttpGet("region/{regionName}")]
         public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetReportsByRegionAsync(string regionName)
