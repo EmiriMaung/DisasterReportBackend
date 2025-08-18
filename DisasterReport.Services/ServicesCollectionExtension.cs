@@ -20,6 +20,8 @@ namespace DisasterReport.Services
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IOrganizationMemberService, OrganizationMemberService>();
             services.AddScoped<InvitationNotificationService>();
+            services.AddScoped<IDonateRequestService, DonateRequestService>();
+            services.AddScoped<IDonationService, DonationService>();
 
             services.AddScoped<IDisasterReportService, DisasterReportService>();
             services.AddScoped<IUserService, UserService>();
