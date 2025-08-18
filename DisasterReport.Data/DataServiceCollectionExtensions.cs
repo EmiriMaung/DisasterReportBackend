@@ -31,6 +31,7 @@ namespace DisasterReport.Data
             services.AddScoped<IBlacklistEntryRepo, BlacklistEntryRepo>();
             services.AddScoped<ISupportTypeRepo, SupportTypeRepo>();
             services.AddScoped<IImpactTypeRepo, ImpactTypeRepo>();
+            services.AddScoped<IReportRepo, ReportRepo>();
             return services;
         }
     }

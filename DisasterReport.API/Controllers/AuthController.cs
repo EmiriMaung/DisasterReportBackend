@@ -226,6 +226,14 @@ public class AuthController : ControllerBase
         _context.RefreshTokens.Add(newTokenEntity);
         await _context.SaveChangesAsync();
 
+        Response.Cookies.Append("access_token", newAccessToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(10) // Match your access token's lifetime
+        });
+
         // Set new refresh token cookie
         Response.Cookies.Append("refresh_token", newRefreshToken, new CookieOptions
         {

@@ -41,6 +41,8 @@ public partial class ApplicationDBContext : DbContext
 
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
+    public virtual DbSet<Report> Reports { get; set; }
+
     public virtual DbSet<SupportType> SupportTypes { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
@@ -337,6 +339,41 @@ public partial class ApplicationDBContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__RefreshTo__UserI__19DFD96B");
+        });
+
+        modelBuilder.Entity<Report>(entity =>
+        {
+            entity.HasIndex(e => e.ReportedPostId, "IX_Reports_ReportedPostId");
+
+            entity.HasIndex(e => e.ReportedUserId, "IX_Reports_ReportedUserId");
+
+            entity.HasIndex(e => e.ReporterId, "IX_Reports_ReporterId");
+
+            entity.HasIndex(e => new { e.Status, e.CreatedAt }, "IX_Reports_Status_CreatedAt").IsDescending(false, true);
+
+            entity.Property(e => e.ActionTaken).HasMaxLength(100);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+            entity.Property(e => e.Reason).HasMaxLength(255);
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Pending");
+
+            entity.HasOne(d => d.ReportedPost).WithMany(p => p.Reports)
+                .HasForeignKey(d => d.ReportedPostId)
+                .HasConstraintName("FK_Reports_Post");
+
+            entity.HasOne(d => d.ReportedUser).WithMany(p => p.ReportReportedUsers)
+                .HasForeignKey(d => d.ReportedUserId)
+                .HasConstraintName("FK_Reports_ReportedUser");
+
+            entity.HasOne(d => d.Reporter).WithMany(p => p.ReportReporters)
+                .HasForeignKey(d => d.ReporterId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Reports_Reporter");
+
+            entity.HasOne(d => d.ReviewedByNavigation).WithMany(p => p.ReportReviewedByNavigations)
+                .HasForeignKey(d => d.ReviewedBy)
+                .HasConstraintName("FK_Reports_ReviewedBy");
         });
 
         modelBuilder.Entity<SupportType>(entity =>

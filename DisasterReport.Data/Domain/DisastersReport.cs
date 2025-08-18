@@ -45,6 +45,8 @@ public partial class DisastersReport
 
     public virtual User Reporter { get; set; } = null!;
 
+    public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
+
     public virtual ICollection<ImpactType> ImpactTypes { get; set; } = new List<ImpactType>();
 
     public virtual ICollection<SupportType> SupportTypes { get; set; } = new List<SupportType>();

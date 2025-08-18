@@ -30,6 +30,7 @@ namespace DisasterReport.Services
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<ISupportTypeService, SupportTypeService>();
             services.AddScoped<IImpactTypeService, ImpactTypeService>();
+            services.AddScoped<IReportService, ReportService>();
 
             //Add Cloudinary
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
