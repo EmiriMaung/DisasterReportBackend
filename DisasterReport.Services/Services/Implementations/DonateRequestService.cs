@@ -22,7 +22,7 @@ namespace DisasterReport.Services.Services
         }
 
         // ✅ Create request
-        public async Task<DonateRequestReadDto> CreateAsync(DonateRequestCreateDto dto, IFormFile? slipFile)
+        public async Task<DonateRequestReadDto> CreateAsync(DonateRequestCreateDto dto, IFormFile? slipFile, Guid userId)
         {
             string? slipUrl = null;
             string? fileType = null;
@@ -38,6 +38,7 @@ namespace DisasterReport.Services.Services
 
             var request = new DonateRequest
             {
+                RequestedByUserId = userId,
                 Description = dto.Description,
                 SupportType = dto.SupportType,
                 Amount = dto.Amount,
@@ -49,7 +50,10 @@ namespace DisasterReport.Services.Services
                 Status = (int)Status.Pending
             };
 
-            // ✅ If platform donation → auto approve & create donation
+            // Save request first
+            await _requestRepo.AddAsync(request);
+
+            // Then handle donation if platform donation
             if (dto.IsPlatformDonation)
             {
                 request.Status = (int)Status.Approved;
@@ -57,16 +61,14 @@ namespace DisasterReport.Services.Services
 
                 var donation = new Donation
                 {
-                    DonateRequest = request,
+                    DonateRequestId = request.Id,
                     DonatedAt = request.DonatedAt
                 };
                 await _donationRepo.AddAsync(donation);
             }
 
-            await _requestRepo.AddAsync(request);
             return MapToReadDto(request);
         }
-
 
         // ✅ Review request (by organization)
         public async Task<DonateRequestReadDto?> ReviewAsync(int requestId, DonateRequestReviewDto dto)
