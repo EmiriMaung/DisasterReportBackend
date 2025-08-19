@@ -61,7 +61,8 @@ namespace DisasterReport.API.Controllers
 
             try
             {
-                var newOrgId = await _organizationService.CreateOrganizationAsync(dto, creatorUserId);
+
+                var newOrgId = await _organizationService.CreateOrganizationAsync(dto, creatorUserId,null);
                 return CreatedAtAction(nameof(GetById), new { id = newOrgId }, new { Id = newOrgId });
             }
             catch (InvalidOperationException ex)
@@ -192,6 +193,22 @@ namespace DisasterReport.API.Controllers
                 return NotFound();
 
             return Ok("Organization removed from blacklist.");
+        }
+        // PUT: api/organization/{id}/logo
+        [HttpPut("{id}/logo")]
+        public async Task<IActionResult> UpdateLogo(int id, IFormFile logo)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+            {
+                return Unauthorized("User ID claim is missing or invalid");
+            }
+
+            var updatedLogoUrl = await _organizationService.UpdateLogoAsync(id, logo, userId);
+            if (updatedLogoUrl == null)
+                return NotFound("Organization not found");
+
+            return Ok(new { LogoUrl = updatedLogoUrl });
         }
 
     }

@@ -1,4 +1,5 @@
 ﻿using DisasterReport.Services.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace DisasterReport.Services.Services
 {
     public interface IOrganizationService
     {
-        Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId);
+        Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId, string? logoUrl);
         Task<IEnumerable<OrganizationDto>> GetAllAsync();
         Task<IEnumerable<OrganizationDto>> GetPendingOrgsAsync();
         Task<IEnumerable<OrganizationDto>> GetRejectedOrgsAsync();
@@ -23,6 +24,7 @@ namespace DisasterReport.Services.Services
         Task<bool> UnBlacklistOrganizationAsync(int orgId, Guid adminUserId);
         Task<bool> InviteMemberAsync(int orgId, InviteMemberDto dto, Guid inviterUserId);
         Task<bool> UserHasActiveOrganizationAsync(Guid userId);
-
+        // ✅ New method for logo updates only
+        Task<string?> UpdateLogoAsync(int orgId, IFormFile logoFile, Guid userId);
     }
 }

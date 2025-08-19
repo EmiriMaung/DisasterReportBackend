@@ -3,6 +3,7 @@ using CloudinaryDotNet.Actions;
 using DisasterReport.Services.Config;
 using DisasterReport.Services.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 // Aliases to avoid confusion between Cloudinary's UploadResult and custom own model

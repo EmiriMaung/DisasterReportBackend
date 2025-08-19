@@ -16,6 +16,9 @@ namespace DisasterReport.Services.Models
         public string? ApprovedByName { get; set; } // NEW FIELD
         public DateTime? ApprovedAt { get; set; }
         public DateTime CreatedAt { get; set; } //NEW FIELD
+
+        public string? LogoUrl { get; set; }//
+        
         public List<OrganizationDocDto>? Docs { get; set; } = new List<OrganizationDocDto>();
         public List<OrganizationMemberDto>? Members { get; set; } = new List<OrganizationMemberDto>();
     }
@@ -26,6 +29,7 @@ namespace DisasterReport.Services.Models
         public string OrganizationEmail { get; set; } = null!;
         public string? Description { get; set; }
         public string PhoneNumber { get; set; } = null!;
+        public IFormFile? Logo { get; set; }///
         public IFormFile? NrcFront { get; set; }   // must match frontend key
         public IFormFile? NrcBack { get; set; }    // must match frontend key
         public IFormFile? Certificate { get; set; } // must match frontend key
@@ -39,5 +43,7 @@ namespace DisasterReport.Services.Models
         public string OrganizationEmail { get; set; } = null!;
         public string? Description { get; set; }
         public string PhoneNumber { get; set; } = null!;
+        // ✅ Allow updating logo in profile
+        public IFormFile? Logo { get; set; }
     }
 }

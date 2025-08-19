@@ -70,7 +70,7 @@ namespace DisasterReport.Services.Services.Implementations
                 CreatedAdminId = entry.CreatedAdminId,
                 CreatedAdminName = adminNames.TryGetValue(entry.CreatedAdminId, out var name) ? name : "Unknown Admin",
                 UpdatedAt = entry.UpdateAt, 
-                UnblockReason = entry.UpdatedReason,
+                //UnblockReason = entry.UpdatedReason,
                 UpdatedAdminId = entry.UpdatedAdminId,
                 UpdatedAdminName = entry.UpdatedAdminId.HasValue && adminNames.TryGetValue(entry.UpdatedAdminId.Value, out var updatedName) ? updatedName : null
             }).ToList();
@@ -113,7 +113,7 @@ namespace DisasterReport.Services.Services.Implementations
                 Email = e.User.Email,
                 ProfilePictureUrl = e.User.ProfilePictureUrl,
                 Reason = e.Reason,
-                UpdatedReason = e.UpdatedReason,
+                //UpdatedReason = e.UpdatedReason,
                 CreatedAt = e.CreatedAt,
                 UpdatedAt = e.UpdateAt,
                 IsDeletedFromBlacklist = e.IsDeleted,
