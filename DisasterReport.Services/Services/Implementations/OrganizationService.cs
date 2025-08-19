@@ -51,7 +51,7 @@ namespace DisasterReport.Services.Services
             return await _organizationRepo.SaveChangesAsync();
         }
 
-        public async Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId)
+        public async Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId,string? logoUrl)
         {
             // 1️⃣ Check if user already has an active (non-rejected) organization
             if (await UserHasActiveOrganizationAsync(creatorUserId))
@@ -69,6 +69,16 @@ namespace DisasterReport.Services.Services
                 Status = (int)Status.Pending,
                 IsBlackListedOrg = false
             };
+            // 3️⃣ Handle Logo (upload or default)
+            if (dto.Logo != null)
+            {
+                var logoUpload = await _cloudinaryService.UploadFileAsync(dto.Logo);
+                organization.LogoUrl = logoUpload.SecureUrl;
+            }
+            else
+            {
+organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
+            }
 
             // 3️⃣ Save Organization to get its Id
             await _organizationRepo.AddAsync(organization);
@@ -146,6 +156,8 @@ namespace DisasterReport.Services.Services
                 OrganizationEmail = org.OrganizationEmail,
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
+                LogoUrl = org.LogoUrl, // ✅ Include logo
+
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -168,6 +180,8 @@ namespace DisasterReport.Services.Services
                 OrganizationEmail = org.OrganizationEmail,
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
+                LogoUrl = org.LogoUrl,
+
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -189,6 +203,8 @@ namespace DisasterReport.Services.Services
                 OrganizationEmail = org.OrganizationEmail,
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
+                LogoUrl = org.LogoUrl,
+
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -213,6 +229,8 @@ namespace DisasterReport.Services.Services
                 OrganizationEmail = org.OrganizationEmail,
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
+                LogoUrl = org.LogoUrl,
+
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -249,6 +267,8 @@ namespace DisasterReport.Services.Services
                 OrganizationEmail = org.OrganizationEmail,
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
+                LogoUrl = org.LogoUrl,
+
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -303,9 +323,29 @@ namespace DisasterReport.Services.Services
             org.Description = dto.Description;
             org.PhoneNumber = dto.PhoneNumber;
 
+            if (dto.Logo != null) // ✅ Allow updating logo
+            {
+                var logoUpload = await _cloudinaryService.UploadFileAsync(dto.Logo);
+                org.LogoUrl = logoUpload.SecureUrl;
+            }
             _organizationRepo.Update(org);
             return await _organizationRepo.SaveChangesAsync();
         }
+
+        //new
+        public async Task<string?> UpdateLogoAsync(int orgId, IFormFile logoFile, Guid userId)
+        {
+            var org = await _organizationRepo.GetByIdAsync(orgId);
+            if (org == null) return null;
+
+            var uploadResult = await _cloudinaryService.UploadFileAsync(logoFile);
+            org.LogoUrl = uploadResult.SecureUrl;
+
+            _organizationRepo.Update(org);
+            await _organizationRepo.SaveChangesAsync();
+
+            return org.LogoUrl;
+        } //
 
         public async Task<IEnumerable<OrganizationDto>> GetBlacklistedOrgsAsync()
         {
@@ -321,6 +361,8 @@ namespace DisasterReport.Services.Services
                     OrganizationEmail = org.OrganizationEmail,
                     Description = org.Description,
                     PhoneNumber = org.PhoneNumber,
+                    LogoUrl = org.LogoUrl,
+
                     IsBlackListedOrg = org.IsBlackListedOrg,
                     Status = (Status)org.Status,
                     ApprovedBy = org.ApprovedBy,
@@ -371,6 +413,6 @@ namespace DisasterReport.Services.Services
             var organizations = await _organizationMemberRepo.GetUserOrganizationsWithOrgAsync(userId);
 
             return organizations.Any(m => m.Organization.Status != (int)Status.Rejected);
-        }
+        } 
     }
 }

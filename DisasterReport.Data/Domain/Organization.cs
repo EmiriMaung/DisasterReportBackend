@@ -25,6 +25,8 @@ public partial class Organization
 
     public DateTime CreatedAt { get; set; }
 
+    public string? LogoUrl { get; set; }
+
     public virtual User? ApprovedByNavigation { get; set; }
 
     public virtual ICollection<DonateRequest> DonateRequests { get; set; } = new List<DonateRequest>();
