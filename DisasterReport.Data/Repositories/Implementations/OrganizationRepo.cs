@@ -93,6 +93,12 @@ namespace DisasterReport.Data.Repositories
                 .Include(o => o.OrganizationDocs)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
+        public async Task<int> GetActiveOrganizationCountAsync()
+        {
+            return await _context.Organizations
+                .Where(o => !o.IsBlackListedOrg && o.Status == 1)
+                .CountAsync();
+        }
 
         public async Task AddAsync(Organization organization)
         {

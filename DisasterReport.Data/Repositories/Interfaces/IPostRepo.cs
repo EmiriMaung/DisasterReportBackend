@@ -30,7 +30,8 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task RejectReportAsync(int reportId, Guid rejectedBy);
         Task<List<DisastersReport>> GetReportsByTopicIdAsync(int topicId);
         Task<List<DisasterReportMapDto>> GetFilteredDisasterReportsAsync(ReportFilterDto filter);//for sp
-
+        Task<List<CategoryCountDto>> GetCategoryCountsAsync(int? year = null, int? month = null);
+        Task<List<(DateTime ReportDate, int ReportCount)>> GetReportCountLast7DaysAsync();
         Task SaveChangesAsync();
         ApplicationDBContext DbContext { get; }
 

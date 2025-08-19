@@ -33,6 +33,10 @@ namespace DisasterReport.Services.Services
             _cloudinaryService = cloudinaryService;
             _userRepo = userRepo;
         }
+        public async Task<int> GetActiveOrganizationCountAsync()
+        {
+            return await _organizationRepo.GetActiveOrganizationCountAsync();
+        }
         public async Task<bool> ApproveOrganizationAsync(int orgId, Guid adminUserId)
         {
             var org = await _organizationRepo.GetByIdAsync(orgId);

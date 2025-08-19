@@ -9,8 +9,6 @@ public partial class DonateRequest
 
     public Guid RequestedByUserId { get; set; }
 
-    public int DisasterReportId { get; set; }
-
     public string? Description { get; set; }
 
     public string? SupportType { get; set; }
@@ -27,9 +25,13 @@ public partial class DonateRequest
 
     public DateTime DonatedAt { get; set; }
 
-    public virtual DisastersReport DisasterReport { get; set; } = null!;
+    public int? OrganizationId { get; set; }
+
+    public bool IsPlatformDonation { get; set; }
 
     public virtual ICollection<Donation> Donations { get; set; } = new List<Donation>();
+
+    public virtual Organization? Organization { get; set; }
 
     public virtual User RequestedByUser { get; set; } = null!;
 }

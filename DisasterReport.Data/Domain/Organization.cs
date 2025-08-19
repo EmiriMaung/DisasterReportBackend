@@ -27,6 +27,8 @@ public partial class Organization
 
     public virtual User? ApprovedByNavigation { get; set; }
 
+    public virtual ICollection<DonateRequest> DonateRequests { get; set; } = new List<DonateRequest>();
+
     public virtual ICollection<OrganizationDoc> OrganizationDocs { get; set; } = new List<OrganizationDoc>();
 
     public virtual ICollection<OrganizationMember> OrganizationMembers { get; set; } = new List<OrganizationMember>();

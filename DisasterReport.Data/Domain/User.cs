@@ -39,5 +39,11 @@ public partial class User
 
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
+    public virtual ICollection<Report> ReportReportedUsers { get; set; } = new List<Report>();
+
+    public virtual ICollection<Report> ReportReporters { get; set; } = new List<Report>();
+
+    public virtual ICollection<Report> ReportReviewedByNavigations { get; set; } = new List<Report>();
+
     public virtual UserRole Role { get; set; } = null!;
 }

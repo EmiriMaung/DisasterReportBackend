@@ -20,6 +20,8 @@ namespace DisasterReport.Services
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IOrganizationMemberService, OrganizationMemberService>();
             services.AddScoped<InvitationNotificationService>();
+            services.AddScoped<IDonateRequestService, DonateRequestService>();
+            services.AddScoped<IDonationService, DonationService>();
 
             services.AddScoped<IDisasterReportService, DisasterReportService>();
             services.AddScoped<IUserService, UserService>();
@@ -28,6 +30,7 @@ namespace DisasterReport.Services
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<ISupportTypeService, SupportTypeService>();
             services.AddScoped<IImpactTypeService, ImpactTypeService>();
+            services.AddScoped<IReportService, ReportService>();
 
             //Add Cloudinary
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));

@@ -48,6 +48,13 @@ namespace DisasterReport.API.Controllers
 
             return Ok(result);
         }
+        [HttpGet("active-count")]
+        [AllowAnonymous]
+        public async Task<int> GetActiveOrganizationCountAsync()
+        {
+            return await _organizationService.GetActiveOrganizationCountAsync();
+        }
+
 
         // POST: api/organization
         [HttpPost]

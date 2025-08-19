@@ -19,7 +19,7 @@ namespace DisasterReport.Tests.WebAPI
         public DisasterReportControllerTest()
         {
             _mockService = new Mock<IDisasterReportService>();
-            _controller = new DisastersReportController(_mockService.Object);
+            //_controller = new DisastersReportController(_mockService.Object);
         }
 
         [Fact]

@@ -1,8 +1,10 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Data.Repositories.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +27,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -42,7 +44,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -58,7 +60,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -74,7 +76,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -88,7 +90,7 @@ public class PostRepo : IPostRepo
             .AsNoTracking()
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
@@ -101,7 +103,7 @@ public class PostRepo : IPostRepo
             .AsNoTracking()
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
@@ -127,7 +129,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -183,7 +185,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -242,7 +244,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
@@ -255,7 +257,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            .Include(r => r.DonateRequests)
+            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
@@ -302,6 +304,34 @@ public class PostRepo : IPostRepo
                     @EndDate = {filter.EndDate}, 
                     @IsUrgent = {filter.IsUrgent}")
             .ToListAsync();
+    }
+    public async Task<List<CategoryCountDto>> GetCategoryCountsAsync(int? year = null, int? month = null)
+    {
+        var yearParam = year.HasValue ? year.Value.ToString() : "NULL";
+        var monthParam = month.HasValue ? month.Value.ToString() : "NULL";
+
+        string sql = $"EXEC GetCategoryCounts @Year={yearParam}, @Month={monthParam}";
+
+        return await _context.CategoryCountDtos.FromSqlRaw(sql).ToListAsync();
+    }
+    public async Task<List<(DateTime ReportDate, int ReportCount)>> GetReportCountLast7DaysAsync()
+    {
+        DateTime today = DateTime.UtcNow.Date;
+        DateTime last7Days = today.AddDays(-6);
+
+        var result = await _context.DisastersReports
+            .Where(r => r.ReportedAt.Date >= last7Days && !r.IsDeleted)
+            .GroupBy(r => r.ReportedAt.Date)
+            .Select(g => new
+            {
+                ReportDate = g.Key,
+                ReportCount = g.Count()
+            })
+            .OrderBy(x => x.ReportDate)
+            .ToListAsync();
+
+        // Convert anonymous type to tuple for returning from repository
+        return result.Select(x => (x.ReportDate, x.ReportCount)).ToList();
     }
     public async Task SaveChangesAsync()
     {

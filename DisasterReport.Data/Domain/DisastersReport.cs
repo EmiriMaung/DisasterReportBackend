@@ -31,17 +31,21 @@ public partial class DisastersReport
 
     public int? DisasterTopicsId { get; set; }
 
+    public Guid? ProcessedBy { get; set; }
+
+    public DateTime? ProcessedAt { get; set; }
+
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
     public virtual DisasterTopic? DisasterTopics { get; set; }
-
-    public virtual ICollection<DonateRequest> DonateRequests { get; set; } = new List<DonateRequest>();
 
     public virtual ICollection<ImpactUrl> ImpactUrls { get; set; } = new List<ImpactUrl>();
 
     public virtual Location Location { get; set; } = null!;
 
     public virtual User Reporter { get; set; } = null!;
+
+    public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
 
     public virtual ICollection<ImpactType> ImpactTypes { get; set; } = new List<ImpactType>();
 

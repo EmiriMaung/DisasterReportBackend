@@ -22,6 +22,8 @@ namespace DisasterReport.Data
             services.AddScoped<IOrganizationRepo, OrganizationRepo>();
             services.AddScoped<IOrganizationDocRepo, OrganizationDocRepo>();
             services.AddScoped<IOrganizationMemberRepo, OrganizationMemberRepo>();
+            services.AddScoped<IDonationRepo, DonationRepo>();
+            services.AddScoped<IDonateRequestRepo, DonateRequestRepo>();
             services.AddScoped<IPostRepo, PostRepo>();
             services.AddScoped<ILocationRepo, LocationRepo>();
             services.AddScoped<IImpactUrlRepo, ImpactUrlRepo>();
@@ -29,6 +31,7 @@ namespace DisasterReport.Data
             services.AddScoped<IBlacklistEntryRepo, BlacklistEntryRepo>();
             services.AddScoped<ISupportTypeRepo, SupportTypeRepo>();
             services.AddScoped<IImpactTypeRepo, ImpactTypeRepo>();
+            services.AddScoped<IReportRepo, ReportRepo>();
             return services;
         }
     }
