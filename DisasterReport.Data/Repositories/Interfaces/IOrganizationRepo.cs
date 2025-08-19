@@ -22,6 +22,7 @@ namespace DisasterReport.Data.Repositories
         Task<Organization?> GetByIdAsync(int id);
         Task<Organization?> GetDetailsByIdAsync(int id); // with members and docs
         Task<IEnumerable<Organization>> GetByUserIdAsync(Guid userId);
+        Task<int> GetActiveOrganizationCountAsync();
         Task AddAsync(Organization organization);
         void Update(Organization organization);
         void Delete(Organization organization);

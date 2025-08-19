@@ -9,6 +9,7 @@ namespace DisasterReport.Services.Services
 {
     public interface IOrganizationService
     {
+        Task<int> GetActiveOrganizationCountAsync();
         Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId);
         Task<IEnumerable<OrganizationDto>> GetAllAsync();
         Task<IEnumerable<OrganizationDto>> GetPendingOrgsAsync();
