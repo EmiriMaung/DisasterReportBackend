@@ -23,12 +23,11 @@ namespace DisasterReport.API.Controllers
             IFormFile? slipFile)
         {
             // Get current user's ID from JWT
-            var userId = Guid.Parse(User.FindFirst("sub")?.Value ?? throw new Exception("UserId missing"));
+            var userId = GetUserId();
 
-            var result = await _service.CreateAsync(dto, slipFile);
+            var result = await _service.CreateAsync(dto, slipFile, userId);
             return Ok(result);
         }
-
 
         // ✅ Admin/org fetch all requests
         [HttpGet]
@@ -51,6 +50,13 @@ namespace DisasterReport.API.Controllers
             var result = await _service.RejectAsync(id);
             if (result == null) return NotFound();
             return Ok(result);
+        }
+
+        // Utility to extract user ID from JWT
+        private Guid GetUserId()
+        {
+            var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+            return Guid.Parse(userIdStr!);
         }
 
     }

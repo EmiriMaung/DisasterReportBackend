@@ -6,7 +6,7 @@ namespace DisasterReport.Services.Services
     public interface IDonateRequestService
     {
         // Create a new donate request
-        Task<DonateRequestReadDto> CreateAsync(DonateRequestCreateDto dto, IFormFile? slipFile);
+        Task<DonateRequestReadDto> CreateAsync(DonateRequestCreateDto dto, IFormFile? slipFile, Guid userId);
 
         // Review (approve/reject) a donate request
         Task<DonateRequestReadDto?> ReviewAsync(int requestId, DonateRequestReviewDto dto);
