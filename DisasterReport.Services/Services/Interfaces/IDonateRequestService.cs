@@ -15,6 +15,7 @@ namespace DisasterReport.Services.Services
         Task<IEnumerable<DonateRequestReadDto>> GetAllAsync();
         Task<IEnumerable<DonateRequestReadDto>> GetByUserIdAsync(Guid userId);
         Task<IEnumerable<DonateRequestReadDto>> GetPendingByOrganizationIdAsync(int organizationId);
+        Task<IEnumerable<DonateRequestReadDto>> GetByIsPlatformAsync(bool isPlatformDonation);
 
         // Approve request (auto creates donation)
         Task<DonateRequestReadDto?> ApproveAsync(int requestId);

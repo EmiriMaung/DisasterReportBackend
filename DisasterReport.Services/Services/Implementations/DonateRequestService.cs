@@ -65,9 +65,15 @@ namespace DisasterReport.Services.Services
                     DonatedAt = request.DonatedAt
                 };
                 await _donationRepo.AddAsync(donation);
+
+                // Update request after donation
+                await _requestRepo.UpdateAsync(request);
             }
 
-            return MapToReadDto(request);
+            // Reload the request with navigation property populated
+            var createdRequest = await _requestRepo.GetByIdAsync(request.Id);
+
+            return MapToReadDto(createdRequest!);
         }
 
         // ✅ Review request (by organization)
@@ -135,6 +141,12 @@ namespace DisasterReport.Services.Services
             var requests = await _requestRepo.GetAllAsync();
             return requests.Select(MapToReadDto);
         }
+        // ✅ Get by platform/organization donation
+        public async Task<IEnumerable<DonateRequestReadDto>> GetByIsPlatformAsync(bool isPlatformDonation)
+        {
+            var requests = await _requestRepo.GetByIsPlatformAsync(isPlatformDonation);
+            return requests.Select(MapToReadDto);
+        }
 
         // ✅ Get by user
         public async Task<IEnumerable<DonateRequestReadDto>> GetByUserIdAsync(Guid userId)
@@ -159,6 +171,7 @@ namespace DisasterReport.Services.Services
             {
                 Id = request.Id,
                 RequestedByUserId = request.RequestedByUserId,
+                RequestedByUserName = request.RequestedByUser?.Name,
                 Description = request.Description,
                 SupportType = request.SupportType,
                 Amount = request.Amount,

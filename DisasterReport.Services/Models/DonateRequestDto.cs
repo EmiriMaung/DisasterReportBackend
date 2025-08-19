@@ -21,6 +21,7 @@ namespace DisasterReport.Services.Models
     {
         public int Id { get; set; }
         public Guid RequestedByUserId { get; set; }
+        public string? RequestedByUserName { get; set; }
         public string? Description { get; set; }
         public string? SupportType { get; set; }
         public decimal? Amount { get; set; }

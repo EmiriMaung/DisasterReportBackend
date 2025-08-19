@@ -25,6 +25,7 @@ namespace DisasterReport.Data.Repositories
         {
             return Task.FromResult(_db.DonateRequests
                                       .Include(r => r.Donations)
+                                      .Include(r => r.RequestedByUser)
                                       .AsEnumerable());
         }
 
@@ -32,6 +33,7 @@ namespace DisasterReport.Data.Repositories
         {
             return _db.DonateRequests
                       .Include(r => r.Donations)
+                      .Include(r => r.RequestedByUser)
                       .FirstOrDefaultAsync(r => r.Id == id);
         }
 
@@ -40,6 +42,7 @@ namespace DisasterReport.Data.Repositories
             return Task.FromResult(_db.DonateRequests
                                        .Where(r => r.OrganizationId == organizationId)
                                        .Include(r => r.Donations)
+                                       .Include(r => r.RequestedByUser)
                                        .AsEnumerable());
         }
 
@@ -49,6 +52,16 @@ namespace DisasterReport.Data.Repositories
                                         .Where(r => r.RequestedByUserId == userId)
                                         .Include(r => r.Donations)
                                         .AsEnumerable());
+        }
+        public Task<IEnumerable<DonateRequest>> GetByIsPlatformAsync(bool isPlatform)
+        {
+            return Task.FromResult(
+                _db.DonateRequests
+                    .Where(r => r.IsPlatformDonation == isPlatform)
+                    .Include(r => r.Donations)
+                    .Include(r => r.RequestedByUser)
+                    .AsEnumerable()
+            );
         }
 
         //Update
