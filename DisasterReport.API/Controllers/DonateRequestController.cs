@@ -52,6 +52,19 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
+        // ✅ New endpoint to get by platform donation
+        [Authorize(Roles = "Admin")]
+        [HttpGet("platform/{isPlatformDonation}")]
+        public async Task<ActionResult<IEnumerable<DonateRequestReadDto>>> GetByIsPlatform(bool isPlatformDonation)
+        {
+            var result = await _service.GetByIsPlatformAsync(isPlatformDonation);
+
+            if (result == null || !result.Any())
+                return NotFound("No donate requests found for the given type.");
+
+            return Ok(result);
+        }
+
         // Utility to extract user ID from JWT
         private Guid GetUserId()
         {
