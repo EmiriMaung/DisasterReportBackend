@@ -27,6 +27,10 @@ public partial class Organization
 
     public string? LogoUrl { get; set; }
 
+    public string? Address { get; set; }
+
+    public string? PayQrUrls { get; set; }
+
     public virtual User? ApprovedByNavigation { get; set; }
 
     public virtual ICollection<DonateRequest> DonateRequests { get; set; } = new List<DonateRequest>();

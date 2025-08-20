@@ -17,6 +17,8 @@ public partial class ApplicationDBContext : DbContext
 
     public virtual DbSet<Comment> Comments { get; set; }
 
+    public virtual DbSet<DisasterEventNasa> DisasterEventNasas { get; set; }
+
     public virtual DbSet<DisasterTopic> DisasterTopics { get; set; }
 
     public virtual DbSet<DisastersReport> DisastersReports { get; set; }
@@ -48,7 +50,9 @@ public partial class ApplicationDBContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
+
     public virtual DbSet<DisasterReportMapDto> DisasterReportMapDtos { get; set; }
+
     public virtual DbSet<CategoryCountDto> CategoryCountDtos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -101,6 +105,19 @@ public partial class ApplicationDBContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Comments__UserId__6C190EBB");
+        });
+
+        modelBuilder.Entity<DisasterEventNasa>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Disaster__3214EC07C6737E0E");
+
+            entity.ToTable("DisasterEventNasa");
+
+            entity.Property(e => e.Category).HasMaxLength(200);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.EventId).HasMaxLength(100);
+            entity.Property(e => e.SourceUrl).HasMaxLength(500);
+            entity.Property(e => e.Title).HasMaxLength(500);
         });
 
         modelBuilder.Entity<DisasterTopic>(entity =>
@@ -411,6 +428,7 @@ public partial class ApplicationDBContext : DbContext
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
         modelBuilder.Entity<CategoryCountDto>().HasNoKey();
+
 
         OnModelCreatingPartial(modelBuilder);
     }
