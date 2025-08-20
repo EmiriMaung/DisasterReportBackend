@@ -4,11 +4,6 @@ using DisasterReport.Data.Repositories.Interfaces;
 using DisasterReport.Services.Enums;
 using DisasterReport.Services.Models;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DisasterReport.Services.Services
 {
@@ -51,7 +46,7 @@ namespace DisasterReport.Services.Services
             return await _organizationRepo.SaveChangesAsync();
         }
 
-        public async Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId,string? logoUrl)
+        public async Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId, string? logoUrl)
         {
             // 1️⃣ Check if user already has an active (non-rejected) organization
             if (await UserHasActiveOrganizationAsync(creatorUserId))
@@ -59,7 +54,7 @@ namespace DisasterReport.Services.Services
                 throw new InvalidOperationException("You already have an active organization (pending, approved, or blacklisted).");
             }
 
-            // 2️⃣ Create Organization entity
+            // 2️⃣ Create Organization entity (without logo & PayQr yet)
             var organization = new Organization
             {
                 Name = dto.Name,
@@ -67,8 +62,10 @@ namespace DisasterReport.Services.Services
                 Description = dto.Description,
                 PhoneNumber = dto.PhoneNumber,
                 Status = (int)Status.Pending,
-                IsBlackListedOrg = false
+                IsBlackListedOrg = false,
+                Address = dto.Address
             };
+
             // 3️⃣ Handle Logo (upload or default)
             if (dto.Logo != null)
             {
@@ -77,14 +74,25 @@ namespace DisasterReport.Services.Services
             }
             else
             {
-organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
+                organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
             }
 
-            // 3️⃣ Save Organization to get its Id
+            // 4️⃣ Handle PayQrUrl (upload if file provided)
+            if (dto.PayQrUrls != null)
+            {
+                var qrUpload = await _cloudinaryService.UploadFileAsync(dto.PayQrUrls);
+                organization.PayQrUrls = qrUpload.SecureUrl; // save uploaded QR code image
+            }
+            else
+            {
+                organization.PayQrUrls = null; // optional: could set to default QR image
+            }
+
+            // 5️⃣ Save Organization to get its Id
             await _organizationRepo.AddAsync(organization);
             await _organizationRepo.SaveChangesAsync();
 
-            // 4️⃣ Upload split files (NRC front/back, Certificate)
+            // 6️⃣ Upload split files (NRC front/back, Certificate)
             var splitFiles = new List<IFormFile?> { dto.NrcFront, dto.NrcBack, dto.Certificate };
             var splitFileLabels = new List<string> { "NRC Front", "NRC Back", "Certificate" };
 
@@ -107,7 +115,7 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                 await _organizationDocRepo.AddAsync(orgDoc);
             }
 
-            // 5️⃣ Upload any additional documents
+            // 7️⃣ Upload any additional documents
             if (dto.Documents != null && dto.Documents.Count > 0)
             {
                 foreach (var file in dto.Documents)
@@ -126,10 +134,10 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                 }
             }
 
-            // 6️⃣ Save all OrganizationDocs
+            // 8️⃣ Save all OrganizationDocs
             await _organizationDocRepo.SaveChangesAsync();
 
-            // 7️⃣ Add creator as Owner in OrganizationMembers
+            // 9️⃣ Add creator as Owner in OrganizationMembers
             var ownerMember = new OrganizationMember
             {
                 OrganizationId = organization.Id,
@@ -141,7 +149,7 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
             await _organizationMemberRepo.AddAsync(ownerMember);
             await _organizationMemberRepo.SaveChangesAsync();
 
-            // 8️⃣ Return the new Organization Id
+            // 🔟 Return the new Organization Id
             return organization.Id;
         }
 
@@ -157,7 +165,8 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
                 LogoUrl = org.LogoUrl, // ✅ Include logo
-
+                Address = org.Address,
+                PayQrUrls = org.PayQrUrls,
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -181,7 +190,8 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
                 LogoUrl = org.LogoUrl,
-
+                Address = org.Address,
+                PayQrUrls = org.PayQrUrls,
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -204,7 +214,8 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
                 LogoUrl = org.LogoUrl,
-
+                Address= org.Address,
+                PayQrUrls = org.PayQrUrls,
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -230,7 +241,8 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
                 LogoUrl = org.LogoUrl,
-
+                Address = org.Address,
+                PayQrUrls = org.PayQrUrls,
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -268,7 +280,8 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
                 LogoUrl = org.LogoUrl,
-
+                Address = org.Address,
+                PayQrUrls = org.PayQrUrls,
                 IsBlackListedOrg = org.IsBlackListedOrg,
                 Status = (Status)org.Status,
                 ApprovedBy = org.ApprovedBy,
@@ -322,12 +335,20 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
             org.OrganizationEmail = dto.OrganizationEmail;
             org.Description = dto.Description;
             org.PhoneNumber = dto.PhoneNumber;
+            org.Address = dto.Address;
 
             if (dto.Logo != null) // ✅ Allow updating logo
             {
                 var logoUpload = await _cloudinaryService.UploadFileAsync(dto.Logo);
                 org.LogoUrl = logoUpload.SecureUrl;
             }
+            // ✅ Update Pay QR if new one is uploaded
+            if (dto.PayQrUrls != null) // <-- assuming UpdateOrganizationDto has IFormFile PayQr
+            {
+                var qrUpload = await _cloudinaryService.UploadFileAsync(dto.PayQrUrls);
+                org.PayQrUrls = qrUpload.SecureUrl;
+            }
+
             _organizationRepo.Update(org);
             return await _organizationRepo.SaveChangesAsync();
         }
@@ -362,7 +383,8 @@ organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
                     Description = org.Description,
                     PhoneNumber = org.PhoneNumber,
                     LogoUrl = org.LogoUrl,
-
+                    Address = org.Address,
+                    PayQrUrls = org.PayQrUrls,
                     IsBlackListedOrg = org.IsBlackListedOrg,
                     Status = (Status)org.Status,
                     ApprovedBy = org.ApprovedBy,
