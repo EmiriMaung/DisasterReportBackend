@@ -38,10 +38,10 @@ namespace DisasterReport.Services.Services.Implementations
         {
             string cacheKey = $"BlacklistEntries_{page}_{pageSize}_{searchQuery}_{sortBy}_{sortOrder}_{statusFilter}_{startDate:yyyy-MM-dd}_{endDate:yyyy-MM-dd}_{adminId}";
 
-            if (_cache.TryGetValue(cacheKey, out PaginatedResult<BlacklistEntryDto> cachedResult))
-            {
-                return cachedResult;
-            }
+            //if (_cache.TryGetValue(cacheKey, out PaginatedResult<BlacklistEntryDto> cachedResult))
+            //{
+            //    return cachedResult;
+            //}
 
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
@@ -84,11 +84,11 @@ namespace DisasterReport.Services.Services.Implementations
                 PageSize = pageSize
             };
 
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
-            .AddExpirationToken(new CancellationChangeToken(_cacheResetTokenSource.Token));
+            //var cacheEntryOptions = new MemoryCacheEntryOptions()
+            //.SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
+            //.AddExpirationToken(new CancellationChangeToken(_cacheResetTokenSource.Token));
 
-            _cache.Set(cacheKey, result, cacheEntryOptions);
+            //_cache.Set(cacheKey, result, cacheEntryOptions);
 
             return result;
         }

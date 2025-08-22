@@ -3,6 +3,7 @@ using DisasterReport.Services.Models.ReportDTO;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -79,13 +80,30 @@ public class ReportsController : ControllerBase
     }
 
 
+    //[HttpPost("{id}/reject")]
+    //[Authorize(Roles = "Admin")]
+    //public async Task<IActionResult> RejectReport(int id)
+    //{
+    //    Guid adminId = Guid.Parse(User.FindFirst("id")!.Value);
+    //    var rejected = await _reportService.RejectReportAsync(id, adminId);
+    //    if (rejected == null) return BadRequest("Report not found or already handled.");
+    //    return Ok(rejected);
+    //}
     [HttpPost("{id}/reject")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> RejectReport(int id)
     {
-        Guid adminId = Guid.Parse(User.FindFirst("id")!.Value);
-        var rejected = await _reportService.RejectReportAsync(id, adminId);
-        if (rejected == null) return BadRequest("Report not found or already handled.");
-        return Ok(rejected);
+        try
+        {
+            Guid adminId = Guid.Parse(User.FindFirst("id")!.Value);
+            var rejected = await _reportService.RejectReportAsync(id, adminId);
+            if (rejected == null) return BadRequest("Report not found or already handled.");
+            return Ok(rejected);
+        }
+        catch (Exception ex)
+        {
+            // Log the actual error
+            return StatusCode(500, new { message = ex.Message, stackTrace = ex.StackTrace });
+        }
     }
 }
