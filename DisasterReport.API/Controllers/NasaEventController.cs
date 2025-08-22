@@ -19,7 +19,7 @@ namespace DisasterReport.API.Controllers
         public async Task<IActionResult> FetchAndSave()
         {
             await _service.FetchAndStoreDisastersAsync();
-            return Ok("NASA events checked and new ones stored.");
+            return Ok();
         }
     }
 

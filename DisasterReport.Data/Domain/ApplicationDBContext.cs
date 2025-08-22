@@ -112,6 +112,8 @@ public partial class ApplicationDBContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Disaster__3214EC07C6737E0E");
 
             entity.ToTable("DisasterEventNasa");
+            entity.Property(e => e.Id)
+          .ValueGeneratedOnAdd(); // Auto increment ဖြစ်အောင်
 
             entity.Property(e => e.Category).HasMaxLength(200);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");

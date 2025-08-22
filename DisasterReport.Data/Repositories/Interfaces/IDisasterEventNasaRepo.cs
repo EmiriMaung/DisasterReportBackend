@@ -12,5 +12,6 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task<bool> ExistsAsync(string eventId);
         Task AddAsync(DisasterEventNasa entity);
         Task SaveChangesAsync();
+        Task<List<string>> GetExistingEventIdsAsync(List<string> eventIds);
     }
 }

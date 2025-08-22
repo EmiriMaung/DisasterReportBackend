@@ -376,7 +376,7 @@ namespace DisasterReport.Data.Repositories.Implementations
 
             return await _context.Users
                 .Where(u => userIds.Contains(u.Id))
-                .ToDictionaryAsync(u => u.Id, u => new AdminInfo { Name = u.Name, ProfilePictureUrl = u.ProfilePictureUrl });
+               .ToDictionaryAsync(u => u.Id, u => new AdminInfo { Name = u.Name, ProfilePictureUrl = u.ProfilePictureUrl });
         }
 
 

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace DisasterReport.Data.Repositories.Implementations
 {
     public class DisasterEventNasaRepo : IDisasterEventNasaRepo
@@ -22,6 +21,14 @@ namespace DisasterReport.Data.Repositories.Implementations
         {
             return await _context.DisasterEventNasas
                 .AnyAsync(e => e.EventId == eventId);
+        }
+
+        public async Task<List<string>> GetExistingEventIdsAsync(List<string> eventIds)
+        {
+            return await _context.DisasterEventNasas
+                .Where(e => eventIds.Contains(e.EventId))
+                .Select(e => e.EventId)
+                .ToListAsync();
         }
 
         public async Task AddAsync(DisasterEventNasa entity)

@@ -1,5 +1,6 @@
 using DisasterReport.Data;
 using DisasterReport.Services;
+using DisasterReport.Services.Services.Implementations;
 using DisasterReport.WebApi.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -30,6 +31,9 @@ namespace DisasterReport.API
             builder.Services.AddServiceLayer(builder.Configuration);
             // Memory Cache
             builder.Services.AddMemoryCache();
+
+            builder.Services.AddHostedService<NasaBackgroundService>();
+
 
             // ADD CORS CONFIGURATION
             builder.Services.AddCors(options =>
