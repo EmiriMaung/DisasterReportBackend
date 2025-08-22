@@ -80,17 +80,19 @@ namespace DisasterReport.API.Controllers
 
         // PUT: api/organization/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateOrganizationDto dto)
-        {
-            if (id != dto.Id)
-                return BadRequest("Mismatched ID");
+        public async Task<IActionResult> Update(
+        int id,
+        [FromForm] UpdateOrganizationDto dto)
+            {
+                if (id != dto.Id)
+                    return BadRequest("Mismatched ID");
 
-            var success = await _organizationService.UpdateOrganizationAsync(dto);
-            if (!success)
-                return NotFound();
+                var success = await _organizationService.UpdateOrganizationAsync(dto);
+                if (!success)
+                    return NotFound();
 
-            return NoContent();
-        }
+                return NoContent();
+            }
 
         // POST: api/organization/{id}/approve
         [HttpPost("{id}/approve")]
