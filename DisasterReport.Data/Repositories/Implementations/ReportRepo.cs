@@ -47,7 +47,7 @@ namespace DisasterReport.Data.Repositories.Implementations
             }
 
             // Status filter
-            if (!string.IsNullOrEmpty(statusFilter))
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
             {
                 query = query.Where(r => r.Status == statusFilter);
             }
@@ -145,11 +145,52 @@ namespace DisasterReport.Data.Repositories.Implementations
             report.Status = "Rejected";
             report.ReviewedBy = adminId;
             report.ReviewedAt = DateTime.UtcNow;
+            report.ActionTaken = "No Action taken.";
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("RejectAsync failed: " + ex.Message, ex);
+            }
+
             return report;
         }
+        // In ReportRepo.cs
 
+        //public async Task<Report?> RejectAsync(int id, Guid adminId)
+        //{
+        //    // First, check if the report exists and is pending
+        //    var reportExists = await _context.Reports
+        //        .AsNoTracking() // Use AsNoTracking for a fast, read-only check
+        //        .AnyAsync(r => r.Id == id && r.Status == "Pending");
+
+        //    if (!reportExists)
+        //    {
+        //        return null;
+        //    }
+
+        //    // Create a "stub" entity with only the ID.
+        //    // This represents the record we want to update.
+        //    var reportToUpdate = new Report { Id = id };
+
+        //    // Attach the stub to the context. EF now knows about this record
+        //    // but isn't tracking its original values.
+        //    _context.Reports.Attach(reportToUpdate);
+
+        //    // Now, explicitly tell EF which properties have changed.
+        //    reportToUpdate.Status = "Rejected";
+        //    reportToUpdate.ReviewedBy = adminId;
+        //    reportToUpdate.ReviewedAt = DateTime.UtcNow;
+
+        //    // EF will now generate a clean UPDATE statement for only these three fields.
+        //    await _context.SaveChangesAsync();
+
+        //    // Return the updated entity
+        //    return reportToUpdate;
+        //}
 
         public async Task<bool> DeleteAsync(int id)
         {

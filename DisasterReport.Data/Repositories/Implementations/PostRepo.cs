@@ -71,7 +71,7 @@ public class PostRepo : IPostRepo
     public async Task<List<DisastersReport>> GetAllPostsWithMaterialsAsync()
     {
         return await _context.DisastersReports
-            .Where(r => r.Status == 1)
+            .Where(r => r.Status == 1 && r.IsDeleted==false)
             .AsNoTracking()
             .Include(r => r.Location)
             .Include(r => r.Comments)

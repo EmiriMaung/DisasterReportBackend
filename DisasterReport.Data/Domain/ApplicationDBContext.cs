@@ -56,6 +56,16 @@ public partial class ApplicationDBContext : DbContext
     public virtual DbSet<CategoryCountDto> CategoryCountDtos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Report>(entity =>
+        {
+            // This explicitly defines the optional relationship to a ReportedPost
+            entity.HasOne(d => d.ReportedPost)
+                  .WithMany(p => p.Reports) // Assuming DisastersReport has a "public virtual ICollection<Report> Reports" property
+                  .HasForeignKey(d => d.ReportedPostId)
+                  .IsRequired(false) // This is the crucial part
+                  .OnDelete(DeleteBehavior.ClientSetNull); // Prevents cascade delete errors
+        });
+
         modelBuilder.Entity<BlacklistEntry>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Blacklis__3214EC077E8C81EA");

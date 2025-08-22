@@ -1,6 +1,7 @@
 ﻿using DisasterReport.Services.Models.Common;
 using DisasterReport.Services.Models.UserDTO;
 using DisasterReport.Services.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -140,6 +141,22 @@ namespace DisasterReport.API.Controllers
         public async Task<ActionResult<UserDto>> GetUserById(Guid id)
         {
             var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(user);
+        }
+
+
+        [HttpGet("{id}/details")]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetUserDetails(Guid id)
+        {
+            // The controller now only calls the service
+            var user = await _userService.GetUserByIdAsync(id);
+
             if (user == null)
             {
                 return NotFound();

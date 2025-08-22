@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DisasterReport.API.Controllers
 {
@@ -155,10 +156,15 @@ namespace DisasterReport.API.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateBlacklistEntryDto dto)
         {
             try
             {
+                var adminId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+                // 2. Set the admin's ID on the data object
+                dto.CreatedAdminId = adminId;
                 await _blacklistEntryService.AddAsync(dto);
                 return StatusCode(201);
             }
