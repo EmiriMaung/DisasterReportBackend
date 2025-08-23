@@ -38,5 +38,37 @@ namespace DisasterReport.Services.Models
     public class EonetResponse
     {
         public List<EonetEvent> Events { get; set; }
+        public Links Links { get; set; } // ✅ pagination info
+
     }
+
+    public class GetDisasterEventsNasa
+    {
+        public int Id { get; set; }
+
+        public string EventId { get; set; } = null!;
+
+        public string Title { get; set; } = null!;
+
+        public string? Description { get; set; }
+
+        public string? Category { get; set; }
+
+        public string? SourceUrl { get; set; }
+
+        public DateTime EventDate { get; set; }
+
+        public double? Latitude { get; set; }
+
+        public double? Longitude { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+    }
+    public class Links
+    {
+        public string Next { get; set; }
+        public string Prev { get; set; }
+        public string Self { get; set; }
+    }
+   
 }

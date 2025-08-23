@@ -18,7 +18,7 @@ namespace DisasterReport.API.Controllers
         [HttpGet("events")]
         public async Task<IActionResult> GetEvents()
         {
-            var eventsData = await _nasaService.GetDisasterEventsAsync();
+            var eventsData = await _nasaService.GetAllDisasterEventsAsync();
             return Ok(eventsData);
         }
     }

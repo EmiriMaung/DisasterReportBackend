@@ -30,7 +30,12 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Select(e => e.EventId)
                 .ToListAsync();
         }
-
+        public async Task<List<DisasterEventNasa>> GetAllAsync()
+        {
+            return await _context.DisasterEventNasas
+                .OrderByDescending(e => e.EventDate).AsNoTracking()
+                .ToListAsync();
+        }
         public async Task AddAsync(DisasterEventNasa entity)
         {
             await _context.DisasterEventNasas.AddAsync(entity);

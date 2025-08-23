@@ -1,6 +1,7 @@
 using DisasterReport.Data;
 using DisasterReport.Services;
 using DisasterReport.Services.Services.Implementations;
+using DisasterReport.Shared.SignalR;
 using DisasterReport.WebApi.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -90,6 +91,60 @@ namespace DisasterReport.API
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+            //.AddJwtBearer(options =>
+            //{
+            //    options.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidateIssuer = true,
+            //        ValidateAudience = true,
+            //        ValidateLifetime = true,
+            //        ValidateIssuerSigningKey = true,
+            //        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            //        ValidAudience = builder.Configuration["Jwt:Audience"],
+            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+
+            //        NameClaimType = JwtRegisteredClaimNames.Sub,
+            //        RoleClaimType = ClaimTypes.Role
+            //    };
+
+            //    //options.Events = new JwtBearerEvents
+            //    //{
+            //    //    OnMessageReceived = context =>
+            //    //    {
+            //    //        // Read token from cookie instead of header
+            //    //        if (context.Request.Cookies.TryGetValue("access_token", out var token))
+            //    //        {
+            //    //            context.Token = token;
+            //    //        }
+            //    //        return Task.CompletedTask;
+            //    //    }
+            //    //};
+
+            //    options.Events = new JwtBearerEvents
+            //    {
+            //        OnMessageReceived = context =>
+            //        {
+            //            // Try to get token from query string (for SignalR)
+            //            var accessToken = context.Request.Query["access_token"];
+            //            var path = context.HttpContext.Request.Path;
+
+            //            // This must match your hub endpoint path (case-sensitive)
+            //            var isHubRequest = path.StartsWithSegments("/hubs/notification");
+
+            //            if (!string.IsNullOrEmpty(accessToken) && isHubRequest)
+            //            {
+            //                context.Token = accessToken;
+            //            }
+            //            else if (context.Request.Cookies.TryGetValue("access_token", out var cookieToken))
+            //            {
+            //                context.Token = cookieToken;
+            //            }
+
+            //            return Task.CompletedTask;
+            //        }
+            //    };
+
+            //});
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -106,24 +161,11 @@ namespace DisasterReport.API
                     RoleClaimType = ClaimTypes.Role
                 };
 
-                //options.Events = new JwtBearerEvents
-                //{
-                //    OnMessageReceived = context =>
-                //    {
-                //        // Read token from cookie instead of header
-                //        if (context.Request.Cookies.TryGetValue("access_token", out var token))
-                //        {
-                //            context.Token = token;
-                //        }
-                //        return Task.CompletedTask;
-                //    }
-                //};
-
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
                     {
-                        // Try to get token from query string (for SignalR)
+                        // ?? ??????? OnMessageReceived delegate
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
 
@@ -142,8 +184,8 @@ namespace DisasterReport.API
                         return Task.CompletedTask;
                     }
                 };
-
             });
+
 
             var app = builder.Build();
 
@@ -165,7 +207,8 @@ namespace DisasterReport.API
             app.MapControllers();
 
             app.MapHub<NotificationHub>("/hubs/notification");
-            app.MapHub<DisasterReportHub>("/disasterReportHub");
+            app.MapHub<DisasterNotificationHub>("/hubs/disaster");
+
 
             app.Run();
         }

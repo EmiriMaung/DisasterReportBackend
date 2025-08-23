@@ -34,9 +34,10 @@ namespace DisasterReport.Services
             services.AddScoped<INasaService, NasaService>();
             services.AddScoped<IDisasterEventNasaService, DisasterEventNasaService>();
             services.AddHttpClient<INasaService, NasaService>();
-            services.AddScoped<IEmailServices, EmailService>();
+            services.AddScoped<IEmailServices, EmailService>(); 
+            services.AddScoped<IDisasterNotificationService, DisasterNotificationService>();
 
-            //Add Cloudinary
+            //Add Cloudinary    
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
