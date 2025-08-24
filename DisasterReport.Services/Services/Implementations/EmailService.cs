@@ -17,7 +17,7 @@ namespace DisasterReport.Services.Services.Implementations
         public async Task SendEmailAsync(string to, string subject, string body)
         {
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("Disaster Report", _config["Email:From"]));
+            email.From.Add(new MailboxAddress("Hands of Hope", _config["Email:From"]));
             email.To.Add(MailboxAddress.Parse(to));
             email.Subject = subject;
             email.Body = new TextPart("html") { Text = body };

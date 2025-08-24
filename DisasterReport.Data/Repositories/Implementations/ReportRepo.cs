@@ -26,7 +26,8 @@ namespace DisasterReport.Data.Repositories.Implementations
         string? statusFilter,
         DateTime? startDate,
         DateTime? endDate,
-        Guid? adminId
+        Guid? adminId,
+        string? reportTypeFilter
     )
         {
             var query = _context.Reports
@@ -50,6 +51,18 @@ namespace DisasterReport.Data.Repositories.Implementations
             if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
             {
                 query = query.Where(r => r.Status == statusFilter);
+            }
+
+            if (!string.IsNullOrEmpty(reportTypeFilter))
+            {
+                if (reportTypeFilter.Equals("Post", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(r => r.ReportedPostId != null);
+                }
+                else if (reportTypeFilter.Equals("User", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(r => r.ReportedUserId != null);
+                }
             }
 
             // Date range filter
