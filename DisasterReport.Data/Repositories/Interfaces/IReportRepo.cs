@@ -13,7 +13,8 @@ namespace DisasterReport.Data.Repositories.Interfaces
             string? statusFilter,
             DateTime? startDate,
             DateTime? endDate,
-            Guid? adminId
+            Guid? adminId,
+            string? reportTypeFilter
         );
 
         Task<Report?> GetByIdAsync(int id);

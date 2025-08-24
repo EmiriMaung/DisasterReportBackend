@@ -39,11 +39,12 @@ public class ReportsController : ControllerBase
         string? statusFilter = null,
         DateTime? startDate = null,
         DateTime? endDate = null,
-        Guid? adminId = null
+        Guid? adminId = null,
+        string? reportFilterType = null
     )
     {
         var reports = await _reportService.GetAllReportsAsync(
-            page, pageSize, searchQuery, sortBy, sortOrder, statusFilter, startDate, endDate, adminId
+            page, pageSize, searchQuery, sortBy, sortOrder, statusFilter, startDate, endDate, adminId, reportFilterType
         );
         return Ok(reports);
     }

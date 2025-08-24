@@ -21,7 +21,8 @@ namespace DisasterReport.Services.Services.Interfaces
         string? statusFilter,
         DateTime? startDate,
         DateTime? endDate,
-        Guid? adminId
+        Guid? adminId,
+        string? reportFilterType
     );
 
         Task<ReportDto?> GetReportByIdAsync(int id);

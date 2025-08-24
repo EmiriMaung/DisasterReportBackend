@@ -13,15 +13,17 @@ namespace DisasterReport.Services.Services.Implementations
         {
             private readonly IBlacklistEntryRepo _blacklistEntryRepo;
             private readonly IUserRepo _userRepo;
-            private readonly IMemoryCache _cache;
-            private static CancellationTokenSource _cacheResetTokenSource = new CancellationTokenSource();
+            //private readonly IMemoryCache _cache;
+            //private static CancellationTokenSource _cacheResetTokenSource = new CancellationTokenSource();
+            private readonly IEmailServices _emailService;
 
-        public BlacklistEntryService(IBlacklistEntryRepo blacklistEntryRepo, IUserRepo userRepo, IMemoryCache cache)
-            {
-                _blacklistEntryRepo = blacklistEntryRepo;
-                _userRepo = userRepo;
-                _cache = cache;
-            }
+        public BlacklistEntryService(IBlacklistEntryRepo blacklistEntryRepo, IUserRepo userRepo, IMemoryCache cache, IEmailServices emailService)
+        {
+            _blacklistEntryRepo = blacklistEntryRepo;
+            _userRepo = userRepo;
+            //_cache = cache;
+            _emailService = emailService;
+        }
 
 
         public async Task<PaginatedResult<BlacklistEntryDto>> GetAllBlacklistEntriesAsync(
@@ -126,11 +128,11 @@ namespace DisasterReport.Services.Services.Implementations
 
         public async Task<BlacklistStatsDto> GetBlacklistStatsAsync()
         {
-            const string cacheKey = "BlacklistStats";
-            if (_cache.TryGetValue(cacheKey, out BlacklistStatsDto cachedStats))
-            {
-                return cachedStats;
-            }
+            //const string cacheKey = "BlacklistStats";
+            //if (_cache.TryGetValue(cacheKey, out BlacklistStatsDto cachedStats))
+            //{
+            //    return cachedStats;
+            //}
 
             var statsTuple = await _blacklistEntryRepo.GetBlacklistStatsAsync();
 
@@ -142,11 +144,11 @@ namespace DisasterReport.Services.Services.Implementations
                 UnblockedLast7Days = statsTuple.UnblockedLast7Days
             };
 
-            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
-                .AddExpirationToken(new CancellationChangeToken(_cacheResetTokenSource.Token));
+            //var cacheEntryOptions = new MemoryCacheEntryOptions()
+            //    .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
+            //    .AddExpirationToken(new CancellationChangeToken(_cacheResetTokenSource.Token));
 
-            _cache.Set(cacheKey, statsDto, cacheEntryOptions);
+            //_cache.Set(cacheKey, statsDto, cacheEntryOptions);
 
             return statsDto;
         }
@@ -154,12 +156,12 @@ namespace DisasterReport.Services.Services.Implementations
 
         public async Task<BlacklistEntryDto> GetBlacklistEntryByIdAsync(int id)
             {
-                string cacheKey = $"BlacklistEntry_{id}";
+                //string cacheKey = $"BlacklistEntry_{id}";
 
-                if (_cache.TryGetValue(cacheKey, out BlacklistEntryDto cachedEntry))
-                {
-                    return cachedEntry;
-                }
+                //if (_cache.TryGetValue(cacheKey, out BlacklistEntryDto cachedEntry))
+                //{
+                //    return cachedEntry;
+                //}
 
                 var entry = await _blacklistEntryRepo.GetByIdAsync(id);
                 if (entry == null)
@@ -169,7 +171,7 @@ namespace DisasterReport.Services.Services.Implementations
 
                 var entryDto = MapToDto(entry);
 
-                _cache.Set(cacheKey, entryDto, TimeSpan.FromMinutes(10));
+                //_cache.Set(cacheKey, entryDto, TimeSpan.FromMinutes(10));
 
                 return entryDto;
             }
@@ -271,8 +273,33 @@ namespace DisasterReport.Services.Services.Implementations
             };
             await _blacklistEntryRepo.AddAsync(blacklistEntry);
 
-            _cacheResetTokenSource.Cancel();
-            _cacheResetTokenSource = new CancellationTokenSource();
+            try
+            {
+                var bannedUser = await _userRepo.GetUserByIdAsync(dto.UserId);
+                if (bannedUser != null)
+                {
+                    var subject = "Account Notification: Your Access Has Been Banned";
+                    var body = $@"
+                        <p>Hello {bannedUser.Name},</p>
+                        <p>This email is to inform you that your account on the platform has been restricted by an administrator.</p>
+                        <p><b>Reason provided:</b> {dto.Reason}</p>
+                        <p>If you believe this action was made in error, please contact our support team.</p>
+                        <p>Sincerely,<br/>The Moderation Team</p>";
+
+                    await _emailService.SendEmailAsync(bannedUser.Email, subject, body);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the email-specific error to your console but DO NOT re-throw it.
+                // This allows the main process to be considered a success even if the email fails.
+                Console.WriteLine($"--- FAILED TO SEND BAN NOTIFICATION EMAIL to user {dto.UserId} ---");
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine("----------------------------------------------------");
+            }
+
+            //_cacheResetTokenSource.Cancel();
+            //_cacheResetTokenSource = new CancellationTokenSource();
         }
 
 
@@ -289,14 +316,14 @@ namespace DisasterReport.Services.Services.Implementations
 
                 await _blacklistEntryRepo.UpdateAsync(entry);
 
-                _cache.Remove($"BlacklistEntry_{id}");
+                //_cache.Remove($"BlacklistEntry_{id}");
 
                 var updatedEntry = await _blacklistEntryRepo.GetByIdAsync(id);
                 if (updatedEntry != null)
                 {
                     var updatedDto = MapToDto(updatedEntry);
-                    _cacheResetTokenSource.Cancel();
-                    _cacheResetTokenSource = new CancellationTokenSource();
+                    //_cacheResetTokenSource.Cancel();
+                    //_cacheResetTokenSource = new CancellationTokenSource();
                 }
             }
 
@@ -311,8 +338,8 @@ namespace DisasterReport.Services.Services.Implementations
 
             await _blacklistEntryRepo.SoftDeleteByUserIdAsync(userId, adminId, unblockedReason);
 
-            _cacheResetTokenSource.Cancel();
-            _cacheResetTokenSource = new CancellationTokenSource();
+            //_cacheResetTokenSource.Cancel();
+            //_cacheResetTokenSource = new CancellationTokenSource();
         }
 
 
