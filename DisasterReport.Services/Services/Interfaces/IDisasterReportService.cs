@@ -52,8 +52,7 @@ public interface IDisasterReportService
 
     Task<PagedResponse<DisasterReportDto>> GetReportsByStatusAsync(int? status, int pageNumber = 1, int pageSize = 18);
 
-    //Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region, string? township, bool? isUrgent, int? topicId);
-
+    Task<PagedResponse<DisasterReportDto>> GetReportsByOrganizationIdAsync(int organizationId, int pageNumber = 1, int pageSize = 10);//for organization
     Task<IEnumerable<DisasterReportDto>> GetReportsByRegionAsync(string regionName);
 
     Task<IEnumerable<DisasterReportDto>> GetReportsByTownshipAsync(string townshipName);

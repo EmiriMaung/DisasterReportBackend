@@ -20,6 +20,7 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task<List<DisastersReport>> GetReportsByTownshipAsync(string townshipName);
         Task<List<DisastersReport>> GetPendingReportsAsync();
         Task<List<DisastersReport>> GetUrgentReportsAsync();
+        Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId);//for organization 
         Task AddPostAsync(DisastersReport report);
         Task UpdatePostAsync(DisastersReport report);
         Task SoftDeleteReportAsync(int reportId);

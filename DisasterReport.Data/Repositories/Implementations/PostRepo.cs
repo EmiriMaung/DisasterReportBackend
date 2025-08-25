@@ -144,6 +144,32 @@ public class PostRepo : IPostRepo
         return await query.ToListAsync();
     }
 
+    public async Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId)
+    {
+        // First get all user IDs that belong to this organization
+        var organizationUserIds = await _context.OrganizationMembers
+            .Where(om => om.OrganizationId == organizationId && om.IsAccepted)
+            .Select(om => om.UserId)
+            .ToListAsync();
+
+        if (!organizationUserIds.Any())
+        {
+            return new List<DisastersReport>();
+        }
+
+        // Then get reports from those users
+        return await _context.DisastersReports
+            .Where(r => !r.IsDeleted && r.Status == 1 && organizationUserIds.Contains(r.ReporterId))
+            .AsNoTracking()
+            .Include(r => r.Location)
+            .Include(r => r.Comments)
+            .Include(r => r.ImpactUrls)
+            .Include(r => r.DisasterTopics)
+            .Include(r => r.ImpactTypes)
+            .Include(r => r.SupportTypes)
+            .Include(r => r.Reporter)
+            .ToListAsync();
+    }
 
 
     public async Task SoftDeleteReportAsync(int reportId)

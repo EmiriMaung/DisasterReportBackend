@@ -522,12 +522,26 @@ namespace DisasterReport.Services.Services.Implementations
             }
         }
 
-        //public async Task<IEnumerable<DisasterReportDto>> SearchReportsAsync(string? keyword, string? category, string? region,string? township, bool? isUrgent, int? topicId)
-        //{
-        //    var reports = await _postRepo.SearchReportsAsync(keyword, category, region, township, isUrgent, topicId);
-        //    return await MapToDtoListAsync(reports);
-        //}
+  
+        public async Task<PagedResponse<DisasterReportDto>> GetReportsByOrganizationIdAsync(int organizationId, int pageNumber = 1, int pageSize = 10)
+        {
+            var reports = await _postRepo.GetReportsByOrganizationIdAsync(organizationId);
+            var totalRecords = reports.Count;
+            var pagedReports = reports
+                .OrderByDescending(r => r.ReportedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
+            var dtoList = await MapToDtoListAsync(pagedReports);
+
+            return new PagedResponse<DisasterReportDto>(
+                dtoList,
+                pageNumber,
+                pageSize,
+                totalRecords
+            );
+        }
 
         public async Task ApproveReportAsync(int reportId, ApproveWithTopicDto topicDto, Guid adminId)
         {

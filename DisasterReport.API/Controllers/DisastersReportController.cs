@@ -137,19 +137,7 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetReportsByTopicIdAsync(topicId);
             return Ok(reports);
         }
-        //[HttpGet("search")]
-        //public async Task<ActionResult<IEnumerable<DisasterReportDto>>> SearchReportsAsync(
-        //    [FromQuery] string? keyword,
-        //    [FromQuery] string? category,
-        //    [FromQuery] int? topicId,
-        //    [FromQuery] string? township,
-        //    [FromQuery] string? region,
-        //    [FromQuery] bool? isUrgent)
-
-        //{
-        //    var reports = await _disasterReportService.SearchReportsAsync(keyword, category, region,township, isUrgent,topicId);
-        //    return Ok(reports);
-        //}
+      
 
         [HttpGet("region/{regionName}")]
         public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetReportsByRegionAsync(string regionName)
@@ -164,7 +152,19 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetReportsByTownshipAsync(townshipName);
             return Ok(reports);
         }
-      
+        [HttpGet("organization/{organizationId}")]
+        public async Task<IActionResult> GetReportsByOrganizationId(int organizationId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var result = await _disasterReportService.GetReportsByOrganizationIdAsync(organizationId, pageNumber, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
         [HttpPost("add-disaster-report")]
         public async Task<IActionResult> AddReportAsync([FromForm] AddDisasterReportDto report)
         {
