@@ -22,5 +22,6 @@ namespace DisasterReport.Services.Services
 
         // Reject request
         Task<DonateRequestReadDto?> RejectAsync(int requestId);
+
     }
 }

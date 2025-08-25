@@ -65,6 +65,19 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
+        // ✅ Org fetch only pending requests
+        [HttpGet("organization/{orgId}/pending")]
+        public async Task<ActionResult<IEnumerable<DonateRequestReadDto>>> GetPendingByOrganization(int orgId)
+        {
+            var result = await _service.GetPendingByOrganizationIdAsync(orgId);
+
+            if (result == null || !result.Any())
+                return NotFound("No pending donate requests found for this organization.");
+
+            return Ok(result);
+        }
+
+
         // Utility to extract user ID from JWT
         private Guid GetUserId()
         {

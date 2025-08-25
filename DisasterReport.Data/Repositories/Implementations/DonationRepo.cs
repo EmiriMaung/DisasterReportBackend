@@ -23,7 +23,9 @@ namespace DisasterReport.Data.Repositories
         //Read
         public Task<IEnumerable<Donation>> GetAllAsync()
         {
-            return Task.FromResult(_db.Donations.Include(d => d.DonateRequest).AsEnumerable());
+            return Task.FromResult(_db.Donations
+                .Include(d => d.DonateRequest)
+                .AsEnumerable());
         }
 
         public Task<Donation?> GetByDonateRequestIdAsync(int donateRequestId)
@@ -44,6 +46,7 @@ namespace DisasterReport.Data.Repositories
             return Task.FromResult(_db.Donations
                                         .Where(d => d.DonateRequest != null && d.DonateRequest.OrganizationId == organizationId)
                                         .Include(d => d.DonateRequest)
+                                        .ThenInclude(d => d.RequestedByUser)
                                         .AsEnumerable());
         }
 

@@ -19,7 +19,9 @@ namespace DisasterReport.Services.Services
             {
                 Id = d.Id,
                 DonateRequestId = (int)d.DonateRequestId,
-                DonatedAt = d.DonatedAt
+                DonatedAt = d.DonatedAt,
+                Amount = (decimal)d.DonateRequest.Amount,
+                DonatedByUserName = d.DonateRequest.RequestedByUser?.Name ?? "Anonymous"
             });
         }
 
@@ -30,7 +32,9 @@ namespace DisasterReport.Services.Services
             {
                 Id = d.Id,
                 DonateRequestId = (int)d.DonateRequestId,
-                DonatedAt = d.DonatedAt
+                DonatedAt = d.DonatedAt,
+                Amount = (decimal)d.DonateRequest.Amount,
+                DonatedByUserName = d.DonateRequest.RequestedByUser?.Name ?? "Anonymous"
             });
         }
 
@@ -41,7 +45,9 @@ namespace DisasterReport.Services.Services
             {
                 Id = d.Id,
                 DonateRequestId = (int)d.DonateRequestId,
-                DonatedAt = d.DonatedAt
+                DonatedAt = d.DonatedAt,
+                Amount = (decimal)d.DonateRequest.Amount,
+                DonatedByUserName = d.DonateRequest.RequestedByUser?.Name ?? "Anonymous"
             });
         }
 
