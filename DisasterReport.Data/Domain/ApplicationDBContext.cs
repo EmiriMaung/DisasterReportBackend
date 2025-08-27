@@ -41,6 +41,8 @@ public partial class ApplicationDBContext : DbContext
 
     public virtual DbSet<OrganizationMember> OrganizationMembers { get; set; }
 
+    public virtual DbSet<PeopleVoice> PeopleVoices { get; set; }
+
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public virtual DbSet<Report> Reports { get; set; }
@@ -50,22 +52,10 @@ public partial class ApplicationDBContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserRole> UserRoles { get; set; }
-
     public virtual DbSet<DisasterReportMapDto> DisasterReportMapDtos { get; set; }
-
     public virtual DbSet<CategoryCountDto> CategoryCountDtos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Report>(entity =>
-        {
-            // This explicitly defines the optional relationship to a ReportedPost
-            entity.HasOne(d => d.ReportedPost)
-                  .WithMany(p => p.Reports) // Assuming DisastersReport has a "public virtual ICollection<Report> Reports" property
-                  .HasForeignKey(d => d.ReportedPostId)
-                  .IsRequired(false) // This is the crucial part
-                  .OnDelete(DeleteBehavior.ClientSetNull); // Prevents cascade delete errors
-        });
-
         modelBuilder.Entity<BlacklistEntry>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Blacklis__3214EC077E8C81EA");
@@ -122,8 +112,6 @@ public partial class ApplicationDBContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK__Disaster__3214EC07C6737E0E");
 
             entity.ToTable("DisasterEventNasa");
-            entity.Property(e => e.Id)
-          .ValueGeneratedOnAdd(); // Auto increment ဖြစ်အောင်
 
             entity.Property(e => e.Category).HasMaxLength(200);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
@@ -303,6 +291,7 @@ public partial class ApplicationDBContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Organiza__3214EC07A956E791");
 
+            entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -353,6 +342,18 @@ public partial class ApplicationDBContext : DbContext
             entity.HasOne(d => d.User).WithOne(p => p.OrganizationMember)
                 .HasForeignKey<OrganizationMember>(d => d.UserId)
                 .HasConstraintName("FK__Organizat__UserI__4BAC3F29");
+        });
+
+        modelBuilder.Entity<PeopleVoice>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PeopleVo__3214EC074953641D");
+
+            entity.ToTable("PeopleVoice");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getutcdate())");
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.FullName).HasMaxLength(255);
+            entity.Property(e => e.Phone).HasMaxLength(50);
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>
@@ -440,8 +441,6 @@ public partial class ApplicationDBContext : DbContext
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
         modelBuilder.Entity<CategoryCountDto>().HasNoKey();
-
-
         OnModelCreatingPartial(modelBuilder);
     }
 
