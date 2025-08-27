@@ -10,11 +10,13 @@ public class ReportService : IReportService
 {
     private readonly IReportRepo _reportRepo;
     private readonly IUserRepo _userRepo;
+    private readonly IEmailServices _emailServices;
 
-    public ReportService(IReportRepo reportRepo, IUserRepo userRepo)
+    public ReportService(IReportRepo reportRepo, IUserRepo userRepo, IEmailServices emailServices)
     {
         _reportRepo = reportRepo;
         _userRepo = userRepo;
+        _emailServices = emailServices;
     }
 
     public async Task<PaginatedResult<ReportDto>> GetAllReportsAsync(
@@ -136,13 +138,68 @@ public class ReportService : IReportService
     }
 
 
+    //public async Task<ReportDto?> ResolveReportAsync(int id, Guid adminId, string actionTaken)
+    //{
+    //    var resolved = await _reportRepo.ResolveAsync(id, adminId, actionTaken);
+    //    if (resolved == null) return null;
+
+    //    var notificationDto = new ReportStatusDto
+    //    {
+    //        ReportId = resolved.Id,
+    //        Status = "Resolved",
+    //        Message = $"Your report (ID: {resolved.Id}) has been resolved. Action taken: {resolved.ActionTaken}"
+    //    };
+    //    await _reportNotificationService.NotifyReporterOnStatusChangeAsync(resolved.ReporterId, notificationDto);
+
+    //    return new ReportDto { };
+    //}
     public async Task<ReportDto?> ResolveReportAsync(int id, Guid adminId, string actionTaken)
     {
         var resolved = await _reportRepo.ResolveAsync(id, adminId, actionTaken);
-        if (resolved == null) return null;
+        if (resolved == null)
+        {
+            return null;
+        }
 
-        return new ReportDto { };
+        try
+        {
+            var reporterUser = await _userRepo.GetUserByIdAsync(resolved.ReporterId);
+            if (reporterUser != null)
+            {
+                var subject = $"Update: Your Report Has Been Resolved";
+                var body = $@"
+                <p>Hello {reporterUser.Name},</p>
+                <p>This email is to inform you that the report you submitted (ID: {resolved.Id}) has been reviewed and resolved by our moderation team.</p>
+                <p><b>Action taken:</b> {resolved.ActionTaken}</p>
+                <p>Thank you for helping us keep the community safe.</p>
+                <p>Sincerely,<br/>The Moderation Team</p>";
+                await _emailServices.SendEmailAsync(reporterUser.Email, subject, body);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+
+        var names = await _userRepo.GetUserNamesByIdsAsync(new List<Guid> { adminId });
+        string? adminName = names.GetValueOrDefault(adminId);
+
+        return new ReportDto
+        {
+            Id = resolved.Id,
+            ReporterId = resolved.ReporterId,
+            ReportedUserId = resolved.ReportedUserId,
+            ReportedPostId = resolved.ReportedPostId,
+            Reason = resolved.Reason,
+            Status = resolved.Status,
+            ActionTaken = resolved.ActionTaken,
+            CreatedAt = resolved.CreatedAt,
+            ReviewedById = resolved.ReviewedBy,
+            ReviewedByName = adminName,
+            ReviewedAt = resolved.ReviewedAt
+        };
     }
+
 
     public async Task<ReportDto?> RejectReportAsync(int id, Guid adminId)
     {

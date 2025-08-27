@@ -13,5 +13,7 @@ namespace DisasterReport.Services.Models.BlacklistEntryDTO
         public string Reason { get; set; } = null!;
 
         public Guid CreatedAdminId { get; set; }
+
+        public int ReportId { get; set; } //
     }
 }
