@@ -13,16 +13,15 @@ namespace DisasterReport.Services.Services.Implementations
         {
             private readonly IBlacklistEntryRepo _blacklistEntryRepo;
             private readonly IUserRepo _userRepo;
-            //private readonly IMemoryCache _cache;
-            //private static CancellationTokenSource _cacheResetTokenSource = new CancellationTokenSource();
+            private readonly IReportService _reportService;
             private readonly IEmailServices _emailService;
 
-        public BlacklistEntryService(IBlacklistEntryRepo blacklistEntryRepo, IUserRepo userRepo, IMemoryCache cache, IEmailServices emailService)
+        public BlacklistEntryService(IBlacklistEntryRepo blacklistEntryRepo, IUserRepo userRepo, IMemoryCache cache, IEmailServices emailService, IReportService reportService)
         {
             _blacklistEntryRepo = blacklistEntryRepo;
             _userRepo = userRepo;
-            //_cache = cache;
             _emailService = emailService;
+            _reportService = reportService;
         }
 
 
@@ -128,12 +127,6 @@ namespace DisasterReport.Services.Services.Implementations
 
         public async Task<BlacklistStatsDto> GetBlacklistStatsAsync()
         {
-            //const string cacheKey = "BlacklistStats";
-            //if (_cache.TryGetValue(cacheKey, out BlacklistStatsDto cachedStats))
-            //{
-            //    return cachedStats;
-            //}
-
             var statsTuple = await _blacklistEntryRepo.GetBlacklistStatsAsync();
 
             var statsDto = new BlacklistStatsDto
@@ -144,77 +137,22 @@ namespace DisasterReport.Services.Services.Implementations
                 UnblockedLast7Days = statsTuple.UnblockedLast7Days
             };
 
-            //var cacheEntryOptions = new MemoryCacheEntryOptions()
-            //    .SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
-            //    .AddExpirationToken(new CancellationChangeToken(_cacheResetTokenSource.Token));
-
-            //_cache.Set(cacheKey, statsDto, cacheEntryOptions);
-
             return statsDto;
         }
 
 
         public async Task<BlacklistEntryDto> GetBlacklistEntryByIdAsync(int id)
+        {
+            var entry = await _blacklistEntryRepo.GetByIdAsync(id);
+            if (entry == null)
             {
-                //string cacheKey = $"BlacklistEntry_{id}";
-
-                //if (_cache.TryGetValue(cacheKey, out BlacklistEntryDto cachedEntry))
-                //{
-                //    return cachedEntry;
-                //}
-
-                var entry = await _blacklistEntryRepo.GetByIdAsync(id);
-                if (entry == null)
-                {
-                    throw new KeyNotFoundException($"Blacklist entry with ID {id} not found.");
-                }
-
-                var entryDto = MapToDto(entry);
-
-                //_cache.Set(cacheKey, entryDto, TimeSpan.FromMinutes(10));
-
-                return entryDto;
+                throw new KeyNotFoundException($"Blacklist entry with ID {id} not found.");
             }
 
+            var entryDto = MapToDto(entry);
 
-        //public async Task<IEnumerable<BlacklistHistoryDto>> GetUserBlacklistHistoryAsync(Guid userId)
-        //{
-        //    var entries = await _blacklistEntryRepo.GetBlacklistEntriesByUserIdAsync(userId);
-        //    if (!entries.Any())
-        //    {
-        //        return Enumerable.Empty<BlacklistHistoryDto>();
-        //    }
-
-        //    var adminIds = entries.Select(e => e.CreatedAdminId)
-        //        .Concat(entries.Where(e => e.UpdatedAdminId.HasValue).Select(e => e.UpdatedAdminId!.Value))
-        //        .Distinct().ToList();
-
-        //    var admins = await _userRepo.GetUserNamesByIdsAsync(adminIds);
-
-        //    var historyEvents = new List<BlacklistHistoryDto>();
-        //    foreach (var entry in entries)
-        //    {
-        //        historyEvents.Add(new BlacklistHistoryDto
-        //        {
-        //            EventType = "Blacklisted",
-        //            EventDate = entry.CreatedAt,
-        //            UpdatedReason = entry.Reason,
-        //            AdminName = admins.TryGetValue(entry.CreatedAdminId, out var createdAdminName) ? createdAdminName : "Unknown Admin"
-        //        });
-
-        //        if (entry.IsDeleted && entry.UpdateAt.HasValue && entry.UpdatedAdminId.HasValue)
-        //        {
-        //            historyEvents.Add(new BlacklistHistoryDto
-        //            {
-        //                EventType = "Unblocked",
-        //                EventDate = entry.UpdateAt.Value,
-        //                UpdatedReason = entry.UpdatedReason,
-        //                AdminName = admins.TryGetValue(entry.UpdatedAdminId.Value, out var updatedAdminName) ? updatedAdminName : "Unknown Admin"
-        //            });
-        //        }
-        //    }
-        //    return historyEvents.OrderByDescending(e => e.EventDate);
-        //}
+            return entryDto;
+        }
 
 
         public async Task<BlacklistDetailDto> GetBlacklistDetailByIdAsync(int id)
@@ -273,6 +211,9 @@ namespace DisasterReport.Services.Services.Implementations
             };
             await _blacklistEntryRepo.AddAsync(blacklistEntry);
 
+            string actionTaken = $"User was banned for reason: {dto.Reason}";
+            await _reportService.ResolveReportAsync(dto.ReportId, dto.CreatedAdminId, actionTaken);
+
             try
             {
                 var bannedUser = await _userRepo.GetUserByIdAsync(dto.UserId);
@@ -291,15 +232,8 @@ namespace DisasterReport.Services.Services.Implementations
             }
             catch (Exception ex)
             {
-                // Log the email-specific error to your console but DO NOT re-throw it.
-                // This allows the main process to be considered a success even if the email fails.
-                Console.WriteLine($"--- FAILED TO SEND BAN NOTIFICATION EMAIL to user {dto.UserId} ---");
                 Console.WriteLine(ex.ToString());
-                Console.WriteLine("----------------------------------------------------");
             }
-
-            //_cacheResetTokenSource.Cancel();
-            //_cacheResetTokenSource = new CancellationTokenSource();
         }
 
 
