@@ -213,6 +213,27 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [Authorize]
+        [HttpPut("me/name")]
+        public async Task<IActionResult> UpdateCurrentUserName([FromBody] UpdateUserNameDto dto)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            var updatedUserDto = await _userService.UpdateCurrentUserNameAsync(userId, dto);
+
+            if (updatedUserDto == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(updatedUserDto);
+        }
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromForm] UpdateUserFormDto dto)
         {
