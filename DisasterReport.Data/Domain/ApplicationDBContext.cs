@@ -41,6 +41,8 @@ public partial class ApplicationDBContext : DbContext
 
     public virtual DbSet<OrganizationMember> OrganizationMembers { get; set; }
 
+    public virtual DbSet<OtpToken> OtpTokens { get; set; }
+
     public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public virtual DbSet<Report> Reports { get; set; }
@@ -119,7 +121,7 @@ public partial class ApplicationDBContext : DbContext
 
         modelBuilder.Entity<DisasterEventNasa>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Disaster__3214EC07C6737E0E");
+            entity.HasKey(e => e.Id).HasName("PK__Disaster__3214EC078D280770");
 
             entity.ToTable("DisasterEventNasa");
             entity.Property(e => e.Id)
@@ -303,6 +305,7 @@ public partial class ApplicationDBContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__Organiza__3214EC07A956E791");
 
+            entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -353,6 +356,14 @@ public partial class ApplicationDBContext : DbContext
             entity.HasOne(d => d.User).WithOne(p => p.OrganizationMember)
                 .HasForeignKey<OrganizationMember>(d => d.UserId)
                 .HasConstraintName("FK__Organizat__UserI__4BAC3F29");
+        });
+
+        modelBuilder.Entity<OtpToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__OtpToken__3214EC07292E4E38");
+
+            entity.Property(e => e.Code).HasMaxLength(10);
+            entity.Property(e => e.Email).HasMaxLength(256);
         });
 
         modelBuilder.Entity<RefreshToken>(entity =>

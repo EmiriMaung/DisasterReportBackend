@@ -9,5 +9,7 @@ namespace DisasterReport.Services.Services.Interfaces
     public interface IEmailServices
     {
         Task SendEmailAsync(string to, string subject, string body);
+
+        Task SendOtpEmailAsync(string toEmail, string otpCode);
     }
 }

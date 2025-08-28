@@ -11,8 +11,12 @@ namespace DisasterReport.Services.Services.Interfaces
     {
         Task<TokenResultDto> LoginOrRegisterExternalAsync(OAuthUserInfoDto userInfo);
 
-        Task<TokenResultDto> RegisterAsync(RegisterDto registerDto);
+        Task RequestOtpAsync(string email);
 
-        public Task<TokenResultDto> LoginAsync(LoginDto dto);
+        Task<TokenResultDto> AuthenticateWithOtpAsync(string email, string code);
+
+        //Task<TokenResultDto> RegisterAsync(RegisterDto registerDto);
+
+        //public Task<TokenResultDto> LoginAsync(LoginDto dto);
     }
 }

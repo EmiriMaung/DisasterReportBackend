@@ -408,15 +408,26 @@ namespace DisasterReport.Services.Services.Implementations
 
             await _userRepo.UpdateUserAsync(user);
 
-            // Invalidate and update the cache
-            //var cacheKey = $"User:{user.Id}";
-            //_cache.Remove(cacheKey);
             var updatedDto = await MapToDtoAsync(user);
-            //_cache.Set(cacheKey, updatedDto, TimeSpan.FromMinutes(10));
-
-            //InvalidateUserListCache();
 
             return updatedDto;
+        }
+
+
+        public async Task<UserDto?> UpdateCurrentUserNameAsync(Guid userId, UpdateUserNameDto dto)
+        {
+            var user = await _userRepo.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return null;
+            }
+
+            user.Name = dto.Name;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepo.UpdateUserAsync(user);
+
+            return await MapToDtoAsync(user);
         }
 
 

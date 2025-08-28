@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 
 namespace DisasterReport.Services.Services.Implementations
 {
@@ -16,7 +17,8 @@ namespace DisasterReport.Services.Services.Implementations
         private readonly IPasswordHasherService _passwordHasher;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICloudinaryService _cloudinaryService;
-        public AuthAccountService(ApplicationDBContext context, IJwtService jwtService, IConfiguration config, IPasswordHasherService passwordHasherService, IHttpClientFactory httpClientFactory, ICloudinaryService cloudinaryService)
+        private readonly IEmailServices _emailServices;
+        public AuthAccountService(ApplicationDBContext context, IJwtService jwtService, IConfiguration config, IPasswordHasherService passwordHasherService, IHttpClientFactory httpClientFactory, ICloudinaryService cloudinaryService, IEmailServices emailServices)
         {
             _context = context;
             _jwtService = jwtService;
@@ -24,6 +26,7 @@ namespace DisasterReport.Services.Services.Implementations
             _passwordHasher = passwordHasherService;
             _httpClientFactory = httpClientFactory;
             _cloudinaryService = cloudinaryService;
+            _emailServices = emailServices;
         }
 
         public async Task<TokenResultDto> LoginOrRegisterExternalAsync(OAuthUserInfoDto userInfo)
@@ -114,75 +117,68 @@ namespace DisasterReport.Services.Services.Implementations
                 ExpiresAt = DateTime.UtcNow.AddMinutes(10)
             };
         }
-
-
-        public async Task<TokenResultDto> RegisterAsync(RegisterDto registerDto)
+        public async Task RequestOtpAsync(string email)
         {
-            var ExistingUser = _context.Users
-                .FirstOrDefault(u => u.Email == registerDto.Email);
-
-            if (ExistingUser != null)
-                throw new Exception("Email is already Registered.");
-
-            var defaultRole = _context.UserRoles.FirstOrDefault(r => r.Id == 2);
-            if (defaultRole == null)
-                throw new Exception("Default user role not found.");
-
-            var passwordHash = _passwordHasher.HashPassword(registerDto.Password);
-
-            var user = new User
+            var otpCode = RandomNumberGenerator.GetInt32(100000, 999999).ToString("D6");
+            var otpToken = new OtpToken
             {
-                Id = Guid.NewGuid(),
-                Email = registerDto.Email,
-                Name = registerDto.Name,
-                RoleId = defaultRole.Id,
-                PasswordHash = passwordHash,
-                CreatedAt = DateTime.UtcNow
+                Email = email,
+                Code = otpCode,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(1)
             };
 
-            _context.Users.Add(user);
-
-            var accessToken = _jwtService.GenerateAccessToken(user);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-
-            var refreshTokenEntity = new RefreshToken
-            {
-                Token = refreshToken,
-                UserId = user.Id,
-                ExpiresAt = DateTime.UtcNow.AddDays(30),
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.RefreshTokens.Add(refreshTokenEntity);
+            _context.OtpTokens.Add(otpToken);
             await _context.SaveChangesAsync();
 
-            return new TokenResultDto
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(10)
-            };
+            await _emailServices.SendOtpEmailAsync(email, otpCode);
         }
 
 
-        public async Task<TokenResultDto> LoginAsync(LoginDto dto)
+        public async Task<TokenResultDto> AuthenticateWithOtpAsync(string email, string code)
         {
+            var otpToken = await _context.OtpTokens
+                .FirstOrDefaultAsync(t =>
+                    t.Email == email &&
+                    t.Code == code &&
+                    !t.IsUsed &&
+                    t.ExpiresAt > DateTime.UtcNow);
+
+            if (otpToken == null)
+            {
+                throw new Exception("Invalid, expired, or already used OTP code.");
+            }
+
+            otpToken.IsUsed = true;
+
             var user = await _context.Users
-        .Include(u => u.Role)
-        .FirstOrDefaultAsync(u => u.Email == dto.Email);
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email);
 
-            if (user == null || string.IsNullOrEmpty(user.PasswordHash))
-                throw new Exception("Invalid email or password.");
+            if (user != null)
+            {
+                if (await IsUserBlacklistedAsync(user.Id))
+                    throw new Exception("This account is blacklisted.");
+            }
 
-            var isValid = _passwordHasher.VerifyPassword(dto.Password, user.PasswordHash);
-            if (!isValid)
-                throw new Exception("Invalid email or password.");
+            bool isNewUser = user == null;
 
-            var isBlacklisted = await _context.BlacklistEntries
-                .AnyAsync(be => be.UserId == user.Id && !be.IsDeleted);
+            if (isNewUser)
+            {
+                user = new User
+                {
+                    Id = Guid.NewGuid(),
+                    Email = email,
+                    Name = email.Split('@')[0],
+                    RoleId = 2,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                var defaultRole = await _context.UserRoles.FindAsync(2); // Find the default role
+                user.Role = defaultRole;
 
-            if (await IsUserBlacklistedAsync(user.Id))
-                throw new Exception("This account is blacklisted.");
+                _context.Users.Add(user);
+            }
+
+            await _context.SaveChangesAsync();
 
             var accessToken = _jwtService.GenerateAccessToken(user);
             var refreshToken = _jwtService.GenerateRefreshToken();
@@ -194,17 +190,19 @@ namespace DisasterReport.Services.Services.Implementations
                 ExpiresAt = DateTime.UtcNow.AddDays(30),
                 CreatedAt = DateTime.UtcNow
             };
-
             _context.RefreshTokens.Add(refreshTokenEntity);
+
             await _context.SaveChangesAsync();
 
             return new TokenResultDto
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsNewUser = isNewUser
             };
         }
+
 
         private async Task<bool> IsUserBlacklistedAsync(Guid userId)
         {

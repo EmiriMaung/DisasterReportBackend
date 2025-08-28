@@ -90,23 +90,30 @@ public class AuthController : ControllerBase
     }
 
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    [HttpPost("login/otp/request")]
+    public async Task<IActionResult> RequestOtp([FromBody] OtpRequestDto request)
+    {
+        await _authAccountService.RequestOtpAsync(request.Email);
+        return Ok(new { message = "An OTP has been sent to your email." });
+    }
+
+
+    [HttpPost("login/otp/verify")]
+    public async Task<IActionResult> VerifyOtp([FromBody] OtpVerifyDto request)
     {
         try
         {
-            var tokens = await _authAccountService.RegisterAsync(dto);
+            var tokens = await _authAccountService.AuthenticateWithOtpAsync(request.Email, request.Code);
 
-            // Set cookies if needed (optional)
             Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
             {
-                HttpOnly = true,
-                Secure = true,
+                HttpOnly = true, 
+                Secure = true,   
                 SameSite = SameSiteMode.None,
-                Expires = tokens.ExpiresAt
+                Expires = DateTimeOffset.UtcNow.AddMinutes(10)
             });
 
-            Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
+            Response.Cookies.Append("refresh_token", tokens.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
@@ -123,37 +130,70 @@ public class AuthController : ControllerBase
     }
 
 
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto)
-    {
-        try
-        {
-            var tokens = await _authAccountService.LoginAsync(dto);
+    //[HttpPost("register")]
+    //public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    //{
+    //    try
+    //    {
+    //        var tokens = await _authAccountService.RegisterAsync(dto);
 
-            // Optional: Set cookies
-            Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = tokens.ExpiresAt
-            });
+    //        // Set cookies if needed (optional)
+    //        Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
+    //        {
+    //            HttpOnly = true,
+    //            Secure = true,
+    //            SameSite = SameSiteMode.None,
+    //            Expires = tokens.ExpiresAt
+    //        });
 
-            Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
-            });
+    //        Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
+    //        {
+    //            HttpOnly = true,
+    //            Secure = true,
+    //            SameSite = SameSiteMode.None,
+    //            Expires = DateTimeOffset.UtcNow.AddDays(30)
+    //        });
 
-            return Ok(tokens);
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized(new { error = ex.Message });
-        }
-    }
+    //        return Ok(tokens);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return BadRequest(new { error = ex.Message });
+    //    }
+    //}
+
+
+    //[HttpPost("login")]
+    //public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    //{
+    //    try
+    //    {
+    //        var tokens = await _authAccountService.LoginAsync(dto);
+
+    //        // Optional: Set cookies
+    //        Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
+    //        {
+    //            HttpOnly = true,
+    //            Secure = true,
+    //            SameSite = SameSiteMode.None,
+    //            Expires = tokens.ExpiresAt
+    //        });
+
+    //        Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
+    //        {
+    //            HttpOnly = true,
+    //            Secure = true,
+    //            SameSite = SameSiteMode.None,
+    //            Expires = DateTimeOffset.UtcNow.AddDays(30)
+    //        });
+
+    //        return Ok(tokens);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return Unauthorized(new { error = ex.Message });
+    //    }
+    //}
 
 
     [HttpPost("logout")]
