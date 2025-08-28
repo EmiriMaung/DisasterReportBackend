@@ -780,7 +780,7 @@ namespace DisasterReport.Services.Services.Implementations
                     // ✅ Organization member info for reporter
                     IsOrganizationMember = orgMember != null,
                     OrganizationName = orgMember?.Organization?.Name,
-                    OrganizationLogoUrl = orgMember?.Organization?.OrganizationDocs?.FirstOrDefault()?.ImageUrl
+                    OrganizationLogoUrl = orgMember?.Organization?.LogoUrl
                 };
             }).ToList();
         }

@@ -111,13 +111,14 @@ public class PostRepo : IPostRepo
     }
     public async Task<(int total, int approve, int pending, int reject)> GetReportCountsByStatusAsync()
     {
-        var total = await _context.DisastersReports.CountAsync();
-        var approve = await _context.DisastersReports.CountAsync(r => r.Status == 0);
-        var pending = await _context.DisastersReports.CountAsync(r => r.Status == 1);
-        var reject = await _context.DisastersReports.CountAsync(r => r.Status == 2);
+        var total = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false);
+        var approve = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 0);
+        var pending = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 1);
+        var reject = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 2);
 
         return (total, approve, pending, reject);
     }
+
     public async Task<List<DisastersReport>> GetReportsByStatusAsync(int? status)
     {
         var query = _context.DisastersReports
