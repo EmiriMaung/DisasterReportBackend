@@ -22,31 +22,10 @@ namespace DisasterReport.Services.Services.Implementations
             _httpClient = httpClient;
         }
 
-        //public async Task<EonetResponse> GetDisasterEventsAsync()
-        //{
-        //    //var url = "https://eonet.gsfc.nasa.gov/api/v3/events?bbox=92,9,101,28&limit=20";
-        //    var url = "https://eonet.gsfc.nasa.gov/api/v3/events?bbox=92,9,101,28&status=open";
-
-        //    // bbox = Myanmar roughly (Lon: 92–101, Lat: 9–28)
-
-        //    var response = await _httpClient.GetAsync(url);
-
-        //    response.EnsureSuccessStatusCode();
-
-        //    var json = await response.Content.ReadAsStringAsync();
-
-        //    var data = JsonSerializer.Deserialize<EonetResponse>(json, new JsonSerializerOptions
-        //    {
-        //        PropertyNameCaseInsensitive = true
-        //    });
-
-        //    return data;
-        //}
         public async Task<List<EonetEvent>> GetAllDisasterEventsAsync()
         {
             var allEvents = new List<EonetEvent>();
-            string url = "https://eonet.gsfc.nasa.gov/api/v3/events?bbox=92,9,101,28&status=open&limit=50";
-
+            string url = "https://eonet.gsfc.nasa.gov/api/v3/events?bbox=92,9,101,28&status=open&limit=50&days=30";
             while (!string.IsNullOrEmpty(url))
             {
                 var response = await _httpClient.GetAsync(url);

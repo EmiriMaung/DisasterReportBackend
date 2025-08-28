@@ -33,11 +33,12 @@ namespace DisasterReport.Services
             services.AddScoped<IImpactTypeService, ImpactTypeService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<INasaService, NasaService>();
-            services.AddScoped<IDisasterEventNasaService, DisasterEventNasaService>();
+            services.AddScoped<IDisasterEventNasaService, DisasterEvenNasaService>();
             services.AddHttpClient<INasaService, NasaService>();
             services.AddScoped<IEmailServices, EmailService>(); 
             services.AddScoped<IDisasterNotificationService, DisasterNotificationService>();
             services.AddScoped<IPeopleVoiceService, PeopleVoiceService>();
+            services.AddScoped<IUsgsService, UsgsService>();
 
             //Add Cloudinary    
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));

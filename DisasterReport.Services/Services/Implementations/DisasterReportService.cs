@@ -39,33 +39,14 @@ namespace DisasterReport.Services.Services.Implementations
             _disasterTopicService = disasterTopicService;
         }
 
-        //public async Task<IEnumerable<DisasterReportDto>> GetAllReportsAsync()
-        //{
-        //    const string cacheKey = "all_reports";
-
-        //    if (_cache.TryGetValue(cacheKey, out List<DisasterReportDto> cachedReports))
-        //    {
-        //        return cachedReports;
-        //    }
-
-        //    var reports = await _postRepo.GetAllPostsWithMaterialsAsync();
-        //    var dtoList = await MapToDtoListAsync(reports);
-
-        //    var cacheOptions = new MemoryCacheEntryOptions()
-        //        .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); 
-
-        //    _cache.Set(cacheKey, dtoList, cacheOptions);
-
-        //    return dtoList;
-        //}
         public async Task<PagedResponse<DisasterReportDto>> GetAllReportsAsync(int pageNumber = 1, int pageSize = 10)
         {
-            string cacheKey = $"all_reports_{pageNumber}_{pageSize}";
+            //string cacheKey = $"all_reports_{pageNumber}_{pageSize}";
 
-            if (_cache.TryGetValue(cacheKey, out PagedResponse<DisasterReportDto> cachedResponse))
-            {
-                return cachedResponse;
-            }
+            //if (_cache.TryGetValue(cacheKey, out PagedResponse<DisasterReportDto> cachedResponse))
+            //{
+            //    return cachedResponse;
+            //}
 
             var reports = await _postRepo.GetAllPostsWithMaterialsAsync();
             var totalRecords = reports.Count();
@@ -83,10 +64,10 @@ namespace DisasterReport.Services.Services.Implementations
                 totalRecords
             );
 
-            var cacheOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+            //var cacheOptions = new MemoryCacheEntryOptions()
+            //    .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
 
-            _cache.Set(cacheKey, response, cacheOptions);
+            //_cache.Set(cacheKey, response, cacheOptions);
 
             return response;
         }
@@ -467,6 +448,60 @@ namespace DisasterReport.Services.Services.Implementations
 
         }
 
+        //public async Task HardDeleteAsync(int id)
+        //{
+        //    await using var transaction = await _postRepo.DbContext.Database.BeginTransactionAsync();
+        //    try
+        //    {
+        //        var report = await _postRepo.GetPostByIdAsync(id);
+        //        if (report == null)
+        //            throw new Exception("Report not found.");
+
+        //        if (report.ImpactUrls?.Any() == true)
+        //        {
+        //            var publicIds = report.ImpactUrls.Select(f => f.PublicId).ToList();
+        //            await _cloudinaryService.DeleteFilesAsync(publicIds);
+        //        }
+
+        //        if (report.ImpactUrls?.Any() == true)
+        //        {
+        //            foreach (var impactUrl in report.ImpactUrls)
+        //            {
+        //                await _impactUrlRepo.DeleteAsync(impactUrl.Id);
+        //            }
+        //            await _impactUrlRepo.SaveChangesAsync();
+        //        }
+
+        //        // Clear many-to-many relationships
+        //        report.ImpactTypes?.Clear();
+        //        report.SupportTypes?.Clear();
+
+        //        var locationId = report.LocationId;
+
+        //        // Delete the report itself
+        //        await _postRepo.HardDeleteReportAsync(report);
+        //        await _postRepo.SaveChangesAsync();
+
+        //        // Delete the location if no other reports use it
+        //        var otherReportsUseLocation = await _postRepo.DbContext.DisastersReports
+        //            .AnyAsync(r => r.LocationId == locationId);
+        //        if (!otherReportsUseLocation)
+        //        {
+        //            var location = await _locationRepo.GetByIdAsync(locationId);
+        //            if (location != null)
+        //                await _locationRepo.DeleteAsync(locationId);
+        //        }
+
+        //        await _postRepo.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+        //        ClearReportCache(report.Id, report.ReporterId);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        throw new Exception("Failed to hard delete report: " + ex.Message, ex);
+        //    }
+        //}
         public async Task HardDeleteAsync(int id)
         {
             await using var transaction = await _postRepo.DbContext.Database.BeginTransactionAsync();
@@ -476,14 +511,12 @@ namespace DisasterReport.Services.Services.Implementations
                 if (report == null)
                     throw new Exception("Report not found.");
 
+                // 1️⃣ Delete Impact URLs from Cloudinary
                 if (report.ImpactUrls?.Any() == true)
                 {
                     var publicIds = report.ImpactUrls.Select(f => f.PublicId).ToList();
                     await _cloudinaryService.DeleteFilesAsync(publicIds);
-                }
 
-                if (report.ImpactUrls?.Any() == true)
-                {
                     foreach (var impactUrl in report.ImpactUrls)
                     {
                         await _impactUrlRepo.DeleteAsync(impactUrl.Id);
@@ -491,17 +524,28 @@ namespace DisasterReport.Services.Services.Implementations
                     await _impactUrlRepo.SaveChangesAsync();
                 }
 
-                // Clear many-to-many relationships
+                // 2️⃣ Delete comments related to this report
+                var comments = await _postRepo.DbContext.Comments
+                    .Where(c => c.DisasterReportId == id)
+                    .ToListAsync();
+
+                if (comments.Any())
+                {
+                    _postRepo.DbContext.Comments.RemoveRange(comments);
+                    await _postRepo.DbContext.SaveChangesAsync();
+                }
+
+                // 3️⃣ Clear many-to-many relationships
                 report.ImpactTypes?.Clear();
                 report.SupportTypes?.Clear();
 
                 var locationId = report.LocationId;
 
-                // Delete the report itself
+                // 4️⃣ Delete the report itself
                 await _postRepo.HardDeleteReportAsync(report);
                 await _postRepo.SaveChangesAsync();
 
-                // Delete the location if no other reports use it
+                // 5️⃣ Delete location if unused
                 var otherReportsUseLocation = await _postRepo.DbContext.DisastersReports
                     .AnyAsync(r => r.LocationId == locationId);
                 if (!otherReportsUseLocation)
@@ -513,6 +557,8 @@ namespace DisasterReport.Services.Services.Implementations
 
                 await _postRepo.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                // 6️⃣ Clear cache
                 ClearReportCache(report.Id, report.ReporterId);
             }
             catch (Exception ex)
@@ -522,7 +568,7 @@ namespace DisasterReport.Services.Services.Implementations
             }
         }
 
-  
+
         public async Task<PagedResponse<DisasterReportDto>> GetReportsByOrganizationIdAsync(int organizationId, int pageNumber = 1, int pageSize = 10)
         {
             var reports = await _postRepo.GetReportsByOrganizationIdAsync(organizationId);

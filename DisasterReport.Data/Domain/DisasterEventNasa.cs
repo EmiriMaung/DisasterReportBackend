@@ -8,6 +8,7 @@ public partial class DisasterEventNasa
     public int Id { get; set; }
 
     public string EventId { get; set; } = null!;
+    public string? Source { get; set; } 
 
     public string Title { get; set; } = null!;
 
@@ -22,6 +23,7 @@ public partial class DisasterEventNasa
     public double? Latitude { get; set; }
 
     public double? Longitude { get; set; }
+    public double? Magnitude { get; set; } // New field for USGS events
 
     public DateTime CreatedAt { get; set; }
 }

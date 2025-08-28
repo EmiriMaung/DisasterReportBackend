@@ -33,6 +33,7 @@ namespace DisasterReport.Data
             services.AddScoped<IImpactTypeRepo, ImpactTypeRepo>();
             services.AddScoped<IReportRepo, ReportRepo>();
             services.AddScoped<IDisasterEventNasaRepo, DisasterEventNasaRepo>();
+            services.AddScoped<IDisasterEventRepo, DisasterEventRepo>();
             return services;
         }
     }

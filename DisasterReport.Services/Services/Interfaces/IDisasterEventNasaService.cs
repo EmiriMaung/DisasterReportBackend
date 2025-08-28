@@ -9,7 +9,9 @@ namespace DisasterReport.Services.Services.Interfaces
 {
     public interface IDisasterEventNasaService
     {
-        Task<IEnumerable<GetDisasterEventsNasa>> GetDisasterEventsAsync();
+        //Task<IEnumerable<GetDisasterEventsNasa>> GetDisasterEventsAsync();
+        //Task FetchAndStoreDisastersAsync();
         Task FetchAndStoreDisastersAsync();
+        Task<IEnumerable<GetDisasterEventsNasa>> GetDisasterEventsAsync();
     }
 }
