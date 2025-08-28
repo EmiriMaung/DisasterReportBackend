@@ -34,7 +34,9 @@ namespace DisasterReport.Services.Services
                 DonateRequestId = (int)d.DonateRequestId,
                 DonatedAt = d.DonatedAt,
                 Amount = (decimal)d.DonateRequest.Amount,
-                DonatedByUserName = d.DonateRequest.RequestedByUser?.Name ?? "Anonymous"
+                DonatedByUserName = d.DonateRequest.RequestedByUser?.Name ?? "Anonymous",
+                OrganizationName = d.DonateRequest.Organization?.Name ?? "HandsOfHope",  // NEW
+                SupportType = d.DonateRequest.SupportType  // optional
             });
         }
 

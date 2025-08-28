@@ -19,6 +19,7 @@
 		<!-- Version updated to a more recent one -->
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+		<PackageReference Include="QuestPDF" Version="2025.7.1" />
 
 		<!-- This reference to your Data project is correct. -->
 		<ProjectReference Include="..\DisasterReport.Data\DisasterReport.Data.csproj" />
