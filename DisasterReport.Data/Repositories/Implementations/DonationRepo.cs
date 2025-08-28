@@ -25,6 +25,7 @@ namespace DisasterReport.Data.Repositories
         {
             return Task.FromResult(_db.Donations
                 .Include(d => d.DonateRequest)
+                .ThenInclude(d => d.RequestedByUser)
                 .AsEnumerable());
         }
 
@@ -55,6 +56,9 @@ namespace DisasterReport.Data.Repositories
             return Task.FromResult(_db.Donations
                                        .Where(d => d.DonateRequest != null && d.DonateRequest.RequestedByUserId == userId)
                                        .Include(d => d.DonateRequest)
+                                            .ThenInclude(d => d.RequestedByUser)
+                                       .Include(d => d.DonateRequest)        // <-- include Organization too
+                                            .ThenInclude(r => r.Organization)
                                        .AsEnumerable());
         }
 
