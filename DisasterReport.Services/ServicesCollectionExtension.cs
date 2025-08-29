@@ -44,7 +44,7 @@ namespace DisasterReport.Services
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
 
             services.AddScoped<ICloudinaryService, CloudinaryService>();
-
+            services.AddScoped<IDashboardService, DashboardService>();
             return services;
         }
     }

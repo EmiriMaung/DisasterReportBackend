@@ -56,6 +56,8 @@ public partial class ApplicationDBContext : DbContext
     public virtual DbSet<UserRole> UserRoles { get; set; }
     public virtual DbSet<DisasterReportMapDto> DisasterReportMapDtos { get; set; }
     public virtual DbSet<CategoryCountDto> CategoryCountDtos { get; set; }
+    public virtual DbSet<DashboardStatsDto> DashboardStatsDtos { get; set; }
+    public virtual DbSet<DailyPlatformDonationDto> DailyPlatformDonationDtos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<BlacklistEntry>(entity =>
@@ -451,6 +453,9 @@ public partial class ApplicationDBContext : DbContext
             entity.Property(e => e.RoleName).HasMaxLength(100);
         });
         modelBuilder.Entity<CategoryCountDto>().HasNoKey();
+        modelBuilder.Entity<DashboardStatsDto>().HasNoKey();
+        modelBuilder.Entity<DailyPlatformDonationDto>().HasNoKey();
+
         OnModelCreatingPartial(modelBuilder);
     }
 
