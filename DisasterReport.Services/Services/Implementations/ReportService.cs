@@ -169,7 +169,7 @@ public class ReportService : IReportService
                 var subject = $"Update: Your Report Has Been Resolved";
                 var body = $@"
                 <p>Hello {reporterUser.Name},</p>
-                <p>This email is to inform you that the report you submitted (ID: {resolved.Id}) has been reviewed and resolved by our moderation team.</p>
+                <p>This email is to inform you that the report you submitted has been reviewed and resolved by our moderation team.</p>
                 <p><b>Action taken:</b> {resolved.ActionTaken}</p>
                 <p>Thank you for helping us keep the community safe.</p>
                 <p>Sincerely,<br/>The Moderation Team</p>";

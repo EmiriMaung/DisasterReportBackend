@@ -16,6 +16,7 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BlacklistEntryController : ControllerBase
     {
         private readonly IBlacklistEntryService _blacklistEntryService;
@@ -24,7 +25,7 @@ namespace DisasterReport.API.Controllers
             _blacklistEntryService = blacklistEntryService;
         }
 
-
+        [Authorize(Roles="Admin")]
         [HttpGet("paginated/all")]
         public async Task<ActionResult<PaginatedResult<BlacklistEntryDto>>> GetAllBlacklistEntriesAsync(
             [FromQuery] int page = 1,
@@ -42,7 +43,7 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-
+        [Authorize(Roles ="Admin")]
         [HttpGet("blacklist-stats")]
         public async Task<ActionResult<BlacklistStatsDto>> GetBlacklistStats()
         {
@@ -50,7 +51,7 @@ namespace DisasterReport.API.Controllers
             return Ok(stats);
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("blacklist-detail/{id}")]
         public async Task<ActionResult<BlacklistDetailDto>> GetBlacklistDetailsById(int id)
         {
@@ -65,7 +66,7 @@ namespace DisasterReport.API.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<BlacklistEntryDto>> GetById(int id)
         {
@@ -88,7 +89,7 @@ namespace DisasterReport.API.Controllers
         //    return Ok(history);
         //}
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("export-excel")]
         public async Task<IActionResult> ExportBlacklist()
         {
@@ -142,7 +143,7 @@ namespace DisasterReport.API.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("export-pdf")]
         public async Task<IActionResult> ExportBlacklistPdf()
         {
@@ -174,7 +175,7 @@ namespace DisasterReport.API.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReason(int id, [FromBody] UnblockUserDto dto)
         {
@@ -189,7 +190,7 @@ namespace DisasterReport.API.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("unblock/{userId}")]
         public async Task<IActionResult> UnbanUser(Guid userId, [FromBody] UnblockUserDto dto)
         {

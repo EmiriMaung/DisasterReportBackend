@@ -418,6 +418,8 @@ namespace DisasterReport.Data.Repositories.Implementations
                     .Include(u => u.RefreshTokens)
                     .Include(u => u.ExternalLogins)
                     .Include(u => u.BlacklistEntries)
+                    .Include(u => u.ReportReportedUsers)
+                    .Include(u => u.ReportReporters)
                     .FirstOrDefaultAsync(u => u.Id == id);
 
                 if (user != null)
@@ -425,6 +427,8 @@ namespace DisasterReport.Data.Repositories.Implementations
                     _context.RefreshTokens.RemoveRange(user.RefreshTokens);
                     _context.ExternalLogins.RemoveRange(user.ExternalLogins);
                     _context.BlacklistEntries.RemoveRange(user.BlacklistEntries);
+                    _context.Reports.RemoveRange(user.ReportReportedUsers);
+                    _context.Reports.RemoveRange(user.ReportReporters);
 
                     _context.Users.Remove(user);
                     await _context.SaveChangesAsync();

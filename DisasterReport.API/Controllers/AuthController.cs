@@ -1,6 +1,7 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Services.Models.AuthDTO;
 using DisasterReport.Services.Services.Interfaces;
+using DisasterReport.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,48 @@ public class AuthController : ControllerBase
     }
 
 
+    //[HttpGet("callback/{provider}")]
+    //public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
+    //{
+    //    if (!string.IsNullOrEmpty(error))
+    //    {
+    //        return Redirect(_config["ClientUrl"]);
+    //    }
+
+    //    if (string.IsNullOrEmpty(code))
+    //        return BadRequest(new { error = "Missing 'code' in query string." });
+
+    //    var expectedState = Request.Cookies["oauth_state"];
+    //    if (string.IsNullOrEmpty(state) || state != expectedState)
+    //        return BadRequest(new { error = "Invalid or missing state parameter (possible CSRF)." });
+
+    //    // Optional: clear state cookie after use
+    //    Response.Cookies.Delete("oauth_state");
+
+    //    var userInfo = await _oAuthService.HandleCallbackAsync(provider.ToLower(), code, state);
+    //    var tokens = await _authAccountService.LoginOrRegisterExternalAsync(userInfo);
+
+    //    // Set Access Token cookie (short-lived)
+    //    Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
+    //    {
+    //        HttpOnly = true,
+    //        Secure = true,
+    //        SameSite = SameSiteMode.None,
+    //        Expires = DateTimeOffset.UtcNow.AddMinutes(10)
+    //    });
+
+    //    // Set Refresh Token cookie (longer lived)
+    //    Response.Cookies.Append("refresh_token", tokens.RefreshToken, new CookieOptions
+    //    {
+    //        HttpOnly = true,
+    //        Secure = true,
+    //        SameSite = SameSiteMode.None,
+    //        Expires = DateTimeOffset.UtcNow.AddDays(30)
+    //    });
+
+    //    return Redirect($"{_config["ClientUrl"]}/oauth-callback");
+    //    //return Ok("Login successful. You can close this window now.");
+    //}
     [HttpGet("callback/{provider}")]
     public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
     {
@@ -61,32 +104,36 @@ public class AuthController : ControllerBase
         if (string.IsNullOrEmpty(state) || state != expectedState)
             return BadRequest(new { error = "Invalid or missing state parameter (possible CSRF)." });
 
-        // Optional: clear state cookie after use
         Response.Cookies.Delete("oauth_state");
 
-        var userInfo = await _oAuthService.HandleCallbackAsync(provider.ToLower(), code, state);
-        var tokens = await _authAccountService.LoginOrRegisterExternalAsync(userInfo);
-
-        // Set Access Token cookie (short-lived)
-        Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
+        try
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(10)
-        });
+            var userInfo = await _oAuthService.HandleCallbackAsync(provider.ToLower(), code, state);
+            var tokens = await _authAccountService.LoginOrRegisterExternalAsync(userInfo);
 
-        // Set Refresh Token cookie (longer lived)
-        Response.Cookies.Append("refresh_token", tokens.RefreshToken, new CookieOptions
+            Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(10)
+            });
+
+            Response.Cookies.Append("refresh_token", tokens.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
+
+            return Redirect($"{_config["ClientUrl"]}/oauth-callback");
+        }
+        catch (ForbiddenException ex)
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTimeOffset.UtcNow.AddDays(30)
-        });
-
-        return Redirect($"{_config["ClientUrl"]}/oauth-callback");
-        //return Ok("Login successful. You can close this window now.");
+            // Redirect to frontend blacklisted page with message
+            return Redirect($"{_config["ClientUrl"]}/blacklisted?message={Uri.EscapeDataString(ex.Message)}");
+        }
     }
 
 
@@ -128,72 +175,6 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
-
-
-    //[HttpPost("register")]
-    //public async Task<IActionResult> Register([FromBody] RegisterDto dto)
-    //{
-    //    try
-    //    {
-    //        var tokens = await _authAccountService.RegisterAsync(dto);
-
-    //        // Set cookies if needed (optional)
-    //        Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
-    //        {
-    //            HttpOnly = true,
-    //            Secure = true,
-    //            SameSite = SameSiteMode.None,
-    //            Expires = tokens.ExpiresAt
-    //        });
-
-    //        Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
-    //        {
-    //            HttpOnly = true,
-    //            Secure = true,
-    //            SameSite = SameSiteMode.None,
-    //            Expires = DateTimeOffset.UtcNow.AddDays(30)
-    //        });
-
-    //        return Ok(tokens);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return BadRequest(new { error = ex.Message });
-    //    }
-    //}
-
-
-    //[HttpPost("login")]
-    //public async Task<IActionResult> Login([FromBody] LoginDto dto)
-    //{
-    //    try
-    //    {
-    //        var tokens = await _authAccountService.LoginAsync(dto);
-
-    //        // Optional: Set cookies
-    //        Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
-    //        {
-    //            HttpOnly = true,
-    //            Secure = true,
-    //            SameSite = SameSiteMode.None,
-    //            Expires = tokens.ExpiresAt
-    //        });
-
-    //        Response.Cookies.Append("refresh_token", tokens.RefreshToken!, new CookieOptions
-    //        {
-    //            HttpOnly = true,
-    //            Secure = true,
-    //            SameSite = SameSiteMode.None,
-    //            Expires = DateTimeOffset.UtcNow.AddDays(30)
-    //        });
-
-    //        return Ok(tokens);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        return Unauthorized(new { error = ex.Message });
-    //    }
-    //}
 
 
     [HttpPost("logout")]

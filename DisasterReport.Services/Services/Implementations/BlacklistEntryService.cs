@@ -211,7 +211,7 @@ namespace DisasterReport.Services.Services.Implementations
             };
             await _blacklistEntryRepo.AddAsync(blacklistEntry);
 
-            string actionTaken = $"User was banned for reason: {dto.Reason}";
+            string actionTaken = $"User was banned";
             await _reportService.ResolveReportAsync(dto.ReportId, dto.CreatedAdminId, actionTaken);
 
             try

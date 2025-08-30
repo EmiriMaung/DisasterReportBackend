@@ -1,9 +1,11 @@
 using DisasterReport.Data;
 using DisasterReport.Services;
 using DisasterReport.Services.Services.Implementations;
+using DisasterReport.Shared;
 using DisasterReport.Shared.SignalR;
 using DisasterReport.WebApi.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
@@ -135,6 +137,35 @@ namespace DisasterReport.API
 
 
             var app = builder.Build();
+
+            app.UseExceptionHandler(config =>
+            {
+                config.Run(async context =>
+                {
+                    context.Response.ContentType = "application/json";
+
+                    var exception = context.Features.Get<IExceptionHandlerPathFeature>()?.Error;
+
+                    if (exception is ForbiddenException)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            error = "blacklisted",
+                            message = exception.Message
+                        });
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                        await context.Response.WriteAsJsonAsync(new
+                        {
+                            error = "server_error",
+                            message = "Something went wrong. Please try again later."
+                        });
+                    }
+                });
+            });
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
