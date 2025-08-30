@@ -165,6 +165,8 @@ namespace DisasterReport.API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+        [Authorize]
         [HttpPost("add-disaster-report")]
         public async Task<IActionResult> AddReportAsync([FromForm] AddDisasterReportDto report)
         {

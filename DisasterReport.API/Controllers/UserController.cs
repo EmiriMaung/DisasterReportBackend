@@ -9,6 +9,7 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -17,25 +18,7 @@ namespace DisasterReport.API.Controllers
             _userService = userService;
         }
 
-        //[HttpGet("all/paginated")]
-        //public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        //{
-        //    var result = await _userService.GetPaginatedUsersAsync(page, pageSize);
-        //    return Ok(result);
-        //}
-
-
-        //[HttpGet("all")]
-        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
-        //{
-        //    var users = await _userService.GetAllUsersAsync();
-        //    if (users == null)
-        //    {
-        //        return NotFound("No users found.");
-        //    }
-        //    return Ok(users);
-        //}
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("normal/paginated")]
         public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedNormalUsers(
             [FromQuery] int page = 1,
@@ -50,6 +33,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("active/paginated")]
         public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedActiveUsers(
             [FromQuery] int page = 1,
@@ -64,18 +48,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
-        //[HttpGet("active")]
-        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllActiveUsers()
-        //{
-        //    var users = await _userService.GetAllActiveUsersAsync();
-        //    if (users == null)
-        //    {
-        //        return NotFound("No users found.");
-        //    }
-        //    return Ok(users);
-        //}
-
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("admins/paginated")]
         public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedAdmins(
             [FromQuery] int page = 1,
@@ -90,19 +63,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
-
-        //[HttpGet("admins")]
-        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllAdmins()
-        //{
-        //    var users = await _userService.GetAllAdminsAsync();
-        //    if (users == null)
-        //    {
-        //        return NotFound("No admin found.");
-        //    }
-        //    return Ok(users);
-        //}
-
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("admins-list")]
         public async Task<ActionResult<IEnumerable<AdminDto>>> GetAdminsForDropdown()
         {
@@ -111,6 +72,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("blacklisted/paginated")]
         public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedBlacklistedUsers(
             [FromQuery] int page = 1,
@@ -125,18 +87,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
-        //[HttpGet("blacklisted")]
-        //public async Task<ActionResult<IEnumerable<UserDto>>> GetAllBlacklistedUsers()
-        //{
-        //    var users = await _userService.GetAllBlacklistedUsersAsync();
-        //    if (users == null)
-        //    {
-        //        return NotFound("No blacklisted users found.");
-        //    }
-        //    return Ok(users);
-        //}
-
-
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetUserById(Guid id)
         {
@@ -151,10 +102,9 @@ namespace DisasterReport.API.Controllers
 
 
         [HttpGet("{id}/details")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserDetails(Guid id)
         {
-            // The controller now only calls the service
             var user = await _userService.GetUserByIdAsync(id);
 
             if (user == null)
@@ -166,6 +116,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("email")]
         public async Task<ActionResult<UserDto>> GetUserByEmail([FromQuery] string email)
         {
@@ -194,6 +145,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [Authorize]
         [HttpPut("me")]
         public async Task<IActionResult> UpdateCurrentUser([FromForm] UpdateUserFormDto dto)
         {
@@ -234,6 +186,7 @@ namespace DisasterReport.API.Controllers
         }
 
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromForm] UpdateUserFormDto dto)
         {
@@ -248,6 +201,7 @@ namespace DisasterReport.API.Controllers
 
         //Actually, we don't delete users in our app. This is just for testing purposes.
         //We have to use gmail again and again cause of insufficient gamil account.
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {

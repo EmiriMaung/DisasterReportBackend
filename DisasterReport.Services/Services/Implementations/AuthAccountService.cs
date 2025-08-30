@@ -1,6 +1,7 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Services.Models.AuthDTO;
 using DisasterReport.Services.Services.Interfaces;
+using DisasterReport.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -44,7 +45,7 @@ namespace DisasterReport.Services.Services.Implementations
                 user = login.User;
 
                 if (await IsUserBlacklistedAsync(user.Id))
-                    throw new Exception("This account is blacklisted.");
+                    throw new ForbiddenException("Your account has been blacklisted.");
             }
             else
             {
@@ -56,7 +57,7 @@ namespace DisasterReport.Services.Services.Implementations
                 if (user != null)
                 {
                     if (await IsUserBlacklistedAsync(user.Id))
-                        throw new Exception("This account is blacklisted.");
+                        throw new ForbiddenException("Your account has been blacklisted.");
                 }
 
                 if (user == null)
@@ -157,7 +158,7 @@ namespace DisasterReport.Services.Services.Implementations
             if (user != null)
             {
                 if (await IsUserBlacklistedAsync(user.Id))
-                    throw new Exception("This account is blacklisted.");
+                    throw new Exception("Your account has been banned.");
             }
 
             bool isNewUser = user == null;
