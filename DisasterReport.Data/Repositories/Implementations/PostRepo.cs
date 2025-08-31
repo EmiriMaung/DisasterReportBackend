@@ -81,6 +81,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
             .Include(r => r.Reporter)
+            .OrderByDescending(r => r.ReportedAt)   
             .ToListAsync();
     }
 
