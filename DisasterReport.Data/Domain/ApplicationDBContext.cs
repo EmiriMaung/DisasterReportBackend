@@ -10,6 +10,9 @@ public partial class ApplicationDBContext : DbContext
         : base(options)
     {
     }
+    public virtual DbSet<Activity> Activities { get; set; }
+
+    public virtual DbSet<ActivityMedium> ActivityMedia { get; set; }
 
     public virtual DbSet<BlacklistEntry> BlacklistEntries { get; set; }
 
@@ -60,6 +63,32 @@ public partial class ApplicationDBContext : DbContext
     public virtual DbSet<DailyPlatformDonationDto> DailyPlatformDonationDtos { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Activity>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Activiti__3214EC07D406D599");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<ActivityMedium>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Activity__3214EC07F1FC19AF");
+
+            entity.Property(e => e.MediaType).HasMaxLength(20);
+            entity.Property(e => e.MediaUrl).HasMaxLength(500);
+            entity.Property(e => e.UploadedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Activity).WithMany(p => p.ActivityMedia)
+                .HasForeignKey(d => d.ActivityId)
+                .HasConstraintName("FK__ActivityM__Activ__0662F0A3");
+        });
+
         modelBuilder.Entity<BlacklistEntry>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Blacklis__3214EC077E8C81EA");
