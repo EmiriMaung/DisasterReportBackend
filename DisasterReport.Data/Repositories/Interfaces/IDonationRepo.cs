@@ -20,5 +20,7 @@ namespace DisasterReport.Data.Repositories
 
         // ✅ Delete (admin only)
         Task DeleteAsync(int id);
+        // ✅ New: just return donations, Service will do grouping & mapping
+        Task<IEnumerable<Donation>> GetAllWithOrganizationsAsync();
     }
 }

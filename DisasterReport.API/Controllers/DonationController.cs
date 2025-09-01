@@ -46,5 +46,16 @@ namespace DisasterReport.API.Controllers
             var total = await _donationService.GetTotalDonatedAmountAsync();
             return Ok(new { total });
         }
+        [HttpGet("organization-summary")]
+        public async Task<IActionResult> GetOrganizationDonationSummary()
+        {
+            var summary = await _donationService.GetOrganizationDonationSummaryAsync();
+
+            if (summary == null || !summary.Any())
+                return NotFound("No donations found for any organization.");
+
+            return Ok(summary);
+        }
+
     }
 }

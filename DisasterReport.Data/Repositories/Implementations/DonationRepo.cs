@@ -87,5 +87,14 @@ namespace DisasterReport.Data.Repositories
                 await _db.SaveChangesAsync();
             }
         }
+        public Task<IEnumerable<Donation>> GetAllWithOrganizationsAsync()
+        {
+            return Task.FromResult(
+                _db.Donations
+                    .Include(d => d.DonateRequest)
+                        .ThenInclude(r => r.Organization)
+                    .AsEnumerable()
+            );
+        }
     }
 }

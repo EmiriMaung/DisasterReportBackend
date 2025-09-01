@@ -10,7 +10,6 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class OrganizationController : ControllerBase
     {
         private readonly IOrganizationService _organizationService;

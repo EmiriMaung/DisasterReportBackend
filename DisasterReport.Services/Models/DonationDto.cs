@@ -10,4 +10,11 @@
         public string? OrganizationName { get; set; }  // NEW
         public string? SupportType { get; set; }       // optional
     }
+    public class OrganizationDonationSummaryDto
+    {
+        public int OrganizationId { get; set; }
+        public string OrganizationName { get; set; } = string.Empty;
+        public decimal TotalDonationAmount { get; set; }
+        public string Currency { get; set; } = "MMK"; // default MMK
+    }
 }

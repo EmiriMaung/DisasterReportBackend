@@ -58,5 +58,24 @@ namespace DisasterReport.Services.Services
             var donations = await _donationRepo.GetAllAsync();
             return donations.Sum(d => d.DonateRequest.Amount ?? 0);
         }
+
+        public async Task<IEnumerable<OrganizationDonationSummaryDto>> GetOrganizationDonationSummaryAsync()
+        {
+            var donations = await _donationRepo.GetAllWithOrganizationsAsync();
+
+            var result = donations
+                .Where(d => d.DonateRequest?.Organization != null)
+                .GroupBy(d => new { d.DonateRequest.OrganizationId, d.DonateRequest.Organization.Name })
+                .Select(g => new OrganizationDonationSummaryDto
+                {
+                    OrganizationId = g.Key.OrganizationId ?? 0,
+                    OrganizationName = g.Key.Name,
+                    TotalDonationAmount = g.Sum(x => x.DonateRequest?.Amount ?? 0),
+                    Currency = "MMK"
+                });
+
+            return result;
+        }
+
     }
 }
