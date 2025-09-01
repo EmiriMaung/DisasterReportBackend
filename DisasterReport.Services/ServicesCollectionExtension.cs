@@ -39,6 +39,7 @@ namespace DisasterReport.Services
             services.AddScoped<IDisasterNotificationService, DisasterNotificationService>();
             services.AddScoped<IPeopleVoiceService, PeopleVoiceService>();
             services.AddScoped<IUsgsService, UsgsService>();
+            services.AddScoped<IActivityService, ActivityService>();
 
             //Add Cloudinary    
             services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
