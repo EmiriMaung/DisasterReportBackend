@@ -220,6 +220,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.Reporter) 
             .Include(r=> r.DisasterTopics)
             .Where(r => !r.IsDeleted && r.Status == 1) 
+            .OrderByDescending(r => r.ReportedAt)
             .AsQueryable();
 
         if (!string.IsNullOrEmpty(keyword))
