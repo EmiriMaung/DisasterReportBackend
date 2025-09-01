@@ -72,7 +72,7 @@ namespace DisasterReport.API.Controllers
             var result = await _service.GetPendingByOrganizationIdAsync(orgId);
 
             if (result == null || !result.Any())
-                return NotFound("No pending donate requests found for this organization.");
+                return Ok(new List<DonateRequestReadDto>());  // ✅ empty list, not 404
 
             return Ok(result);
         }
