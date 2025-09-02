@@ -71,7 +71,7 @@ public class PostRepo : IPostRepo
     public async Task<List<DisastersReport>> GetAllPostsWithMaterialsAsync()
     {
         return await _context.DisastersReports
-            .Where(r => r.Status == 1 && r.IsDeleted==false)
+            .Where(r => r.Status == 1 && r.IsDeleted == false && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted))
             .AsNoTracking()
             .Include(r => r.Location)
             .Include(r => r.Comments)
@@ -81,7 +81,7 @@ public class PostRepo : IPostRepo
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
             .Include(r => r.Reporter)
-            .OrderByDescending(r => r.ReportedAt)   
+            .OrderByDescending(r => r.ReportedAt)
             .ToListAsync();
     }
 
@@ -112,10 +112,10 @@ public class PostRepo : IPostRepo
     }
     public async Task<(int total, int approve, int pending, int reject)> GetReportCountsByStatusAsync()
     {
-        var total = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false);
-        var approve = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 0);
-        var pending = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 1);
-        var reject = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 2);
+        var total = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted));
+        var approve = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 0 && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted));
+        var pending = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 1 && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted));
+        var reject = await _context.DisastersReports.CountAsync(r => r.IsDeleted == false && r.Status == 2 && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted));
 
         return (total, approve, pending, reject);
     }
@@ -123,7 +123,7 @@ public class PostRepo : IPostRepo
     public async Task<List<DisastersReport>> GetReportsByStatusAsync(int? status)
     {
         var query = _context.DisastersReports
-            .Where(r => !r.IsDeleted)
+            .Where(r => !r.IsDeleted && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted))
             .AsNoTracking();
 
         // Include statements
@@ -146,6 +146,33 @@ public class PostRepo : IPostRepo
         return await query.ToListAsync();
     }
 
+    //public async Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId)
+    //{
+    //    // First get all user IDs that belong to this organization
+    //    var organizationUserIds = await _context.OrganizationMembers
+    //        .Where(om => om.OrganizationId == organizationId && om.IsAccepted )
+    //        .Select(om => om.UserId)
+    //        .ToListAsync();
+
+    //    if (!organizationUserIds.Any())
+    //    {
+    //        return new List<DisastersReport>();
+    //    }
+
+    //    // Then get reports from those users
+    //    return await _context.DisastersReports
+    //        .Where(r => !r.IsDeleted && r.Status == 1 && organizationUserIds.Contains(r.ReporterId))
+    //        .AsNoTracking()
+    //        .Include(r => r.Location)
+    //        .Include(r => r.Comments)
+    //        .Include(r => r.ImpactUrls)
+    //        .Include(r => r.DisasterTopics)
+    //        .Include(r => r.ImpactTypes)
+    //        .Include(r => r.SupportTypes)
+    //        .Include(r => r.Reporter)
+    //        .ToListAsync();
+    //}
+
     public async Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId)
     {
         // First get all user IDs that belong to this organization
@@ -159,9 +186,12 @@ public class PostRepo : IPostRepo
             return new List<DisastersReport>();
         }
 
-        // Then get reports from those users
+        // Then get reports from those users, excluding blacklist users
         return await _context.DisastersReports
-            .Where(r => !r.IsDeleted && r.Status == 1 && organizationUserIds.Contains(r.ReporterId))
+            .Where(r => !r.IsDeleted
+                     && r.Status == 1
+                     && organizationUserIds.Contains(r.ReporterId)
+                     && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted)) // exclude blacklisted
             .AsNoTracking()
             .Include(r => r.Location)
             .Include(r => r.Comments)
@@ -172,7 +202,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Reporter)
             .ToListAsync();
     }
-
 
     public async Task SoftDeleteReportAsync(int reportId)
     {
@@ -202,11 +231,11 @@ public class PostRepo : IPostRepo
             .Include(r => r.SupportTypes)
             .Include(r => r.Comments)
             .Include(r => r.Reporter)
-            .Include(r=>r.DisasterTopics)
+            .Include(r => r.DisasterTopics)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
-    public async Task<List<DisastersReport>> SearchReportsAsync(string? keyword, string? category, string? region,string? township, bool? isUrgent,int? topicId)
+    public async Task<List<DisastersReport>> SearchReportsAsync(string? keyword, string? category, string? region, string? township, bool? isUrgent, int? topicId)
     {
         var query = _context.DisastersReports
             .AsNoTracking()
@@ -217,9 +246,9 @@ public class PostRepo : IPostRepo
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
-            .Include(r => r.Reporter) 
-            .Include(r=> r.DisasterTopics)
-            .Where(r => !r.IsDeleted && r.Status == 1) 
+            .Include(r => r.Reporter)
+            .Include(r => r.DisasterTopics)
+            .Where(r => !r.IsDeleted && r.Status == 1 && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted))
             .OrderByDescending(r => r.ReportedAt)
             .AsQueryable();
 
