@@ -1,5 +1,7 @@
 ﻿using DisasterReport.Data.Domain;
+using DisasterReport.Data.Dtos;
 using DisasterReport.Services.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +12,12 @@ namespace DisasterReport.Services.Services.Interfaces
 {
     public interface IActivityService
     {
-        // Activities
-        // Activities
-        Task<List<Activity>> GetAllActivitiesAsync();
-        Task<Activity?> GetActivityByIdAsync(int id);
-        Task<Activity> CreateActivityAsync(ActivityDto dto);
-        Task<bool> UpdateActivityAsync(int id, ActivityDto dto);
+        Task<ActivityDto> GetActivityByIdAsync(int id);
+        Task<List<ActivityDto>> GetAllActivitiesAsync();
+        Task<ActivityDto> CreateActivityAsync(CreateActivityDto createDto);
+        Task<ActivityDto> UpdateActivityAsync(int id, ActivityDto updateDto);
         Task<bool> DeleteActivityAsync(int id);
-
-        // Activity Media
-        Task<ActivityMedium> AddMediaAsync(ActivityMediumDto dto);
-        Task<bool> DeleteMediaAsync(int id);
+        Task<ActivityMediumDto> AddMediaToActivityAsync(int activityId, IFormFile mediaFile);
+        Task<bool> RemoveMediaFromActivityAsync(int mediaId);
     }
 }
