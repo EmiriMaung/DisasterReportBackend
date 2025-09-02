@@ -1,73 +1,81 @@
-﻿using DisasterReport.Services.Models;
-using DisasterReport.Services.Services.Implementations;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using DisasterReport.Data.Dtos;
+using DisasterReport.Services.Models;
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DisasterReport.API.Controllers
 {
-
     [ApiController]
     [Route("api/[controller]")]
     public class ActivitiesController : ControllerBase
     {
-        private readonly IActivityService _service;
+        private readonly IActivityService _activityService;
 
-        public ActivitiesController(IActivityService service)
+        public ActivitiesController(IActivityService activityService)
         {
-            _service = service;
+            _activityService = activityService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<List<ActivityDto>>> GetAllActivities()
         {
-            var activities = await _service.GetAllActivitiesAsync();
+            var activities = await _activityService.GetAllActivitiesAsync();
             return Ok(activities);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<ActivityDto>> GetActivity(int id)
         {
-            var activity = await _service.GetActivityByIdAsync(id);
+            var activity = await _activityService.GetActivityByIdAsync(id);
             if (activity == null) return NotFound();
             return Ok(activity);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ActivityDto dto)
+        public async Task<ActionResult<ActivityDto>> CreateActivity([FromForm] CreateActivityDto createDto)
         {
-            var activity = await _service.CreateActivityAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = activity.Id }, activity);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var activity = await _activityService.CreateActivityAsync(createDto);
+            return CreatedAtAction(nameof(GetActivity), new { id = activity.Id }, activity);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, ActivityDto dto)
+        public async Task<ActionResult<ActivityDto>> UpdateActivity(int id, [FromBody] ActivityDto updateDto)
         {
-            var updated = await _service.UpdateActivityAsync(id, dto);
-            if (!updated) return NotFound();
-            return NoContent();
+            if (id != updateDto.Id) return BadRequest("ID mismatch");
+
+            var activity = await _activityService.UpdateActivityAsync(id, updateDto);
+            if (activity == null) return NotFound();
+            return Ok(activity);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult> DeleteActivity(int id)
         {
-            var deleted = await _service.DeleteActivityAsync(id);
-            if (!deleted) return NotFound();
+            var result = await _activityService.DeleteActivityAsync(id);
+            if (!result) return NotFound();
             return NoContent();
         }
 
-        [HttpPost("{id}/media")]
-        public async Task<IActionResult> AddMedia(int id, ActivityMediumDto dto)
+        [HttpPost("{activityId}/media")]
+        public async Task<ActionResult<ActivityMediumDto>> AddMedia(int activityId, IFormFile mediaFile)
         {
-            dto.ActivityId = id;
-            var media = await _service.AddMediaAsync(dto);
+            if (mediaFile == null || mediaFile.Length == 0)
+                return BadRequest("No file provided");
+
+            var media = await _activityService.AddMediaToActivityAsync(activityId, mediaFile);
+            if (media == null) return NotFound("Activity not found");
             return Ok(media);
         }
 
-        [HttpDelete("media/{id}")]
-        public async Task<IActionResult> DeleteMedia(int id)
+        [HttpDelete("media/{mediaId}")]
+        public async Task<ActionResult> RemoveMedia(int mediaId)
         {
-            var deleted = await _service.DeleteMediaAsync(id);
-            if (!deleted) return NotFound();
+            var result = await _activityService.RemoveMediaFromActivityAsync(mediaId);
+            if (!result) return NotFound();
             return NoContent();
         }
 
