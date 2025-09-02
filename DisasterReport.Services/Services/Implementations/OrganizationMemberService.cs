@@ -3,6 +3,7 @@ using DisasterReport.Data.Repositories;
 using DisasterReport.Data.Repositories.Interfaces;
 using DisasterReport.Services.Enums;
 using DisasterReport.Services.Models;
+using DisasterReport.Services.Services.Interfaces;
 
 namespace DisasterReport.Services.Services
 {
@@ -12,17 +13,21 @@ namespace DisasterReport.Services.Services
         private readonly IOrganizationMemberRepo _orgMemberRepo;
         private readonly IUserRepo _userRepo;
         private readonly InvitationNotificationService _invitationNotificationService;
+        private readonly IEmailServices _emailService;
 
         public OrganizationMemberService(
             IOrganizationRepo organizationRepo,
             IOrganizationMemberRepo orgMemberRepo,
             IUserRepo userRepo,
-            InvitationNotificationService invitationNotificationService)
+            InvitationNotificationService invitationNotificationService,
+            IEmailServices emailService
+            )
         {
             _organizationRepo = organizationRepo;
             _orgMemberRepo = orgMemberRepo;
             _userRepo = userRepo;
             _invitationNotificationService = invitationNotificationService;
+            _emailService = emailService;
         }
 
         public async Task<bool> AcceptInvitationAsync(AcceptInvitationDto dto, Guid userId)
@@ -126,6 +131,18 @@ namespace DisasterReport.Services.Services
                     org.Name,
                     ownerMember.UserId.ToString());
             }
+
+            var subject = $"You're invited to join {org.Name}";
+            var body = $@"
+            <html>
+            <body>
+                <p>Hello</p>
+                <p>You have been invited to join the organization '<strong>{org.Name}</strong>' as a '<strong>{invitation.RoleInOrg}</strong>'.</p>
+                <p>Please login to your account to Civic Responder platform to accept the request.</p>
+            </body>
+            </html>";
+
+            await _emailService.SendEmailAsync(dto.InvitedEmail, subject, body);
 
             // TODO: Optionally, send email invite for unregistered users here
 
