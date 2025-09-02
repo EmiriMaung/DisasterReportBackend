@@ -37,7 +37,7 @@ namespace DisasterReport.Services.Services.Implementations
             Guid? adminId
         )
         {
-            string cacheKey = $"BlacklistEntries_{page}_{pageSize}_{searchQuery}_{sortBy}_{sortOrder}_{statusFilter}_{startDate:yyyy-MM-dd}_{endDate:yyyy-MM-dd}_{adminId}";
+            //string cacheKey = $"BlacklistEntries_{page}_{pageSize}_{searchQuery}_{sortBy}_{sortOrder}_{statusFilter}_{startDate:yyyy-MM-dd}_{endDate:yyyy-MM-dd}_{adminId}";
 
             //if (_cache.TryGetValue(cacheKey, out PaginatedResult<BlacklistEntryDto> cachedResult))
             //{
