@@ -10,10 +10,6 @@ namespace DisasterReport.Data.Repositories.Interfaces
 
     public interface IUserRepo
     {
-        //Task<(List<User> Items, int TotalCount)> GetPaginatedUsersAsync(int page, int pageSize);
-
-        //Task<IEnumerable<User>> GetAllUsersAsync();
-
         Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(
             int page,
             int pageSize,
@@ -29,8 +25,6 @@ namespace DisasterReport.Data.Repositories.Interfaces
             string? sortBy,
             string? sortOrder
         );
-
-        //Task<IEnumerable<User>> GetAllActiveUsersAsync();
 
         Task<(List<User> Items, int TotalCount)> GetPaginatedAdminsAsync(
             int page,
@@ -53,8 +47,6 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task<Dictionary<Guid, string>> GetUserNamesByIdsAsync(List<Guid> userIds);
 
         Task<Dictionary<Guid, AdminInfo>> GetAdminInfoByIdsAsync(IEnumerable<Guid> userIds);
-
-        //Task<IEnumerable<User>> GetAllBlacklistedUsers();
 
         Task<User?> GetUserByIdAsync(Guid id);
 
