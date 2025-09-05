@@ -30,8 +30,6 @@ namespace DisasterReport.Services.Services.Interfaces
 
         Task<BlacklistEntryDto> GetBlacklistEntryByIdAsync(int id);
 
-        //Task<IEnumerable<BlacklistHistoryDto>> GetUserBlacklistHistoryAsync(Guid userId);
-
         Task<BlacklistDetailDto> GetBlacklistDetailByIdAsync(int id);
 
         Task AddAsync(CreateBlacklistEntryDto dto);

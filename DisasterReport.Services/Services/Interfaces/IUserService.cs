@@ -5,10 +5,6 @@ namespace DisasterReport.Services.Services.Interfaces
 {
     public interface IUserService
     {
-        //Task<PaginatedResult<UserDto>> GetPaginatedUsersAsync(int page, int pageSize);
-
-        //Task<IEnumerable<UserDto>> GetAllUsersAsync();
-
         Task<PaginatedResult<UserDto>> GetPaginatedNormalUsersAsync(
             int page,
             int pageSize,
@@ -25,9 +21,6 @@ namespace DisasterReport.Services.Services.Interfaces
             string? sortOrder
         );
 
-
-        //Task<IEnumerable<UserDto>> GetAllActiveUsersAsync();
-
         Task<PaginatedResult<UserDto>> GetPaginatedAdminsAsync(
             int page,
             int pageSize,
@@ -36,9 +29,7 @@ namespace DisasterReport.Services.Services.Interfaces
             string? sortOrder
         );
 
-
         Task<IEnumerable<AdminDto>> GetAdminsForDropdownAsync();
-
 
         Task<IEnumerable<UserDto>> GetAllAdminsAsync();
 
@@ -49,8 +40,6 @@ namespace DisasterReport.Services.Services.Interfaces
             string? sortBy,
             string? sortOrder
         );
-
-        //Task<IEnumerable<UserDto>> GetAllBlacklistedUsersAsync();
 
         Task<UserDto?> GetUserByIdAsync(Guid id);
 

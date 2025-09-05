@@ -31,12 +31,14 @@ namespace DisasterReport.API.Controllers
 
         // ✅ Admin/org fetch all requests
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetAll()
         {
             var requests = await _service.GetAllAsync();
             return Ok(requests);
         }
         [HttpPost("{id}/approve")]
+        [Authorize]
         public async Task<IActionResult> Approve(int id)
         {
             var result = await _service.ApproveAsync(id);
@@ -45,6 +47,7 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpPost("{id}/reject")]
+        [Authorize] 
         public async Task<IActionResult> Reject(int id)
         {
             var result = await _service.RejectAsync(id);
@@ -67,6 +70,7 @@ namespace DisasterReport.API.Controllers
 
         // ✅ Org fetch only pending requests
         [HttpGet("organization/{orgId}/pending")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<DonateRequestReadDto>>> GetPendingByOrganization(int orgId)
         {
             var result = await _service.GetPendingByOrganizationIdAsync(orgId);

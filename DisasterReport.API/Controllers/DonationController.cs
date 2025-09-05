@@ -1,4 +1,5 @@
 ﻿using DisasterReport.Services.Services;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,6 +26,7 @@ namespace DisasterReport.API.Controllers
 
         // ✅ Get donations by user
         [HttpGet("user/{userId}")]
+        [Authorize]
         public async Task<IActionResult> GetByUser(Guid userId)
         {
             var donations = await _donationService.GetByUserIdAsync(userId);
@@ -33,6 +35,7 @@ namespace DisasterReport.API.Controllers
 
         // ✅ Get donations by organization
         [HttpGet("organization/{orgId}")]
+        [Authorize]
         public async Task<IActionResult> GetByOrganization(int orgId)
         {
             var donations = await _donationService.GetByOrganizationIdAsync(orgId);

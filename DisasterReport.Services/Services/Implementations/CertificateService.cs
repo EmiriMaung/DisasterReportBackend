@@ -30,7 +30,7 @@ namespace DisasterReport.Services.Services
                 throw new Exception("Donation not found");
 
             var donorName = donation.DonateRequest?.RequestedByUser?.Name ?? "Donor";
-            var organizationName = donation.DonateRequest?.Organization?.Name ?? "HandsOfHope"; // default platform
+            var organizationName = donation.DonateRequest?.Organization?.Name ?? "CivicResponders"; // default platform
             var supportType = donation.DonateRequest?.SupportType;
             var amount = donation.DonateRequest?.Amount;
             var date = donation.DonatedAt;
@@ -48,7 +48,7 @@ namespace DisasterReport.Services.Services
                         col.Spacing(30);
 
                         // Platform name / logo
-                        col.Item().AlignCenter().Text("HandsOfHope")
+                        col.Item().AlignCenter().Text("CivicResponders")
                             .FontSize(24)
                             .SemiBold()
                             .FontColor(Colors.Blue.Medium);

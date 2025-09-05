@@ -47,6 +47,7 @@ namespace DisasterReport.API.Controllers
 
             return Ok(result);
         }
+
         [HttpGet("active-count")]
         [AllowAnonymous]
         public async Task<int> GetActiveOrganizationCountAsync()
@@ -57,6 +58,7 @@ namespace DisasterReport.API.Controllers
 
         // POST: api/organization
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromForm] CreateOrganizationDto dto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -79,6 +81,7 @@ namespace DisasterReport.API.Controllers
 
         // PUT: api/organization/{id}
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Update(
         int id,
         [FromForm] UpdateOrganizationDto dto)
@@ -103,9 +106,6 @@ namespace DisasterReport.API.Controllers
             {
                 return Unauthorized("User ID claim is missing or invalid");
             }
-
-            //Temp
-            //Guid adminUserId = Guid.Parse("7B6D7655-8BEC-48C6-AE97-6411F50EF8A7");
 
             var success = await _organizationService.ApproveOrganizationAsync(id, adminUserId);
             if (!success)
@@ -204,6 +204,7 @@ namespace DisasterReport.API.Controllers
         }
         // PUT: api/organization/{id}/logo
         [HttpPut("{id}/logo")]
+        [Authorize]
         public async Task<IActionResult> UpdateLogo(int id, IFormFile logo)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

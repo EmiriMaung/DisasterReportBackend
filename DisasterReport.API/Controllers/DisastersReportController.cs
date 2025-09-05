@@ -11,7 +11,7 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-   // [Authorize]
+    //[Authorize]
     public class DisastersReportController : ControllerBase
     {
         private readonly IDisasterReportService _disasterReportService;
@@ -22,21 +22,15 @@ namespace DisasterReport.API.Controllers
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetAllReportsAsync()
-        //{
-        //    var reports = await _disasterReportService.GetAllReportsAsync();
-        //    return Ok(reports);
-        //}
+      
         [HttpGet]
         public async Task<ActionResult<PagedResponse<DisasterReportDto>>> GetAllReportsAsync(
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 10)
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
         {
             var reports = await _disasterReportService.GetAllReportsAsync(pageNumber, pageSize);
             return Ok(reports);
         }
-
         [HttpGet("search")]
         public async Task<ActionResult<PagedResponse<DisasterReportDto>>> SearchReportsAsync(
             [FromQuery] string? keyword,
@@ -116,6 +110,8 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpGet("countreportbystatus")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ActionResult<ReportStatusCountDto>> CountReportByStatus()
         {
             var result = await _disasterReportService.CountReportsByStatusAsync();
@@ -123,6 +119,8 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpGet("status")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<ActionResult<PagedResponse<DisasterReportDto>>> GetReportsByStatusAsync(
         [FromQuery] int? status,
         [FromQuery] int pageNumber = 1,
@@ -166,8 +164,9 @@ namespace DisasterReport.API.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpPost("add-disaster-report")]
+
         public async Task<IActionResult> AddReportAsync([FromForm] AddDisasterReportDto report)
         {
             if (report == null)
@@ -189,7 +188,7 @@ namespace DisasterReport.API.Controllers
                 return StatusCode(500, "An error occurred while adding the report");
             }
         }
-
+        [Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReportAsync(int id, [FromForm] UpdateDisasterReportDto dto)
         {
@@ -197,20 +196,21 @@ namespace DisasterReport.API.Controllers
             return Ok("Report updated successfully.");
         }
 
-
+        [Authorize(Roles = "User")]
         [HttpDelete("{id}/soft-delete")]
         public async Task<IActionResult> SoftDeleteAsync(int id)
         {
             await _disasterReportService.SoftDeleteAsync(id);
             return Ok("SoftDeleted successfully.");
         }
-
+        [Authorize(Roles = "User")]
         [HttpPatch("{id}/restore-deletedreport")]
         public async Task<IActionResult> RestoreAsync(int id)
         {
             await _disasterReportService.RestoreReportAsync(id);
             return Ok("restore successfully.");
         }
+        [Authorize(Roles = "User")]
         [HttpDelete("{id}/permanent")]
         public async Task<IActionResult> HardDeleteAsync(int id)
         {
@@ -219,7 +219,7 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpPost("{reportId}/approve")]
-        [Authorize] // Ensure only authenticated users can access this
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveReportAsync(int reportId, [FromBody] ApproveWithTopicDto topicDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -249,6 +249,8 @@ namespace DisasterReport.API.Controllers
             }
         }
         [HttpPost("{reportId}/reject")]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> RejectReportAsync(int reportId)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -278,31 +280,23 @@ namespace DisasterReport.API.Controllers
 
             return Ok(relatedReports);
         }
+        [Authorize]
         [HttpGet("map-reports")]
         public async Task<IActionResult> GetDisasterReportsForMap([FromQuery] ReportFilterDto filter)
         
         {
-            
-            
             var result = await _disasterReportService.GetDisasterReportsForMapAsync(filter);
             return Ok(result);
         }
         [HttpGet("categories")]
+
         public async Task<IActionResult> GetCategoryCounts([FromQuery] int? year, [FromQuery] int? month)
         {
             return Ok(await _disasterReportService.GetCategoryCountsAsync(year, month));
         }
-        //[HttpGet("categories")]
-        //public async Task<IActionResult> GetCategoryCounts([FromQuery] int? year, [FromQuery] int? month)
-        //{
-        //    var result = await _disasterReportService.GetCategoryCountsAsync(year, month);
-
-        //    // Send real-time update to all clients
-        //    await _hubContext.Clients.All.SendAsync("ReceiveCategoryCounts", new object[] { result });
-
-        //    return Ok(result);
-        //}
+      
         [HttpGet("report-count-last-7-days")]
+
         public async Task<ActionResult<List<object>>> GetReportCountLast7Days()
         {
             var result = await _disasterReportService.GetReportCountLast7DaysAsync();
