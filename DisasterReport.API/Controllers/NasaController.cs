@@ -23,6 +23,7 @@ namespace DisasterReport.API.Controllers
             var eventsData = await _nasaService.GetAllDisasterEventsAsync();
             return Ok(eventsData);
         }
+
         [HttpGet("usgs-event")]
         public async Task<IActionResult> GetUsgsEvent()
         {

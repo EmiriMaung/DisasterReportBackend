@@ -8,7 +8,7 @@ namespace DisasterReport.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Require authentication by default
+    [Authorize] 
     public class CommentController : ControllerBase
     {
         private readonly ICommentService _commentService;
@@ -62,7 +62,7 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpGet("disaster/{disasterReportId}")]
-        [AllowAnonymous] // Optional: Allow unauthenticated access to view comments
+        [AllowAnonymous] 
         public async Task<IActionResult> GetCommentsByDisaster(int disasterReportId)
         {
             try
@@ -78,7 +78,7 @@ namespace DisasterReport.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous] // Optional: Allow unauthenticated access to view single comment
+        [AllowAnonymous] 
         public async Task<IActionResult> GetCommentById(int id)
         {
             try

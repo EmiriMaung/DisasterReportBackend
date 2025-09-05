@@ -35,8 +35,8 @@ namespace DisasterReport.Services.Services
                 DonatedAt = d.DonatedAt,
                 Amount = (decimal)d.DonateRequest.Amount,
                 DonatedByUserName = d.DonateRequest.RequestedByUser?.Name ?? "Anonymous",
-                OrganizationName = d.DonateRequest.Organization?.Name ?? "CivicResponders",  // NEW
-                SupportType = d.DonateRequest.SupportType  // optional
+                OrganizationName = d.DonateRequest.Organization?.Name ?? "CivicResponders", 
+                SupportType = d.DonateRequest.SupportType 
             });
         }
 

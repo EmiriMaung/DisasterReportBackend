@@ -15,6 +15,7 @@ namespace DisasterReport.API.Controllers
         {
             _service = service;
         }
+
         [HttpPost]
         [Authorize]
         [Consumes("multipart/form-data")]
@@ -29,7 +30,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // ✅ Admin/org fetch all requests
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAll()
@@ -37,6 +37,7 @@ namespace DisasterReport.API.Controllers
             var requests = await _service.GetAllAsync();
             return Ok(requests);
         }
+
         [HttpPost("{id}/approve")]
         [Authorize]
         public async Task<IActionResult> Approve(int id)
@@ -55,7 +56,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // ✅ New endpoint to get by platform donation
         [Authorize(Roles = "Admin")]
         [HttpGet("platform/{isPlatformDonation}")]
         public async Task<ActionResult<IEnumerable<DonateRequestReadDto>>> GetByIsPlatform(bool isPlatformDonation)
@@ -68,7 +68,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // ✅ Org fetch only pending requests
         [HttpGet("organization/{orgId}/pending")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<DonateRequestReadDto>>> GetPendingByOrganization(int orgId)
@@ -76,11 +75,10 @@ namespace DisasterReport.API.Controllers
             var result = await _service.GetPendingByOrganizationIdAsync(orgId);
 
             if (result == null || !result.Any())
-                return Ok(new List<DonateRequestReadDto>());  // ✅ empty list, not 404
+                return Ok(new List<DonateRequestReadDto>()); 
 
             return Ok(result);
         }
-
 
         // Utility to extract user ID from JWT
         private Guid GetUserId()

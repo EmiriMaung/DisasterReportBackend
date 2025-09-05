@@ -48,13 +48,13 @@ namespace DisasterReport.Services.Services
 
         public async Task<int> CreateOrganizationAsync(CreateOrganizationDto dto, Guid creatorUserId, string? logoUrl)
         {
-            // 1️⃣ Check if user already has an active (non-rejected) organization
+            // 1️ Check if user already has an active (non-rejected) organization
             if (await UserHasActiveOrganizationAsync(creatorUserId))
             {
                 throw new InvalidOperationException("You already have an active organization (pending, approved, or blacklisted).");
             }
 
-            // 2️⃣ Create Organization entity (without logo & PayQr yet)
+            // 2️ Create Organization entity (without logo & PayQr yet)
             var organization = new Organization
             {
                 Name = dto.Name,
@@ -66,7 +66,7 @@ namespace DisasterReport.Services.Services
                 Address = dto.Address
             };
 
-            // 3️⃣ Handle Logo (upload or default)
+            // 3️ Handle Logo (upload or default)
             if (dto.Logo != null)
             {
                 var logoUpload = await _cloudinaryService.UploadFileAsync(dto.Logo);
@@ -74,25 +74,25 @@ namespace DisasterReport.Services.Services
             }
             else
             {
-                organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; // default logo
+                organization.LogoUrl = logoUrl ?? "/images/default-logo.png"; 
             }
 
-            // 4️⃣ Handle PayQrUrl (upload if file provided)
+            // 4️ Handle PayQrUrl (upload if file provided)
             if (dto.PayQrUrls != null)
             {
                 var qrUpload = await _cloudinaryService.UploadFileAsync(dto.PayQrUrls);
-                organization.PayQrUrls = qrUpload.SecureUrl; // save uploaded QR code image
+                organization.PayQrUrls = qrUpload.SecureUrl; 
             }
             else
             {
-                organization.PayQrUrls = null; // optional: could set to default QR image
+                organization.PayQrUrls = null; 
             }
 
-            // 5️⃣ Save Organization to get its Id
+            // 5️ Save Organization to get its Id
             await _organizationRepo.AddAsync(organization);
             await _organizationRepo.SaveChangesAsync();
 
-            // 6️⃣ Upload split files (NRC front/back, Certificate)
+            // 6️ Upload split files (NRC front/back, Certificate)
             var splitFiles = new List<IFormFile?> { dto.NrcFront, dto.NrcBack, dto.Certificate };
             var splitFileLabels = new List<string> { "NRC Front", "NRC Back", "Certificate" };
 
@@ -115,7 +115,7 @@ namespace DisasterReport.Services.Services
                 await _organizationDocRepo.AddAsync(orgDoc);
             }
 
-            // 7️⃣ Upload any additional documents
+            // 7️ Upload any additional documents
             if (dto.Documents != null && dto.Documents.Count > 0)
             {
                 foreach (var file in dto.Documents)
@@ -134,10 +134,10 @@ namespace DisasterReport.Services.Services
                 }
             }
 
-            // 8️⃣ Save all OrganizationDocs
+            // 8️ Save all OrganizationDocs
             await _organizationDocRepo.SaveChangesAsync();
 
-            // 9️⃣ Add creator as Owner in OrganizationMembers
+            // 9️ Add creator as Owner in OrganizationMembers
             var ownerMember = new OrganizationMember
             {
                 OrganizationId = organization.Id,
@@ -149,13 +149,13 @@ namespace DisasterReport.Services.Services
             await _organizationMemberRepo.AddAsync(ownerMember);
             await _organizationMemberRepo.SaveChangesAsync();
 
-            // 🔟 Return the new Organization Id
+            // 10 Return the new Organization Id
             return organization.Id;
         }
 
         public async Task<IEnumerable<OrganizationDto>> GetAllAsync()
         {
-            var orgs = await _organizationRepo.GetAllAsync(); // Summary only
+            var orgs = await _organizationRepo.GetAllAsync(); 
 
             var dtoList = orgs.Select(org => new OrganizationDto
             {
@@ -164,7 +164,7 @@ namespace DisasterReport.Services.Services
                 OrganizationEmail = org.OrganizationEmail,
                 Description = org.Description,
                 PhoneNumber = org.PhoneNumber,
-                LogoUrl = org.LogoUrl, // ✅ Include logo
+                LogoUrl = org.LogoUrl, 
                 Address = org.Address,
                 PayQrUrls = org.PayQrUrls,
                 IsBlackListedOrg = org.IsBlackListedOrg,
@@ -228,7 +228,7 @@ namespace DisasterReport.Services.Services
         }
         public async Task<OrganizationDto?> GetByIdAsync(int id)
         {
-            var org = await _organizationRepo.GetByIdAsync(id); // Summary only
+            var org = await _organizationRepo.GetByIdAsync(id); 
 
             if (org == null)
                 return null;
@@ -265,7 +265,6 @@ namespace DisasterReport.Services.Services
                 var approverUser = await _userRepo.GetUserByIdAsync(org.ApprovedBy.Value);
                 if (approverUser != null)
                 {
-                    // Assume user has FullName property or fallback to Email
                     approverName = !string.IsNullOrEmpty(approverUser.Name)
                         ? approverUser.Name
                         : approverUser.Email;
@@ -337,13 +336,12 @@ namespace DisasterReport.Services.Services
             org.PhoneNumber = dto.PhoneNumber;
             org.Address = dto.Address;
 
-            if (dto.Logo != null) // ✅ Allow updating logo
+            if (dto.Logo != null) 
             {
                 var logoUpload = await _cloudinaryService.UploadFileAsync(dto.Logo);
                 org.LogoUrl = logoUpload.SecureUrl;
             }
-            // ✅ Update Pay QR if new one is uploaded
-            if (dto.PayQrUrls != null) // <-- assuming UpdateOrganizationDto has IFormFile PayQr
+            if (dto.PayQrUrls != null) 
             {
                 var qrUpload = await _cloudinaryService.UploadFileAsync(dto.PayQrUrls);
                 org.PayQrUrls = qrUpload.SecureUrl;
@@ -353,7 +351,6 @@ namespace DisasterReport.Services.Services
             return await _organizationRepo.SaveChangesAsync();
         }
 
-        //new
         public async Task<string?> UpdateLogoAsync(int orgId, IFormFile logoFile, Guid userId)
         {
             var org = await _organizationRepo.GetByIdAsync(orgId);
@@ -366,7 +363,7 @@ namespace DisasterReport.Services.Services
             await _organizationRepo.SaveChangesAsync();
 
             return org.LogoUrl;
-        } //
+        } 
 
         public async Task<IEnumerable<OrganizationDto>> GetBlacklistedOrgsAsync()
         {

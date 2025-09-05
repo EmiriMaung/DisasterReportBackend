@@ -41,7 +41,6 @@ namespace DisasterReport.Services.Services.Implementations
                 if (data?.Events != null)
                     allEvents.AddRange(data.Events);
 
-                // ✅ pagination
                 url = data?.Links?.Next;
             }
 

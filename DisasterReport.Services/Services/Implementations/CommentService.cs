@@ -94,7 +94,7 @@ namespace DisasterReport.Services.Services.Implementations
             }
 
             comment.Content = updateDto.Content.Trim();
-            comment.CreatedAt = DateTime.UtcNow; // Update timestamp
+            comment.CreatedAt = DateTime.UtcNow; 
 
             await _context.SaveChangesAsync();
 
@@ -111,17 +111,10 @@ namespace DisasterReport.Services.Services.Implementations
                 throw new KeyNotFoundException($"Comment with ID {commentId} not found");
             }
 
-            // Option 1: Only allow owner to delete
             if (comment.UserId != userId)
             {
                 throw new UnauthorizedAccessException("You can only delete your own comments");
             }
-
-            // Option 2: Or allow admin to delete as well
-            // var isAdmin = await IsAdmin(userId);
-            // if (comment.UserId != userId && !isAdmin) {
-            //     throw new UnauthorizedAccessException("You don't have permission to delete this comment");
-            // }
 
             _context.Comments.Remove(comment);
             await _context.SaveChangesAsync();
@@ -143,12 +136,6 @@ namespace DisasterReport.Services.Services.Implementations
             };
         }
 
-        // Optional: Add this if you have admin roles
-        // private async Task<bool> IsAdmin(Guid userId)
-        // {
-        //     return await _context.Users
-        //         .AnyAsync(u => u.Id == userId && u.IsAdmin);
-        // }
     }
 
 }

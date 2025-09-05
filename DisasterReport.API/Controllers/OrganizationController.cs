@@ -18,7 +18,6 @@ namespace DisasterReport.API.Controllers
             _organizationService = organizationService;
         }
 
-        // GET: api/organization
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -26,7 +25,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // GET: api/organization/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -37,7 +35,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // GET: api/organization/{id}/details
         [HttpGet("{id}/details")]
         public async Task<IActionResult> GetDetails(int id)
         {
@@ -55,8 +52,6 @@ namespace DisasterReport.API.Controllers
             return await _organizationService.GetActiveOrganizationCountAsync();
         }
 
-
-        // POST: api/organization
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create([FromForm] CreateOrganizationDto dto)
@@ -79,7 +74,6 @@ namespace DisasterReport.API.Controllers
             }
         }
 
-        // PUT: api/organization/{id}
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> Update(
@@ -96,12 +90,11 @@ namespace DisasterReport.API.Controllers
                 return NoContent();
             }
 
-        // POST: api/organization/{id}/approve
         [HttpPost("{id}/approve")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Approve(int id)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // ← this matches your JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid adminUserId))
             {
                 return Unauthorized("User ID claim is missing or invalid");
@@ -114,19 +107,15 @@ namespace DisasterReport.API.Controllers
             return Ok("Organization approved.");
         }
 
-        // POST: api/organization/{id}/reject
         [HttpPost("{id}/reject")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Reject(int id)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // ← this matches your JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid adminUserId))
             {
                 return Unauthorized("User ID claim is missing or invalid");
             }
-
-            //Temp
-            //Guid adminUserId = Guid.Parse("7B6D7655-8BEC-48C6-AE97-6411F50EF8A7");
 
             var success = await _organizationService.RejectOrganizationAsync(id, adminUserId);
             if (!success)
@@ -135,7 +124,6 @@ namespace DisasterReport.API.Controllers
             return Ok("Organization rejected.");
         }
 
-        // GET: api/organization/pending
         [HttpGet("pending")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetPendingOrganizations()
@@ -144,7 +132,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // GET: api/organization/rejected
         [HttpGet("rejected")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetRejectedOrganizations()
@@ -153,7 +140,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // GET: api/organization/blacklisted
         [HttpGet("blacklisted")]
         public async Task<IActionResult> GetBlacklisted()
         {
@@ -161,19 +147,15 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-        // POST: api/organization/{id}/blacklist
         [HttpPost("{id}/blacklist")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Blacklist(int id)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // ← this matches your JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid adminUserId))
             {
                 return Unauthorized("User ID claim is missing or invalid");
             }
-
-            //Temp
-            //Guid adminUserId = Guid.Parse("7B6D7655-8BEC-48C6-AE97-6411F50EF8A7");
 
             var success = await _organizationService.BlacklistOrganizationAsync(id, adminUserId);
             if (!success)
@@ -182,19 +164,15 @@ namespace DisasterReport.API.Controllers
             return Ok("Organization blacklisted.");
         }
 
-        // POST: api/organization/{id}/unblacklist
         [HttpPost("{id}/unblacklist")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UnBlacklist(int id)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); // ← this matches your JWT
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier); 
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid adminUserId))
             {
                 return Unauthorized("User ID claim is missing or invalid");
             }
-
-            //Temp
-            //Guid adminUserId = Guid.Parse("7B6D7655-8BEC-48C6-AE97-6411F50EF8A7");
 
             var success = await _organizationService.UnBlacklistOrganizationAsync(id, adminUserId);
             if (!success)
@@ -202,7 +180,7 @@ namespace DisasterReport.API.Controllers
 
             return Ok("Organization removed from blacklist.");
         }
-        // PUT: api/organization/{id}/logo
+        
         [HttpPut("{id}/logo")]
         [Authorize]
         public async Task<IActionResult> UpdateLogo(int id, IFormFile logo)

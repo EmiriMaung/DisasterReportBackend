@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace DisasterReport.Services.Services.Implementations
 {
-    // File: DisasterReport.Services.Services.Implementations/UsgsService.cs
     using System.Net.Http;
     using System.Text.Json;
     using System.Threading.Tasks;
@@ -30,7 +29,6 @@ namespace DisasterReport.Services.Services.Implementations
 
         public async Task<List<UsgsEvent>> GetEarthquakeEventsAsync()
         {
-            // Ensure the date range is always valid
             var startTime = DateTime.UtcNow.AddDays(-30).ToString("yyyy-MM-dd");
             var endTime = DateTime.UtcNow.ToString("yyyy-MM-dd");
 

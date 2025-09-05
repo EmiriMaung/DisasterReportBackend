@@ -1,6 +1,6 @@
 ﻿using DisasterReport.Data.Domain;
 using DisasterReport.Data.Dtos;
-using DisasterReport.Services.Models; // Use UploadResult
+using DisasterReport.Services.Models; 
 using DisasterReport.Services.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -112,7 +112,7 @@ namespace DisasterReport.Services.Services.Implementations
             var activityMedium = new ActivityMedium
             {
                 ActivityId = activityId,
-                MediaUrl = uploadResult.SecureUrl, // Assuming UploadResult has Url property
+                MediaUrl = uploadResult.SecureUrl, 
                 MediaType = GetMediaType(mediaFile.ContentType),
                 UploadedAt = DateTime.UtcNow
             };

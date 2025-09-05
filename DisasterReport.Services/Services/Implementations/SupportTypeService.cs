@@ -30,7 +30,7 @@ namespace DisasterReport.Services.Services.Implementations
                 var supportTypes = await _supportTypeRepo.GetAllAsync();
                 cachedData = supportTypes.Select(st => new SupportTypeDto { Id = st.Id, Name = st.Name }).ToList();
 
-                _cache.Set(CacheKey, cachedData, TimeSpan.FromMinutes(5)); // Cache for 5 minutes
+                _cache.Set(CacheKey, cachedData, TimeSpan.FromMinutes(5)); 
             }
 
             return cachedData;
@@ -47,7 +47,7 @@ namespace DisasterReport.Services.Services.Implementations
             var entity = new SupportType { Name = dto.Name };
             var added = await _supportTypeRepo.AddAsync(entity);
 
-            _cache.Remove(CacheKey); // Clear cache on write
+            _cache.Remove(CacheKey); 
             return new SupportTypeDto { Id = added.Id, Name = added.Name };
         }
 

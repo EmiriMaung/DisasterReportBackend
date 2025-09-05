@@ -12,7 +12,6 @@ namespace DisasterReport.Data.Repositories.Implementations
             _context = context;
         }
 
-
         public async Task<(List<BlacklistEntry> Items, int TotalCount)> GetAllAsync(
             int page,
             int pageSize,
@@ -104,7 +103,6 @@ namespace DisasterReport.Data.Repositories.Implementations
             return (entries, totalCount);
         }
 
-
         public async Task<List<BlacklistEntry>> GetAllForExportAsync()
         {
             return await _context.BlacklistEntries
@@ -112,7 +110,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .AsNoTracking()
                 .ToListAsync();
         }
-
 
         public async Task<(int TotalBlocked, int TotalUnlocked, int BlockedLast7Days, int UnblockedLast7Days)> GetBlacklistStatsAsync()
         {
@@ -127,7 +124,6 @@ namespace DisasterReport.Data.Repositories.Implementations
 
             return (totalBlocked, totalUnlocked, blockedLast7Days, unblockedLast7Days);
         }
-
 
         public async Task<BlacklistEntry?> GetByIdAsync(int id)
         {
@@ -161,7 +157,6 @@ namespace DisasterReport.Data.Repositories.Implementations
             await _context.SaveChangesAsync();
         }
 
-
         public async Task UpdateAsync(BlacklistEntry entry)
         {
             _context.BlacklistEntries.Update(entry);
@@ -184,7 +179,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 await _context.SaveChangesAsync();
             }
         }
-
 
         public async Task<bool> IsUserBlacklistedAsync(Guid userId)
         {

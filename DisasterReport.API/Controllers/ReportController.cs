@@ -17,16 +17,12 @@ public class ReportsController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize] // Any authenticated user
+    [Authorize] 
     public async Task<IActionResult> CreateReport([FromBody] ReportCreateDto dto)
     {
-        // Optionally, you can set ReporterId from the JWT claims
-        // dto.ReporterId = Guid.Parse(User.FindFirst("id")?.Value ?? throw new Exception("User Id not found"));
-
         var createdReport = await _reportService.CreateReportAsync(dto);
         return CreatedAtAction(nameof(GetReportById), new { id = createdReport.Id }, createdReport);
     }
-
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
@@ -49,7 +45,6 @@ public class ReportsController : ControllerBase
         return Ok(reports);
     }
 
-
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetReportById(int id)
@@ -59,7 +54,6 @@ public class ReportsController : ControllerBase
         return Ok(report);
     }
 
-
     [HttpGet("stats")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetReportStats()
@@ -67,7 +61,6 @@ public class ReportsController : ControllerBase
         var stats = await _reportService.GetReportStatsAsync();
         return Ok(stats);
     }
-
 
     [HttpPost("{id}/resolve")]
     [Authorize(Roles = "Admin")]
@@ -80,16 +73,6 @@ public class ReportsController : ControllerBase
         return Ok(resolved);
     }
 
-
-    //[HttpPost("{id}/reject")]
-    //[Authorize(Roles = "Admin")]
-    //public async Task<IActionResult> RejectReport(int id)
-    //{
-    //    Guid adminId = Guid.Parse(User.FindFirst("id")!.Value);
-    //    var rejected = await _reportService.RejectReportAsync(id, adminId);
-    //    if (rejected == null) return BadRequest("Report not found or already handled.");
-    //    return Ok(rejected);
-    //}
     [HttpPost("{id}/reject")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> RejectReport(int id)

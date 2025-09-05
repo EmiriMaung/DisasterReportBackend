@@ -18,12 +18,11 @@ namespace DisasterReport.WebAPI.Controllers
             _memberService = memberService;
         }
 
-        // ✅ Invite a member (POST)
         [HttpPost("{organizationId}/invite")]
         [Authorize]
         public async Task<IActionResult> InviteMember(int organizationId, [FromBody] InviteMemberDto dto)
         {
-            var userId = GetUserId(); // from token
+            var userId = GetUserId(); 
 
             var success = await _memberService.InviteMemberAsync(organizationId, dto, userId);
             if (!success)
@@ -32,7 +31,6 @@ namespace DisasterReport.WebAPI.Controllers
             return Ok("Invitation sent.");
         }
 
-        // ✅ Accept invitation (POST)
         [HttpPost("accept")]
         [Authorize]
         public async Task<IActionResult> AcceptInvitation([FromBody] AcceptInvitationDto dto)
@@ -46,7 +44,6 @@ namespace DisasterReport.WebAPI.Controllers
             return Ok("Invitation accepted.");
         }
 
-        // ✅ Remove a member (DELETE)
         [HttpDelete("{organizationId}/remove/{userId}")]
         [Authorize]
         public async Task<IActionResult> RemoveMember(int organizationId, Guid userId)
@@ -58,7 +55,6 @@ namespace DisasterReport.WebAPI.Controllers
             return Ok("Member removed.");
         }
 
-        // ✅ Get all members in an organization (GET)
         [HttpGet("{organizationId}/members")]
         public async Task<IActionResult> GetMembers(int organizationId)
         {
@@ -74,12 +70,11 @@ namespace DisasterReport.WebAPI.Controllers
             return Ok(org);
         }
 
-        // POST: /api/OrganizationMember/reject
         [HttpPost("reject")]
         [Authorize]
         public async Task<IActionResult> RejectInvitation([FromBody] AcceptInvitationDto dto)
         {
-            var userId = GetUserId(); // from JWT
+            var userId = GetUserId(); 
 
             var success = await _memberService.RejectInvitationAsync(dto.Token, userId);
             if (!success)
@@ -87,7 +82,7 @@ namespace DisasterReport.WebAPI.Controllers
 
             return Ok("Invitation rejected.");
         }
-        // GET: /api/OrganizationMember/user/{userId}/pending-invitations
+        
         [HttpGet("user/{userId}/pending-invitations")]
         [Authorize]
         public async Task<IActionResult> GetPendingInvitations(Guid userId)
@@ -95,7 +90,6 @@ namespace DisasterReport.WebAPI.Controllers
             var invitations = await _memberService.GetPendingInvitationsAsync(userId);
             return Ok(invitations);
         }
-
 
         // Utility to extract user ID from JWT
         private Guid GetUserId()

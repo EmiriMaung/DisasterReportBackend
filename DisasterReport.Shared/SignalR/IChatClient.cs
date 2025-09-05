@@ -1,4 +1,5 @@
-﻿namespace DisasterReport.Shared.SignalR
+﻿//For Future Improvements
+namespace DisasterReport.Shared.SignalR
 {
     public interface IChatClient
     {
@@ -9,7 +10,7 @@
 
     public class ChatMessageDto
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString(); // temp
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string FromUserId { get; set; } = string.Empty;
         public string ToUserId { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;

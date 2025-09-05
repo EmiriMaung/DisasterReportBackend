@@ -41,13 +41,6 @@ namespace DisasterReport.Services.Services.Implementations
 
         public async Task<PagedResponse<DisasterReportDto>> GetAllReportsAsync(int pageNumber = 1, int pageSize = 10)
         {
-            //string cacheKey = $"all_reports_{pageNumber}_{pageSize}";
-
-            //if (_cache.TryGetValue(cacheKey, out PagedResponse<DisasterReportDto> cachedResponse))
-            //{
-            //    return cachedResponse;
-            //}
-
             var reports = await _postRepo.GetAllPostsWithMaterialsAsync();
             var totalRecords = reports.Count();
             var pagedReports = reports
@@ -63,11 +56,6 @@ namespace DisasterReport.Services.Services.Implementations
                 pageSize,
                 totalRecords
             );
-
-            //var cacheOptions = new MemoryCacheEntryOptions()
-            //    .SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
-
-            //_cache.Set(cacheKey, response, cacheOptions);
 
             return response;
         }
@@ -97,7 +85,6 @@ namespace DisasterReport.Services.Services.Implementations
                 totalRecords
             );
         }
-
 
         public async Task<IEnumerable<DisasterReportDto>> GetUrgentReportsAsync()
         {
@@ -139,7 +126,6 @@ namespace DisasterReport.Services.Services.Implementations
             return dtoList;
         }
     
-
         public async Task<IEnumerable<DisasterReportDto>> GetPendingRejectReportByReporterIdAsync(Guid reporterId)
         {
             var cacheKey = $"pending_reject_reports_by_reporter_{reporterId}";
@@ -286,11 +272,9 @@ namespace DisasterReport.Services.Services.Implementations
                     Category = report.Category,
                     ReporterId = reporterId,
                     LocationId = newLocation.Id,
-                    // DisasterTopicsId = report.DisasterTopicsId,
                     IsUrgent = report.IsUrgent,
                     IsDeleted = false,
                     ReportedAt = DateTime.Now,
-                    //UpdatedAt = DateTime.UtcNow,
                     ImpactUrls = uploadedFiles.Select(f => new ImpactUrl
                     {
                         ImageUrl = f.ImageUrl,
@@ -376,7 +360,6 @@ namespace DisasterReport.Services.Services.Implementations
                 report.Title = reportDto.Title;
                 report.Description = reportDto.Description;
                 report.Category = reportDto.Category;
-                // report.DisasterTopicsId = reportDto.DisasterTopicsId;
                 report.UpdatedAt = reportDto.UpdateAt ?? DateTime.Now;
                 report.IsUrgent = reportDto.IsUrgent;
                 report.LocationId = existingLocation.Id;
@@ -448,60 +431,6 @@ namespace DisasterReport.Services.Services.Implementations
 
         }
 
-        //public async Task HardDeleteAsync(int id)
-        //{
-        //    await using var transaction = await _postRepo.DbContext.Database.BeginTransactionAsync();
-        //    try
-        //    {
-        //        var report = await _postRepo.GetPostByIdAsync(id);
-        //        if (report == null)
-        //            throw new Exception("Report not found.");
-
-        //        if (report.ImpactUrls?.Any() == true)
-        //        {
-        //            var publicIds = report.ImpactUrls.Select(f => f.PublicId).ToList();
-        //            await _cloudinaryService.DeleteFilesAsync(publicIds);
-        //        }
-
-        //        if (report.ImpactUrls?.Any() == true)
-        //        {
-        //            foreach (var impactUrl in report.ImpactUrls)
-        //            {
-        //                await _impactUrlRepo.DeleteAsync(impactUrl.Id);
-        //            }
-        //            await _impactUrlRepo.SaveChangesAsync();
-        //        }
-
-        //        // Clear many-to-many relationships
-        //        report.ImpactTypes?.Clear();
-        //        report.SupportTypes?.Clear();
-
-        //        var locationId = report.LocationId;
-
-        //        // Delete the report itself
-        //        await _postRepo.HardDeleteReportAsync(report);
-        //        await _postRepo.SaveChangesAsync();
-
-        //        // Delete the location if no other reports use it
-        //        var otherReportsUseLocation = await _postRepo.DbContext.DisastersReports
-        //            .AnyAsync(r => r.LocationId == locationId);
-        //        if (!otherReportsUseLocation)
-        //        {
-        //            var location = await _locationRepo.GetByIdAsync(locationId);
-        //            if (location != null)
-        //                await _locationRepo.DeleteAsync(locationId);
-        //        }
-
-        //        await _postRepo.SaveChangesAsync();
-        //        await transaction.CommitAsync();
-        //        ClearReportCache(report.Id, report.ReporterId);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await transaction.RollbackAsync();
-        //        throw new Exception("Failed to hard delete report: " + ex.Message, ex);
-        //    }
-        //}
         public async Task HardDeleteAsync(int id)
         {
             await using var transaction = await _postRepo.DbContext.Database.BeginTransactionAsync();
@@ -511,7 +440,7 @@ namespace DisasterReport.Services.Services.Implementations
                 if (report == null)
                     throw new Exception("Report not found.");
 
-                // 1️⃣ Delete Impact URLs from Cloudinary
+                // 1️ Delete Impact URLs from Cloudinary
                 if (report.ImpactUrls?.Any() == true)
                 {
                     var publicIds = report.ImpactUrls.Select(f => f.PublicId).ToList();
@@ -524,7 +453,7 @@ namespace DisasterReport.Services.Services.Implementations
                     await _impactUrlRepo.SaveChangesAsync();
                 }
 
-                // 2️⃣ Delete comments related to this report
+                // 2️ Delete comments related to this report
                 var comments = await _postRepo.DbContext.Comments
                     .Where(c => c.DisasterReportId == id)
                     .ToListAsync();
@@ -535,17 +464,17 @@ namespace DisasterReport.Services.Services.Implementations
                     await _postRepo.DbContext.SaveChangesAsync();
                 }
 
-                // 3️⃣ Clear many-to-many relationships
+                // 3️ Clear many-to-many relationships
                 report.ImpactTypes?.Clear();
                 report.SupportTypes?.Clear();
 
                 var locationId = report.LocationId;
 
-                // 4️⃣ Delete the report itself
+                // 4️ Delete the report itself
                 await _postRepo.HardDeleteReportAsync(report);
                 await _postRepo.SaveChangesAsync();
 
-                // 5️⃣ Delete location if unused
+                // 5️ Delete location if unused
                 var otherReportsUseLocation = await _postRepo.DbContext.DisastersReports
                     .AnyAsync(r => r.LocationId == locationId);
                 if (!otherReportsUseLocation)
@@ -558,7 +487,7 @@ namespace DisasterReport.Services.Services.Implementations
                 await _postRepo.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 6️⃣ Clear cache
+                // 6️ Clear cache
                 ClearReportCache(report.Id, report.ReporterId);
             }
             catch (Exception ex)
@@ -567,7 +496,6 @@ namespace DisasterReport.Services.Services.Implementations
                 throw new Exception("Failed to hard delete report: " + ex.Message, ex);
             }
         }
-
 
         public async Task<PagedResponse<DisasterReportDto>> GetReportsByOrganizationIdAsync(int organizationId, int pageNumber = 1, int pageSize = 10)
         {
@@ -602,7 +530,6 @@ namespace DisasterReport.Services.Services.Implementations
 
                 if (topicDto.ExistingTopicId.HasValue)
                 {
-                    // Check if the topic exists
                     var existingTopic = await _postRepo.DbContext.DisasterTopics
                         .FirstOrDefaultAsync(t => t.Id == topicDto.ExistingTopicId.Value);
 
@@ -615,7 +542,7 @@ namespace DisasterReport.Services.Services.Implementations
                         var newTopic = new DisasterTopic
                         {
                             TopicName = topicDto.NewTopic.TopicName,
-                            AdminId = adminId, // Use the passed adminId here
+                            AdminId = adminId, 
                             CreatedAt = DateTime.UtcNow,
                             UpdateAt = DateTime.UtcNow
                         };
@@ -644,7 +571,7 @@ namespace DisasterReport.Services.Services.Implementations
                         var newTopic = new DisasterTopic
                         {
                             TopicName = topicDto.NewTopic.TopicName,
-                            AdminId = adminId, // Use the passed adminId here
+                            AdminId = adminId, 
                             CreatedAt = DateTime.UtcNow,
                             UpdateAt = DateTime.UtcNow
                         };
@@ -660,12 +587,11 @@ namespace DisasterReport.Services.Services.Implementations
                     throw new ArgumentException("Must provide either existing topic ID or new topic details.");
                 }
 
-                // Update the report with processing information
                 report.Status = 1;
                 report.UpdatedAt = DateTime.UtcNow;
                 report.DisasterTopicsId = topicId;
-                report.ProcessedBy = adminId; // Set the admin who processed this report
-                report.ProcessedAt = DateTime.UtcNow; // Set the processing time
+                report.ProcessedBy = adminId; 
+                report.ProcessedAt = DateTime.UtcNow; 
 
                 await _postRepo.UpdatePostAsync(report);
                 await _postRepo.SaveChangesAsync();
@@ -693,8 +619,7 @@ namespace DisasterReport.Services.Services.Implementations
                     throw new ArgumentException("Report not found");
                 }
 
-                // Update report status and rejection info
-                report.Status = 2; // Assuming 2 means "Rejected"
+                report.Status = 2;
                 report.UpdatedAt = DateTime.UtcNow;
                 report.ProcessedBy = rejectedBy;
                 report.ProcessedAt = DateTime.UtcNow;
@@ -823,7 +748,6 @@ namespace DisasterReport.Services.Services.Implementations
                         Name = s.Name
                     }).ToList() ?? new List<SupportTypeDto>(),
 
-                    // ✅ Organization member info for reporter
                     IsOrganizationMember = orgMember != null,
                     OrganizationName = orgMember?.Organization?.Name,
                     OrganizationLogoUrl = orgMember?.Organization?.LogoUrl
@@ -933,7 +857,6 @@ namespace DisasterReport.Services.Services.Implementations
         {
             _cache.Remove($"report_{reportId}");
             _cache.Remove($"reports_by_reporter_{reporterId}");
-            // _cache.Remove("all_reports");
             ClearAllReportsCache();
             _cache.Remove("urgent_reports");
             _cache.Remove($"pending_reject_reports_by_reporter_{reporterId}");
