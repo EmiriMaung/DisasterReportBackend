@@ -39,12 +39,34 @@ namespace DisasterReport.Tests.Data
             Assert.Equal(entry.UserId, result.UserId);
         }
 
+
         [Fact]
         public async Task GetByIdAsync_ShouldReturnCorrectEntry()
         {
             var context = GetDbContext();
-            var entry = new BlacklistEntry { UserId = Guid.NewGuid() };
+
+            var userId = Guid.NewGuid();
+            var user = new User
+            {
+                Id = userId,
+                Name = "Test User",
+                Email = "test@example.com",
+                RoleId = 2,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.Users.Add(user);
+
+            var entry = new BlacklistEntry
+            {
+                Id = 1,
+                UserId = userId,
+                CreatedAdminId = Guid.NewGuid(),
+                Reason = "Test Reason",
+                CreatedAt = DateTime.UtcNow,
+                IsDeleted = false
+            };
             context.BlacklistEntries.Add(entry);
+
             await context.SaveChangesAsync();
 
             var repo = new BlacklistEntryRepo(context);
@@ -52,7 +74,9 @@ namespace DisasterReport.Tests.Data
 
             Assert.NotNull(result);
             Assert.Equal(entry.Id, result!.Id);
+            Assert.Equal(userId, result.UserId);
         }
+
 
         [Fact]
         public async Task UpdateAsync_ShouldUpdateEntry()
@@ -83,7 +107,8 @@ namespace DisasterReport.Tests.Data
             {
                 UserId = userId,
                 IsDeleted = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Reason = "Test Reason"
             };
             context.BlacklistEntries.Add(entry);
             await context.SaveChangesAsync();
@@ -103,7 +128,12 @@ namespace DisasterReport.Tests.Data
             var context = GetDbContext();
             var userId = Guid.NewGuid();
 
-            context.BlacklistEntries.Add(new BlacklistEntry { UserId = userId, IsDeleted = false });
+            context.BlacklistEntries.Add(new BlacklistEntry
+            { 
+                UserId = userId,
+                IsDeleted = false,
+                Reason = "Test",
+            });
             await context.SaveChangesAsync();
 
             var repo = new BlacklistEntryRepo(context);
@@ -112,13 +142,19 @@ namespace DisasterReport.Tests.Data
             Assert.True(isBlacklisted);
         }
 
+
         [Fact]
         public async Task IsUserBlacklistedAsync_ReturnsFalseIfDeleted()
         {
             var context = GetDbContext();
             var userId = Guid.NewGuid();
 
-            context.BlacklistEntries.Add(new BlacklistEntry { UserId = userId, IsDeleted = true });
+            context.BlacklistEntries.Add(new BlacklistEntry
+            {
+                UserId = userId,
+                IsDeleted = true,
+                Reason = "Test",
+            });
             await context.SaveChangesAsync();
 
             var repo = new BlacklistEntryRepo(context);
