@@ -12,34 +12,6 @@ namespace DisasterReport.Data.Repositories.Implementations
             _context = context;
         }
 
-        //public async Task<(List<User> Items, int TotalCount)> GetPaginatedUsersAsync(int page, int pageSize)
-        //{
-        //    var query = _context.Users
-        //        .Include(u => u.Role)
-        //        .Include(u => u.Organizations)
-        //        .AsNoTracking();
-
-        //    int totalCount = await query.CountAsync();
-
-        //    var users = await query
-        //        .Skip((page - 1) * pageSize)
-        //        .Take(pageSize)
-        //        .ToListAsync();
-
-        //    return (users, totalCount);
-        //}
-
-
-        //public async Task<IEnumerable<User>> GetAllUsersAsync()
-        //{
-        //    return await _context.Users
-        //        .Include(u => u.Role)
-        //        .Include(u => u.Organizations)
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
-
-
         public async Task<(List<User> Items, int TotalCount)> GetPaginatedNormalUsersAsync(
             int page,
             int pageSize,
@@ -106,7 +78,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .ToListAsync();
             return (users, totalCount);
         }
-
 
         public async Task<(List<User> Items, int TotalCount)> GetPaginatedActiveUsersAsync(
             int page,
@@ -178,18 +149,6 @@ namespace DisasterReport.Data.Repositories.Implementations
             return (items, total);
         }
 
-        //public async Task<IEnumerable<User>> GetAllActiveUsersAsync()
-        //{
-        //    return await _context.Users
-        //        .Where(u => u.RoleId == 2)
-        //        .Where(u => !_context.BlacklistEntries
-        //            .Any(be => be.UserId == u.Id && !be.IsDeleted))
-        //        .Include(u => u.Role)
-        //        .Include(u => u.Organizations)
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
-
         public async Task<(List<User> Items, int TotalCount)> GetPaginatedAdminsAsync(
             int page,
             int pageSize,
@@ -258,7 +217,6 @@ namespace DisasterReport.Data.Repositories.Implementations
             return (items, total);
         }
 
-
         public async Task<IEnumerable<User>> GetAllAdminsAsync()
         {
             return await _context.Users
@@ -268,7 +226,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .AsNoTracking()
                 .ToListAsync();
         }
-
 
         public async Task<(List<User> Items, int TotalCount)> GetPaginatedBlacklistedUsersAsync(
             int page,
@@ -347,17 +304,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .ToDictionaryAsync(u => u.Id, u => u.Name);
         }
 
-        //public async Task<IEnumerable<User>> GetAllBlacklistedUsers()
-        //{
-        //    return await _context.Users
-        //        .Where(u => _context.BlacklistEntries
-        //            .Any(be => be.UserId == u.Id && !be.IsDeleted))
-        //        .Include(u => u.Role)
-        //        .Include(u => u.Organizations)
-        //        .AsNoTracking()
-        //        .ToListAsync();
-        //}
-
         public async Task<User?> GetUserByIdAsync(Guid id)
         {
             return await _context.Users
@@ -365,7 +311,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Include(u => u.Organizations)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
-
 
         public async Task<Dictionary<Guid, AdminInfo>> GetAdminInfoByIdsAsync(IEnumerable<Guid> userIds)
         {
@@ -378,7 +323,6 @@ namespace DisasterReport.Data.Repositories.Implementations
                 .Where(u => userIds.Contains(u.Id))
                .ToDictionaryAsync(u => u.Id, u => new AdminInfo { Name = u.Name, ProfilePictureUrl = u.ProfilePictureUrl });
         }
-
 
         public async Task<User?> GetUsersByEmailAsync(string email)
         {
@@ -406,8 +350,6 @@ namespace DisasterReport.Data.Repositories.Implementations
             }
         }
 
-        //Actually, we don't delete users in our app. This is just for testing purposes.
-        //We have to use gmail again and again cause of insufficient gamil account.
         public async Task DeleteUserAsync(Guid id)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();

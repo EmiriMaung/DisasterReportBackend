@@ -38,7 +38,7 @@ namespace DisasterReport.Services.Models
     public class EonetResponse
     {
         public List<EonetEvent> Events { get; set; }
-        public Links Links { get; set; } // ✅ pagination info
+        public Links Links { get; set; } //pagination info
 
     }
 

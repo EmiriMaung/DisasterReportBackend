@@ -7,8 +7,6 @@ namespace DisasterReport.Services.Models
         public string? Description { get; set; }
         public string? SupportType { get; set; }
         public decimal? Amount { get; set; }
-
-        // Slip upload (image/pdf)
         public string? PaymentSlipUrl { get; set; }
         public string? FileType { get; set; }
         public int? FileSizeKb { get; set; }
@@ -28,8 +26,7 @@ namespace DisasterReport.Services.Models
         public string? PaymentSlipUrl { get; set; }
         public int? OrganizationId { get; set; }
         public bool IsPlatformDonation { get; set; }
-
-        public Status Status { get; set; }         // ✅ return as enum, easier for frontend
+        public Status Status { get; set; }    
         public DateTime? DonatedAt { get; set; }
     }
     public class DonateRequestReviewDto  //To approve and reject

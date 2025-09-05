@@ -16,7 +16,6 @@ namespace DisasterReport.API.Controllers
             _donationService = donationService;
         }
 
-        // ✅ Get all donations
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -24,7 +23,6 @@ namespace DisasterReport.API.Controllers
             return Ok(donations);
         }
 
-        // ✅ Get donations by user
         [HttpGet("user/{userId}")]
         [Authorize]
         public async Task<IActionResult> GetByUser(Guid userId)
@@ -33,7 +31,6 @@ namespace DisasterReport.API.Controllers
             return Ok(donations);
         }
 
-        // ✅ Get donations by organization
         [HttpGet("organization/{orgId}")]
         [Authorize]
         public async Task<IActionResult> GetByOrganization(int orgId)
@@ -42,13 +39,13 @@ namespace DisasterReport.API.Controllers
             return Ok(donations);
         }
 
-        // ✅ Get total donated amount (all users)
         [HttpGet("total")]
         public async Task<IActionResult> GetTotalAmount()
         {
             var total = await _donationService.GetTotalDonatedAmountAsync();
             return Ok(new { total });
         }
+
         [HttpGet("organization-summary")]
         public async Task<IActionResult> GetOrganizationDonationSummary()
         {
@@ -59,6 +56,5 @@ namespace DisasterReport.API.Controllers
 
             return Ok(summary);
         }
-
     }
 }

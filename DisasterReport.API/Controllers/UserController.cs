@@ -32,7 +32,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-
         [Authorize(Roles = "Admin")]
         [HttpGet("active/paginated")]
         public async Task<ActionResult<PaginatedResult<UserDto>>> GetPaginatedActiveUsers(
@@ -46,7 +45,6 @@ namespace DisasterReport.API.Controllers
             var result = await _userService.GetPaginatedActiveUsersAsync(page, pageSize, searchQuery, sortBy, sortOrder);
             return Ok(result);
         }
-
 
         [Authorize(Roles = "Admin")]
         [HttpGet("admins/paginated")]
@@ -62,7 +60,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-
         [Authorize(Roles = "Admin")]
         [HttpGet("admins-list")]
         public async Task<ActionResult<IEnumerable<AdminDto>>> GetAdminsForDropdown()
@@ -70,7 +67,6 @@ namespace DisasterReport.API.Controllers
             var admins = await _userService.GetAdminsForDropdownAsync();
             return Ok(admins);
         }
-
 
         [Authorize(Roles = "Admin")]
         [HttpGet("blacklisted/paginated")]
@@ -86,7 +82,6 @@ namespace DisasterReport.API.Controllers
             return Ok(result);
         }
 
-
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDto>> GetUserById(Guid id)
@@ -99,7 +94,6 @@ namespace DisasterReport.API.Controllers
 
             return Ok(user);
         }
-
 
         [HttpGet("{id}/details")]
         [Authorize(Roles = "Admin")]
@@ -115,7 +109,6 @@ namespace DisasterReport.API.Controllers
             return Ok(user);
         }
 
-
         [Authorize(Roles = "Admin")]
         [HttpGet("email")]
         public async Task<ActionResult<UserDto>> GetUserByEmail([FromQuery] string email)
@@ -125,7 +118,6 @@ namespace DisasterReport.API.Controllers
 
             return Ok(user);
         }
-
 
         [HttpGet("me")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
@@ -143,7 +135,6 @@ namespace DisasterReport.API.Controllers
 
             return Ok(user);
         }
-
 
         [Authorize]
         [HttpPut("me")]
@@ -163,7 +154,6 @@ namespace DisasterReport.API.Controllers
             }
             return Ok(updatedUserDto);
         }
-
 
         [Authorize]
         [HttpPut("me/name")]
@@ -185,7 +175,6 @@ namespace DisasterReport.API.Controllers
             return Ok(updatedUserDto);
         }
 
-
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(Guid id, [FromForm] UpdateUserFormDto dto)
@@ -197,7 +186,6 @@ namespace DisasterReport.API.Controllers
             }
             return Ok(updatedUserDto);
         }
-
 
         //Actually, we don't delete users in our app. This is just for testing purposes.
         //We have to use gmail again and again cause of insufficient gamil account.

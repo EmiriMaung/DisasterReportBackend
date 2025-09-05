@@ -23,7 +23,6 @@ namespace DisasterReport.Services.Services.Implementations
             email.Subject = subject;
             email.Body = new TextPart("html") { Text = body };
 
-            // Use fully qualified name to avoid ambiguity
             using var smtp = new MailKit.Net.Smtp.SmtpClient();
             await smtp.ConnectAsync(_config["Email:SmtpServer"], int.Parse(_config["Email:Port"]), false);
             await smtp.AuthenticateAsync(_config["Email:Username"], _config["Email:Password"]);

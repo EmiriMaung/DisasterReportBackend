@@ -1,5 +1,4 @@
-﻿// DisasterReport.Shared/SignalR/BaseNotificationHub.cs
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
 namespace DisasterReport.Shared.SignalR;

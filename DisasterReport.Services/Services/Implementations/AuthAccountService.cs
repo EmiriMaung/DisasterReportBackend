@@ -41,7 +41,6 @@ namespace DisasterReport.Services.Services.Implementations
 
             if (login != null)
             {
-                // Existing external login found
                 user = login.User;
 
                 if (await IsUserBlacklistedAsync(user.Id))
@@ -49,7 +48,6 @@ namespace DisasterReport.Services.Services.Implementations
             }
             else
             {
-                // Try to find user by email
                 user = await _context.Users
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Email == userInfo.Email);
@@ -173,7 +171,7 @@ namespace DisasterReport.Services.Services.Implementations
                     RoleId = 2,
                     CreatedAt = DateTime.UtcNow,
                 };
-                var defaultRole = await _context.UserRoles.FindAsync(2); // Find the default role
+                var defaultRole = await _context.UserRoles.FindAsync(2); 
                 user.Role = defaultRole;
 
                 _context.Users.Add(user);

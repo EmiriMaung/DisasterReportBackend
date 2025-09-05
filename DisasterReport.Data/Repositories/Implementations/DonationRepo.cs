@@ -12,7 +12,6 @@ namespace DisasterReport.Data.Repositories
             _db = db;
         }
 
-        //Create
         public async Task<Donation> AddAsync(Donation donation)
         {
             await _db.Donations.AddAsync(donation);
@@ -20,7 +19,6 @@ namespace DisasterReport.Data.Repositories
             return donation;
         }
 
-        //Read
         public Task<IEnumerable<Donation>> GetAllAsync()
         {
             return Task.FromResult(_db.Donations
@@ -70,14 +68,12 @@ namespace DisasterReport.Data.Repositories
                                        .AsEnumerable());
         }
 
-        //Update
         public async Task UpdateAsync(Donation donation)
         {
             _db.Donations.Update(donation);
             await _db.SaveChangesAsync();
         }
 
-        //Delete
         public async Task DeleteAsync(int id)
         {
             var donation = await _db.Donations.FindAsync(id);

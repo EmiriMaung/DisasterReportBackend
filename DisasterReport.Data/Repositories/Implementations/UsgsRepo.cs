@@ -9,16 +9,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DisasterReport.Data.Repositories.Implementations
 {
-    // File: DisasterReport.Data.Repositories.Interfaces/IDisasterEventRepo.cs
     public interface IDisasterEventRepo
     {
         Task<List<string>> GetExistingEventIdsAsync(List<string> eventIds);
         Task<List<DisasterEventNasa>> GetAllAsync();
         Task AddAsync(DisasterEventNasa entity);
-        Task AddRangeAsync(List<DisasterEventNasa> entities); // Add this method for bulk insert
+        Task AddRangeAsync(List<DisasterEventNasa> entities); //method for bulk insert
         Task SaveChangesAsync();
     }
-    // File: DisasterReport.Data.Repositories.Implementations/DisasterEventRepo.cs
     public class DisasterEventRepo : IDisasterEventRepo
     {
         private readonly ApplicationDBContext _context;

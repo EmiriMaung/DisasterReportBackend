@@ -34,7 +34,7 @@ namespace DisasterReport.Data.Repositories
         public async Task<IEnumerable<OrganizationMember>> GetByOrganizationIdAsync(int orgId)
         {
             return await _context.OrganizationMembers
-                .Include(m => m.User) // ✅ Necessary to get registered user's email
+                .Include(m => m.User) //Necessary to get registered user's email
                 .Where(m => m.OrganizationId == orgId)
                 .ToListAsync();
         }

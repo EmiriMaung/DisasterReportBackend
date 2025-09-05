@@ -11,14 +11,13 @@ namespace DisasterReport.Services.Models
         public string? Description { get; set; }
         public string PhoneNumber { get; set; } = null!;
         public bool IsBlackListedOrg { get; set; }
-        public Status Status { get; set; }  // use an enum 
+        public Status Status { get; set; }  
         public Guid? ApprovedBy { get; set; }
-        public string? ApprovedByName { get; set; } // NEW FIELD
+        public string? ApprovedByName { get; set; } 
         public DateTime? ApprovedAt { get; set; }
-        public DateTime CreatedAt { get; set; } //NEW FIELD
+        public DateTime CreatedAt { get; set; } 
 
         public string? LogoUrl { get; set; }
-        // ✅ New fields
         public string? Address { get; set; }
         public string? PayQrUrls { get; set; }
 
@@ -32,12 +31,11 @@ namespace DisasterReport.Services.Models
         public string OrganizationEmail { get; set; } = null!;
         public string? Description { get; set; }
         public string PhoneNumber { get; set; } = null!;
-        public IFormFile? Logo { get; set; }///
-        public IFormFile? NrcFront { get; set; }   // must match frontend key
-        public IFormFile? NrcBack { get; set; }    // must match frontend key
-        public IFormFile? Certificate { get; set; } // must match frontend key
+        public IFormFile? Logo { get; set; }
+        public IFormFile? NrcFront { get; set; }   
+        public IFormFile? NrcBack { get; set; }   
+        public IFormFile? Certificate { get; set; } 
         public List<IFormFile> Documents { get; set; } = new(); //optional
-                                                                // ✅ New fields
         public string? Address { get; set; }
         public IFormFile? PayQrUrls { get; set; }
     }
@@ -49,9 +47,7 @@ namespace DisasterReport.Services.Models
         public string OrganizationEmail { get; set; } = null!;
         public string? Description { get; set; }
         public string PhoneNumber { get; set; } = null!;
-        // ✅ Allow updating logo in profile
         public IFormFile? Logo { get; set; }
-        // ✅ New fields
         public string? Address { get; set; }
         public IFormFile? PayQrUrls { get; set; }
     }

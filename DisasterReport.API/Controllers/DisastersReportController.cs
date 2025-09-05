@@ -11,7 +11,6 @@ namespace DisasterReport.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
     public class DisastersReportController : ControllerBase
     {
         private readonly IDisasterReportService _disasterReportService;
@@ -22,7 +21,6 @@ namespace DisasterReport.API.Controllers
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
-      
         [HttpGet]
         public async Task<ActionResult<PagedResponse<DisasterReportDto>>> GetAllReportsAsync(
         [FromQuery] int pageNumber = 1,
@@ -31,6 +29,7 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetAllReportsAsync(pageNumber, pageSize);
             return Ok(reports);
         }
+
         [HttpGet("search")]
         public async Task<ActionResult<PagedResponse<DisasterReportDto>>> SearchReportsAsync(
             [FromQuery] string? keyword,
@@ -54,6 +53,7 @@ namespace DisasterReport.API.Controllers
             );
             return Ok(reports);
         }
+
         [HttpGet("urgent")]
         public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetUrgentReportsAsync()
         {
@@ -80,25 +80,28 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetMyDeletedReportsAsync(userId);
             return Ok(reports);
         }
+
         [HttpGet("reporter/{reporterId}")]
         public async Task<IActionResult> GetAllReportsByReporter(Guid reporterId)
         {
             var reports = await _disasterReportService.GetAllReportsByReporterIdAsync(reporterId);
             return Ok(reports);
         }
+
         [HttpGet("reporter/{reporterId}/pending-reject")]
         public async Task<IActionResult> GetPendingRejectReportByReporterId(Guid reporterId)
         {
             var reports = await _disasterReportService.GetPendingRejectReportByReporterIdAsync(reporterId);
             return Ok(reports);
         }
-        // GET: api/ReporterReports/reporter/{reporterId}/deleted
+        
         [HttpGet("reporter/{reporterId}/deleted")]
         public async Task<IActionResult> GetDeletedReportsByReporter(Guid reporterId)
         {
             var deletedReports = await _disasterReportService.GetDeletedReportsByReporterIdAsync(reporterId);
             return Ok(deletedReports);
         }
+
         [HttpGet("reports/{id}")]
         public async Task<ActionResult<DisasterReportDto>> GetReportByIdAsync(int id)
         {
@@ -111,7 +114,6 @@ namespace DisasterReport.API.Controllers
 
         [HttpGet("countreportbystatus")]
         [Authorize(Roles = "Admin")]
-
         public async Task<ActionResult<ReportStatusCountDto>> CountReportByStatus()
         {
             var result = await _disasterReportService.CountReportsByStatusAsync();
@@ -120,7 +122,6 @@ namespace DisasterReport.API.Controllers
 
         [HttpGet("status")]
         [Authorize(Roles = "Admin")]
-
         public async Task<ActionResult<PagedResponse<DisasterReportDto>>> GetReportsByStatusAsync(
         [FromQuery] int? status,
         [FromQuery] int pageNumber = 1,
@@ -129,6 +130,7 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetReportsByStatusAsync(status, pageNumber, pageSize);
             return Ok(reports);
         }
+
         [HttpGet("topic/{topicId}")]
         public async Task<IActionResult> GetReportsByTopic(int topicId)
         {
@@ -136,7 +138,6 @@ namespace DisasterReport.API.Controllers
             return Ok(reports);
         }
       
-
         [HttpGet("region/{regionName}")]
         public async Task<ActionResult<IEnumerable<DisasterReportDto>>> GetReportsByRegionAsync(string regionName)
         {
@@ -150,6 +151,7 @@ namespace DisasterReport.API.Controllers
             var reports = await _disasterReportService.GetReportsByTownshipAsync(townshipName);
             return Ok(reports);
         }
+
         [HttpGet("organization/{organizationId}")]
         public async Task<IActionResult> GetReportsByOrganizationId(int organizationId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -166,7 +168,6 @@ namespace DisasterReport.API.Controllers
 
         [Authorize(Roles = "User")]
         [HttpPost("add-disaster-report")]
-
         public async Task<IActionResult> AddReportAsync([FromForm] AddDisasterReportDto report)
         {
             if (report == null)
@@ -188,6 +189,7 @@ namespace DisasterReport.API.Controllers
                 return StatusCode(500, "An error occurred while adding the report");
             }
         }
+
         [Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReportAsync(int id, [FromForm] UpdateDisasterReportDto dto)
@@ -203,6 +205,7 @@ namespace DisasterReport.API.Controllers
             await _disasterReportService.SoftDeleteAsync(id);
             return Ok("SoftDeleted successfully.");
         }
+
         [Authorize(Roles = "User")]
         [HttpPatch("{id}/restore-deletedreport")]
         public async Task<IActionResult> RestoreAsync(int id)
@@ -248,6 +251,7 @@ namespace DisasterReport.API.Controllers
                 return StatusCode(500, new { message = "Failed to approve report", error = ex.Message });
             }
         }
+
         [HttpPost("{reportId}/reject")]
         [Authorize(Roles = "Admin")]
 
@@ -273,6 +277,7 @@ namespace DisasterReport.API.Controllers
                 return StatusCode(500, new { message = "Failed to reject report", error = ex.Message });
             }
         }
+
         [HttpGet("{reportId}/related")]
         public async Task<IActionResult> GetRelatedReportsAsync(int reportId)
         {
@@ -280,6 +285,7 @@ namespace DisasterReport.API.Controllers
 
             return Ok(relatedReports);
         }
+
         [Authorize]
         [HttpGet("map-reports")]
         public async Task<IActionResult> GetDisasterReportsForMap([FromQuery] ReportFilterDto filter)
@@ -288,15 +294,14 @@ namespace DisasterReport.API.Controllers
             var result = await _disasterReportService.GetDisasterReportsForMapAsync(filter);
             return Ok(result);
         }
-        [HttpGet("categories")]
 
+        [HttpGet("categories")]
         public async Task<IActionResult> GetCategoryCounts([FromQuery] int? year, [FromQuery] int? month)
         {
             return Ok(await _disasterReportService.GetCategoryCountsAsync(year, month));
         }
       
         [HttpGet("report-count-last-7-days")]
-
         public async Task<ActionResult<List<object>>> GetReportCountLast7Days()
         {
             var result = await _disasterReportService.GetReportCountLast7DaysAsync();

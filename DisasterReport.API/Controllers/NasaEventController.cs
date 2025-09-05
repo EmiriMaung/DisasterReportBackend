@@ -21,6 +21,7 @@ namespace DisasterReport.API.Controllers
             await _service.FetchAndStoreDisastersAsync();
             return Ok();
         }
+
         [HttpGet("all")]
         public async Task<IActionResult> GetAllEvents()
         {

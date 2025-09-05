@@ -46,7 +46,6 @@ namespace DisasterReport.Services.Services
             if (user == null)
                 throw new InvalidOperationException("User not found.");
 
-            // Update member entry
             member.UserId = userId;
             member.IsAccepted = true;
             member.JoinedAt = DateTime.UtcNow;
@@ -72,7 +71,6 @@ namespace DisasterReport.Services.Services
         {
             var member = await _orgMemberRepo.GetUserOrganizationsWithOrgAsync(userId);
 
-            // Since one user has only one organization, get the first or default
             var orgMember = member.FirstOrDefault();
 
             if (orgMember == null || orgMember.Organization == null)
@@ -108,11 +106,10 @@ namespace DisasterReport.Services.Services
                     throw new InvalidOperationException("User is already a member.");
             }
 
-            // Create invitation entity
             var invitation = new OrganizationMember
             {
                 OrganizationId = organizationId,
-                UserId = invitedUser?.Id,  // nullable UserId property expected
+                UserId = invitedUser?.Id,  
                 RoleInOrg = dto.RoleInOrg ?? "Member",
                 InvitedEmail = dto.InvitedEmail,
                 IsAccepted = false,
@@ -138,13 +135,11 @@ namespace DisasterReport.Services.Services
             <body>
                 <p>Hello</p>
                 <p>You have been invited to join the organization '<strong>{org.Name}</strong>' as a '<strong>{invitation.RoleInOrg}</strong>'.</p>
-                <p>Please login to your account to Civic Responder platform to accept the request.</p>
+                <p>Please login to your account to Civic Responders platform to accept the request.</p>
             </body>
             </html>";
 
             await _emailService.SendEmailAsync(dto.InvitedEmail, subject, body);
-
-            // TODO: Optionally, send email invite for unregistered users here
 
             return saved;
         }
@@ -170,11 +165,7 @@ namespace DisasterReport.Services.Services
             if (member.UserId != null && member.UserId != userId)
                 throw new InvalidOperationException("This invitation was not intended for you.");
 
-            // Option 1: Remove the invitation entirely
             await _orgMemberRepo.RemoveAsync(member);
-
-            // Option 2 (optional): Keep record and mark as rejected
-            // member.IsRejected = true;
 
             return await _orgMemberRepo.SaveChangesAsync();
         }

@@ -27,7 +27,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -44,7 +43,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -60,7 +58,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -76,7 +73,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -91,7 +87,6 @@ public class PostRepo : IPostRepo
             .AsNoTracking()
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
@@ -104,7 +99,6 @@ public class PostRepo : IPostRepo
             .AsNoTracking()
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
@@ -131,11 +125,10 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
-            .Include(r => r.Reporter); // this line is safe now
+            .Include(r => r.Reporter);
 
         // Filter by status
         if (status.HasValue)
@@ -146,36 +139,8 @@ public class PostRepo : IPostRepo
         return await query.ToListAsync();
     }
 
-    //public async Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId)
-    //{
-    //    // First get all user IDs that belong to this organization
-    //    var organizationUserIds = await _context.OrganizationMembers
-    //        .Where(om => om.OrganizationId == organizationId && om.IsAccepted )
-    //        .Select(om => om.UserId)
-    //        .ToListAsync();
-
-    //    if (!organizationUserIds.Any())
-    //    {
-    //        return new List<DisastersReport>();
-    //    }
-
-    //    // Then get reports from those users
-    //    return await _context.DisastersReports
-    //        .Where(r => !r.IsDeleted && r.Status == 1 && organizationUserIds.Contains(r.ReporterId))
-    //        .AsNoTracking()
-    //        .Include(r => r.Location)
-    //        .Include(r => r.Comments)
-    //        .Include(r => r.ImpactUrls)
-    //        .Include(r => r.DisasterTopics)
-    //        .Include(r => r.ImpactTypes)
-    //        .Include(r => r.SupportTypes)
-    //        .Include(r => r.Reporter)
-    //        .ToListAsync();
-    //}
-
     public async Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId)
     {
-        // First get all user IDs that belong to this organization
         var organizationUserIds = await _context.OrganizationMembers
             .Where(om => om.OrganizationId == organizationId && om.IsAccepted)
             .Select(om => om.UserId)
@@ -186,12 +151,11 @@ public class PostRepo : IPostRepo
             return new List<DisastersReport>();
         }
 
-        // Then get reports from those users, excluding blacklist users
         return await _context.DisastersReports
             .Where(r => !r.IsDeleted
                      && r.Status == 1
                      && organizationUserIds.Contains(r.ReporterId)
-                     && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted)) // exclude blacklisted
+                     && !r.Reporter.BlacklistEntries.Any(b => !b.IsDeleted)) 
             .AsNoTracking()
             .Include(r => r.Location)
             .Include(r => r.Comments)
@@ -242,7 +206,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.SupportTypes)
@@ -302,7 +265,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)
@@ -315,7 +277,6 @@ public class PostRepo : IPostRepo
             .Include(r => r.Location)
             .Include(r => r.Comments)
             .Include(r => r.ImpactUrls)
-            //.Include(r => r.DonateRequests)
             .Include(r => r.DisasterTopics)
             .Include(r => r.ImpactTypes)
             .Include(r => r.Reporter)

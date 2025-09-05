@@ -1,6 +1,7 @@
 ﻿using DisasterReport.Shared.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
+//For Future Improvements
 namespace DisasterReport.WebApi.SignalR
 {
     public class ChatHub : Hub<IChatClient>

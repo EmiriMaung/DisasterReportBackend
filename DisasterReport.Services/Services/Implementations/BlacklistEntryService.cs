@@ -24,7 +24,6 @@ namespace DisasterReport.Services.Services.Implementations
             _reportService = reportService;
         }
 
-
         public async Task<PaginatedResult<BlacklistEntryDto>> GetAllBlacklistEntriesAsync(
             int page,
             int pageSize,
@@ -37,12 +36,6 @@ namespace DisasterReport.Services.Services.Implementations
             Guid? adminId
         )
         {
-            //string cacheKey = $"BlacklistEntries_{page}_{pageSize}_{searchQuery}_{sortBy}_{sortOrder}_{statusFilter}_{startDate:yyyy-MM-dd}_{endDate:yyyy-MM-dd}_{adminId}";
-
-            //if (_cache.TryGetValue(cacheKey, out PaginatedResult<BlacklistEntryDto> cachedResult))
-            //{
-            //    return cachedResult;
-            //}
 
             if (page <= 0) page = 1;
             if (pageSize <= 0) pageSize = 10;
@@ -71,7 +64,6 @@ namespace DisasterReport.Services.Services.Implementations
                 CreatedAdminId = entry.CreatedAdminId,
                 CreatedAdminName = adminNames.TryGetValue(entry.CreatedAdminId, out var name) ? name : "Unknown Admin",
                 UpdatedAt = entry.UpdateAt, 
-                //UnblockReason = entry.UpdatedReason,
                 UpdatedAdminId = entry.UpdatedAdminId,
                 UpdatedAdminName = entry.UpdatedAdminId.HasValue && adminNames.TryGetValue(entry.UpdatedAdminId.Value, out var updatedName) ? updatedName : null
             }).ToList();
@@ -84,12 +76,6 @@ namespace DisasterReport.Services.Services.Implementations
                 Page = page,
                 PageSize = pageSize
             };
-
-            //var cacheEntryOptions = new MemoryCacheEntryOptions()
-            //.SetAbsoluteExpiration(TimeSpan.FromMinutes(10))
-            //.AddExpirationToken(new CancellationChangeToken(_cacheResetTokenSource.Token));
-
-            //_cache.Set(cacheKey, result, cacheEntryOptions);
 
             return result;
         }
@@ -114,7 +100,6 @@ namespace DisasterReport.Services.Services.Implementations
                 Email = e.User.Email,
                 ProfilePictureUrl = e.User.ProfilePictureUrl,
                 Reason = e.Reason,
-                //UpdatedReason = e.UpdatedReason,
                 CreatedAt = e.CreatedAt,
                 UpdatedAt = e.UpdateAt,
                 IsDeletedFromBlacklist = e.IsDeleted,
@@ -250,14 +235,10 @@ namespace DisasterReport.Services.Services.Implementations
 
                 await _blacklistEntryRepo.UpdateAsync(entry);
 
-                //_cache.Remove($"BlacklistEntry_{id}");
-
                 var updatedEntry = await _blacklistEntryRepo.GetByIdAsync(id);
                 if (updatedEntry != null)
                 {
                     var updatedDto = MapToDto(updatedEntry);
-                    //_cacheResetTokenSource.Cancel();
-                    //_cacheResetTokenSource = new CancellationTokenSource();
                 }
             }
 
@@ -272,8 +253,6 @@ namespace DisasterReport.Services.Services.Implementations
 
             await _blacklistEntryRepo.SoftDeleteByUserIdAsync(userId, adminId, unblockedReason);
 
-            //_cacheResetTokenSource.Cancel();
-            //_cacheResetTokenSource = new CancellationTokenSource();
         }
 
 

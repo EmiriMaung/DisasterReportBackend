@@ -36,7 +36,6 @@ namespace DisasterReport.Data.Repositories
         public async Task<IEnumerable<Organization>> GetAllAsync()
         {
             return await _context.Organizations
-                //.Where(o => !o.IsBlackListedOrg && o.Status == 1)
                 .ToListAsync();
         }
 

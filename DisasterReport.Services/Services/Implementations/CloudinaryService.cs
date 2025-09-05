@@ -149,9 +149,7 @@ namespace DisasterReport.Services.Services
             var uploadParams = new ImageUploadParams()
             {
                 File = new FileDescription(file.FileName, stream),
-                // 1. Store profile pictures in a dedicated folder
                 Folder = "user_profiles",
-                // 2. Apply a transformation to create a 300x300 square, focusing on the face
                 Transformation = new Transformation().Width(300).Height(300).Crop("fill").Gravity("face")
             };
 

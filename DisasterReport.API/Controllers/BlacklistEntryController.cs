@@ -81,14 +81,6 @@ namespace DisasterReport.API.Controllers
             }
         }
 
-
-        //[HttpGet("user-history/{userId}")]
-        //public async Task<ActionResult<IEnumerable<BlacklistHistoryDto>>> GetUserHistory(Guid userId)
-        //{
-        //    var history = await _blacklistEntryService.GetUserBlacklistHistoryAsync(userId);
-        //    return Ok(history);
-        //}
-
         [Authorize(Roles = "Admin")]
         [HttpGet("export-excel")]
         public async Task<IActionResult> ExportBlacklist()
@@ -155,7 +147,6 @@ namespace DisasterReport.API.Controllers
             return File(bytes, "application/pdf", "blacklist_export.pdf");
         }
 
-
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateBlacklistEntryDto dto)
@@ -211,7 +202,6 @@ namespace DisasterReport.API.Controllers
                 return NotFound(ex.Message);
             }
         }
-
 
         [HttpGet("check/{userId}")]
         public async Task<ActionResult<bool>> IsUserBlacklisted(Guid userId)

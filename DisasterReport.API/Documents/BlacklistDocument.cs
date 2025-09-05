@@ -1,4 +1,4 @@
-﻿using DisasterReport.Services.Models.BlacklistEntryDTO; // Make sure this matches your project's namespace
+﻿using DisasterReport.Services.Models.BlacklistEntryDTO; 
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -19,10 +19,9 @@ public class BlacklistDocument : IDocument
         container
             .Page(page =>
             {
-                // Configure page settings for a wide data table
                 page.Margin(5);
-                page.Size(PageSizes.A4.Width, PageSizes.A4.Height); // Corrected the usage of PageSizes
-                page.DefaultTextStyle(x => x.FontSize(8)); // Use a slightly smaller font
+                page.Size(PageSizes.A4.Width, PageSizes.A4.Height);
+                page.DefaultTextStyle(x => x.FontSize(8));
 
                 page.Header().Element(ComposeHeader);
                 page.Content().Element(ComposeContent);
@@ -54,7 +53,6 @@ public class BlacklistDocument : IDocument
         {
             column.Item().Table(table =>
             {
-                // Define column widths: one fixed-width column and eight relative-width columns
                 table.ColumnsDefinition(columns =>
                 {
                     columns.ConstantColumn(30);     // No.

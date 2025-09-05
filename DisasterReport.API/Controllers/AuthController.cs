@@ -46,49 +46,6 @@ public class AuthController : ControllerBase
         return Redirect(loginUrl);
     }
 
-
-    //[HttpGet("callback/{provider}")]
-    //public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
-    //{
-    //    if (!string.IsNullOrEmpty(error))
-    //    {
-    //        return Redirect(_config["ClientUrl"]);
-    //    }
-
-    //    if (string.IsNullOrEmpty(code))
-    //        return BadRequest(new { error = "Missing 'code' in query string." });
-
-    //    var expectedState = Request.Cookies["oauth_state"];
-    //    if (string.IsNullOrEmpty(state) || state != expectedState)
-    //        return BadRequest(new { error = "Invalid or missing state parameter (possible CSRF)." });
-
-    //    // Optional: clear state cookie after use
-    //    Response.Cookies.Delete("oauth_state");
-
-    //    var userInfo = await _oAuthService.HandleCallbackAsync(provider.ToLower(), code, state);
-    //    var tokens = await _authAccountService.LoginOrRegisterExternalAsync(userInfo);
-
-    //    // Set Access Token cookie (short-lived)
-    //    Response.Cookies.Append("access_token", tokens.AccessToken, new CookieOptions
-    //    {
-    //        HttpOnly = true,
-    //        Secure = true,
-    //        SameSite = SameSiteMode.None,
-    //        Expires = DateTimeOffset.UtcNow.AddMinutes(10)
-    //    });
-
-    //    // Set Refresh Token cookie (longer lived)
-    //    Response.Cookies.Append("refresh_token", tokens.RefreshToken, new CookieOptions
-    //    {
-    //        HttpOnly = true,
-    //        Secure = true,
-    //        SameSite = SameSiteMode.None,
-    //        Expires = DateTimeOffset.UtcNow.AddDays(30)
-    //    });
-
-    //    return Redirect($"{_config["ClientUrl"]}/oauth-callback");
-    //    //return Ok("Login successful. You can close this window now.");
-    //}
     [HttpGet("callback/{provider}")]
     public async Task<IActionResult> Callback(string provider, [FromQuery] string? code, [FromQuery] string? state, [FromQuery] string? error)
     {
@@ -136,14 +93,12 @@ public class AuthController : ControllerBase
         }
     }
 
-
     [HttpPost("login/otp/request")]
     public async Task<IActionResult> RequestOtp([FromBody] OtpRequestDto request)
     {
         await _authAccountService.RequestOtpAsync(request.Email);
         return Ok(new { message = "An OTP has been sent to your email." });
     }
-
 
     [HttpPost("login/otp/verify")]
     public async Task<IActionResult> VerifyOtp([FromBody] OtpVerifyDto request)
@@ -176,7 +131,6 @@ public class AuthController : ControllerBase
         }
     }
 
-
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -196,7 +150,6 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Logged out successfully." });
     }
 
-
     [Authorize]
     [HttpGet("me")]
     public IActionResult Me()
@@ -210,7 +163,6 @@ public class AuthController : ControllerBase
             profilePicture = User.FindFirst("profilePicture")?.Value
         });
     }
-
 
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken()

@@ -137,22 +137,6 @@ public class ReportService : IReportService
         return new ReportDto { };
     }
 
-
-    //public async Task<ReportDto?> ResolveReportAsync(int id, Guid adminId, string actionTaken)
-    //{
-    //    var resolved = await _reportRepo.ResolveAsync(id, adminId, actionTaken);
-    //    if (resolved == null) return null;
-
-    //    var notificationDto = new ReportStatusDto
-    //    {
-    //        ReportId = resolved.Id,
-    //        Status = "Resolved",
-    //        Message = $"Your report (ID: {resolved.Id}) has been resolved. Action taken: {resolved.ActionTaken}"
-    //    };
-    //    await _reportNotificationService.NotifyReporterOnStatusChangeAsync(resolved.ReporterId, notificationDto);
-
-    //    return new ReportDto { };
-    //}
     public async Task<ReportDto?> ResolveReportAsync(int id, Guid adminId, string actionTaken)
     {
         var resolved = await _reportRepo.ResolveAsync(id, adminId, actionTaken);

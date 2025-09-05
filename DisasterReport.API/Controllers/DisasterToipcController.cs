@@ -10,7 +10,7 @@ namespace DisasterReport.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Require JWT Authentication
+    [Authorize] 
     public class DisasterTopicController : ControllerBase
     {
         private readonly IDisasterTopicService _service;

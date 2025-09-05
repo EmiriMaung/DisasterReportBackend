@@ -21,7 +21,6 @@ namespace DisasterReport.Services.Services
             _cloudinaryService = cloudinaryService;
         }
 
-        // ✅ Create request
         public async Task<DonateRequestReadDto> CreateAsync(DonateRequestCreateDto dto, IFormFile? slipFile, Guid userId)
         {
             string? slipUrl = null;
@@ -70,13 +69,11 @@ namespace DisasterReport.Services.Services
                 await _requestRepo.UpdateAsync(request);
             }
 
-            // Reload the request with navigation property populated
             var createdRequest = await _requestRepo.GetByIdAsync(request.Id);
 
             return MapToReadDto(createdRequest!);
         }
 
-        // ✅ Review request (by organization)
         public async Task<DonateRequestReadDto?> ReviewAsync(int requestId, DonateRequestReviewDto dto)
         {
             var request = await _requestRepo.GetByIdAsync(requestId);
@@ -103,7 +100,6 @@ namespace DisasterReport.Services.Services
             return MapToReadDto(request);
         }
 
-        // ✅ Approve directly
         public async Task<DonateRequestReadDto?> ApproveAsync(int requestId)
         {
             var request = await _requestRepo.GetByIdAsync(requestId);
@@ -123,7 +119,6 @@ namespace DisasterReport.Services.Services
             return MapToReadDto(request);
         }
 
-        // ✅ Reject directly
         public async Task<DonateRequestReadDto?> RejectAsync(int requestId)
         {
             var request = await _requestRepo.GetByIdAsync(requestId);
@@ -135,27 +130,24 @@ namespace DisasterReport.Services.Services
             return MapToReadDto(request);
         }
 
-        // ✅ Get all
         public async Task<IEnumerable<DonateRequestReadDto>> GetAllAsync()
         {
             var requests = await _requestRepo.GetAllAsync();
             return requests.Select(MapToReadDto);
         }
-        // ✅ Get by platform/organization donation
+
         public async Task<IEnumerable<DonateRequestReadDto>> GetByIsPlatformAsync(bool isPlatformDonation)
         {
             var requests = await _requestRepo.GetByIsPlatformAsync(isPlatformDonation);
             return requests.Select(MapToReadDto);
         }
 
-        // ✅ Get by user
         public async Task<IEnumerable<DonateRequestReadDto>> GetByUserIdAsync(Guid userId)
         {
             var requests = await _requestRepo.GetByUserIdAsync(userId);
             return requests.Select(MapToReadDto);
         }
 
-        // ✅ Get pending by org
         public async Task<IEnumerable<DonateRequestReadDto>> GetPendingByOrganizationIdAsync(int organizationId)
         {
             var requests = await _requestRepo.GetByOrganizationIdAsync(organizationId);
@@ -164,7 +156,6 @@ namespace DisasterReport.Services.Services
                 .Select(MapToReadDto);
         }
 
-        // ✅ Manual mapper
         private static DonateRequestReadDto MapToReadDto(DonateRequest request)
         {
             return new DonateRequestReadDto

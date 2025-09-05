@@ -56,7 +56,6 @@ namespace DisasterReport.Services.Services.Implementations
                 return null;
             }
 
-            // Manual mapping with null checking
             if (updateDto.FullName != null)
                 existingPeopleVoice.FullName = updateDto.FullName;
 

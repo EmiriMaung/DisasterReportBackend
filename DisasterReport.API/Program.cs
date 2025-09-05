@@ -23,27 +23,23 @@ namespace DisasterReport.API
 
             QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community; //for PDF export 
 
-            // Add services to the container.
-        
-
-            // 1 . Read Connection string 
+            
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            // 2 . Register Data Layer 
+            
             builder.Services.AddDataServices(connectionString); //get from DataServiceControllerEntension... 
-            // 3 .  Register Service Layer 
+            
             builder.Services.AddServiceLayer(builder.Configuration);
-            // Memory Cache
+            
             builder.Services.AddMemoryCache();
 
             builder.Services.AddHostedService<NasaBackgroundService>();
-
 
             // ADD CORS CONFIGURATION
             builder.Services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins("http://localhost:5173") // Your frontend URL
+                    builder.WithOrigins("http://localhost:5173") //Frontend URL
                            .AllowAnyHeader()
                            .AllowAnyMethod()
                            .AllowCredentials(); // Important for cookies
@@ -51,7 +47,7 @@ namespace DisasterReport.API
             });
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwaggerGen(options =>
@@ -87,7 +83,6 @@ namespace DisasterReport.API
                 });
             });
 
-            // 4. Configure Authentication
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -114,11 +109,9 @@ namespace DisasterReport.API
                 {
                     OnMessageReceived = context =>
                     {
-                        // ?? ??????? OnMessageReceived delegate
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
 
-                        // This must match your hub endpoint path (case-sensitive)
                         var isHubRequest = path.StartsWithSegments("/hubs/notification");
 
                         if (!string.IsNullOrEmpty(accessToken) && isHubRequest)
