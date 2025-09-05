@@ -11,7 +11,6 @@ namespace DisasterReport.Services.Services.Interfaces;
 
 public interface IDisasterReportService
 {
-    // Task<IEnumerable<DisasterReportDto>> GetAllReportsAsync();
     Task<PagedResponse<DisasterReportDto>> GetAllReportsAsync(int pageNumber = 1, int pageSize = 10);
     Task<PagedResponse<DisasterReportDto>> SearchReportsAsync(
            string? keyword,

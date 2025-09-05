@@ -20,7 +20,7 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task<List<DisastersReport>> GetReportsByTownshipAsync(string townshipName);
         Task<List<DisastersReport>> GetPendingReportsAsync();
         Task<List<DisastersReport>> GetUrgentReportsAsync();
-        Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId);//for organization 
+        Task<List<DisastersReport>> GetReportsByOrganizationIdAsync(int organizationId);
         Task AddPostAsync(DisastersReport report);
         Task UpdatePostAsync(DisastersReport report);
         Task SoftDeleteReportAsync(int reportId);
@@ -30,7 +30,7 @@ namespace DisasterReport.Data.Repositories.Interfaces
         Task ApproveReportAsync(int reportId, Guid approvedBy);
         Task RejectReportAsync(int reportId, Guid rejectedBy);
         Task<List<DisastersReport>> GetReportsByTopicIdAsync(int topicId);
-        Task<List<DisasterReportMapDto>> GetFilteredDisasterReportsAsync(ReportFilterDto filter);//for sp
+        Task<List<DisasterReportMapDto>> GetFilteredDisasterReportsAsync(ReportFilterDto filter);
         Task<List<CategoryCountDto>> GetCategoryCountsAsync(int? year = null, int? month = null);
         Task<List<(DateTime ReportDate, int ReportCount)>> GetReportCountLast7DaysAsync();
         Task SaveChangesAsync();

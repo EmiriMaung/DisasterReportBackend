@@ -25,7 +25,6 @@ namespace DisasterReport.Services.Services
         Task<bool> UnBlacklistOrganizationAsync(int orgId, Guid adminUserId);
         Task<bool> InviteMemberAsync(int orgId, InviteMemberDto dto, Guid inviterUserId);
         Task<bool> UserHasActiveOrganizationAsync(Guid userId);
-        // ✅ New method for logo updates only
         Task<string?> UpdateLogoAsync(int orgId, IFormFile logoFile, Guid userId);
     }
 }

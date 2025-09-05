@@ -14,9 +14,5 @@ namespace DisasterReport.Services.Services.Interfaces
         Task RequestOtpAsync(string email);
 
         Task<TokenResultDto> AuthenticateWithOtpAsync(string email, string code);
-
-        //Task<TokenResultDto> RegisterAsync(RegisterDto registerDto);
-
-        //public Task<TokenResultDto> LoginAsync(LoginDto dto);
     }
 }

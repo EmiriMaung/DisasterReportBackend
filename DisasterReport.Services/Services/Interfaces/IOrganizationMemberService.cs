@@ -14,7 +14,7 @@ namespace DisasterReport.Services.Services
         Task<bool> RemoveMemberAsync(int organizationId, Guid userId);
         Task<List<OrganizationMemberDto>> GetMembersByOrganizationIdAsync(int organizationId);
         Task<UserOrganizationDto?> GetUserOrganizationAsync(Guid userId);
-        Task<bool> RejectInvitationAsync(Guid token, Guid userId); //new method
+        Task<bool> RejectInvitationAsync(Guid token, Guid userId); 
         Task<List<PendingInvitationDto>> GetPendingInvitationsAsync(Guid userId);
     }
 }
